@@ -6,25 +6,25 @@
 - Nagy Huba  
 
 ## Leírás  
-A Smart Manager egy oktatási és projektmenedzsment rendszer, melyet két felhasználói felület – diákok számára asztali (.exe) kliens, tanárok számára webes felület – támogat. Celja, hogy egyszerre egészítse ki egy projekt-kezelő rendszer (Kanban board, feladatrendszer) és egy kommunikációs felület (chat, értesítők).
+A Smart Manager egy projektmenedzsment és oktatási rendszer, melyet két felhasználói felület – felhasználó/diákok számára asztali (.exe) kliens, adminisztrátor/tanárok számára webes felület – támogat. Célja, hogy egyszerre egészítse ki egy projekt-kezelő rendszer (Kanban board, feladatrendszer) és egy kommunikációs felület (chat, értesítők).
 
 ## Főbb funkciók  
-- **Diák (.exe desktop alkalmazás):**  
+- **Felhasználó/Diák (.exe desktop alkalmazás):**  
   - Bejelentkezés (.exe fájlból)  
   - Kanban board felület feladatkövetéshez  
   - Feladatok beadása fájlokkal, határidők kezelése  
   - Valós idejű kommunikáció tanárral és csapattársakkal  
   - Statisztikák (saját teljesítmény megtekintése)  
 
-- **Tanár (webes felület):**  
+- **Adminisztrátor/Tanár (webes felület):**  
   - Kurzusok és feladatok létrehozása/kiosztása  
   - Beadások nyomon követése és értékelése  
   - Statisztikai dashboard (átlagok, késések, export)  
-  - Tanulói kommunikáció, kurzus anyagainak kezelése  
+  - Kommunikáció, kurzus anyagainak kezelése  
 
 ## Rendszerkövetelmények  
-- **Diák oldalon (.exe alkalmazás):** Windows 10 vagy újabb  
-- **Tanár oldal (web):** Modern böngésző (Chrome, Edge, Firefox, Safari)  
+- **Felhasználói/Diák oldalon (.exe alkalmazás):** Windows 10 vagy újabb  
+- **Adminisztrátor/Tanár oldal (web):** Modern böngésző (Chrome, Edge, Firefox, Safari)  
 - **Backend:** .NET/C# környezet, SQL-alapú adatbázis  
 
 ## Dokumentáció  
