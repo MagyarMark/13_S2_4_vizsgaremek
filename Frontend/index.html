@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="hu">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="src/style.css">
+    <link rel="icon" href="images/sm_logo.png" />
+    <title>Smart Manager</title>
+</head>
+
+<body>
+
+    <header class="site-header" role="banner">
+        <div class="logo-wrap" id="menu-toggle">
+            <img src="images/sm_logo.png" alt="Cég logó (PNG)" id="site-logo" />
+        </div>
+    <!--<div class="site-title">Üdv a <u>Smart Manager</u> weboldalán </div>-->
+    </header>
+
+    <nav class="side-menu" id="side-menu">
+    <div class="menu-items">
+        <ul>
+            <br>
+            <li><a href="index.html"><span class="icon">👤</span> Profil</a></li>
+            <li><a href="dashboard.html"><span class="icon">🏠</span> Dashboard</a></li>
+            <li><a href="tasks.html"><span class="icon">📝</span> Feladatok</a></li>
+            <li><a href="settings.html"><span class="icon">⚙️</span> Beállítások</a></li>
+        </ul>
+    </div>
+    <div class="menu-footer" style="text-align: center;">
+        <button class="btn-theme" id="theme-toggle">🌞 / 🌙</button>
+    </div>
+</nav>
+    <main>
+  <section class="mid" id="mid">
+    <h2>Mi is az a <u>Smart Manager</u>?</h2>
+    <div class="self-intro">
+      <div class="intro-item">
+        <p>A Smart Manager egy projektmenedzsment rendszer. A szoftver támogatja az általános felhasználást, illetve akár tanárok és diákok közötti hatékony együttműködést is elősegítheti.</p>
+      </div>
+    </div>
+    <div class="self-intro" style="margin-top: 20px;">
+      <div class="intro-item">
+        <p>A Smart Manager segítségével a felhasználók könnyedén nyomon követhetik a projektjeiket, kezelhetik a feladatokat, és együttműködhetnek csapatukkal.</p>
+      </div>
+    </div>
+    <div class="button-group">
+      <button class="btn-to" id="login-btn">Bejelentkezés</button>
+      <button class="btn-to">Regisztráció</button>
+    </div>
+  </section>
+
+  <!-- Rejtett Login Form js/css megoldás-->
+  <section class="login-form" id="login-form">
+    <h2>Bejelentkezés</h2>
+    <form id="loginForm">
+      <input type="text" placeholder="Felhasználónév" required>
+      <input type="password" placeholder="Jelszó" required>
+      <button type="submit" class="btn-to">Bejelentkezés</button>
+    </form>
+  </section>
+</main>
+
+    <footer>
+        © 2025 Smart Manager. Minden jog fenntartva.
+    </footer>
+
+    <script src="src/script.js"></script>
+</body>
+
+</html>
