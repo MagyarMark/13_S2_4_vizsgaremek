@@ -262,6 +262,61 @@ footer {
   border: 1px solid #ccc;
 }
 
+/* Registration form */
+.register-section {
+        max-width: 480px;
+        margin: 4rem auto;
+        text-align: center;
+}
+
+.login-form.register-section {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    text-align: center;
+    opacity: 0;
+    transition: all 0.6s ease;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.login-form.register-section.active {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+}
+
+.register-form input,
+.register-form select {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.12);
+}
+
+.register-form .btn-to {
+    margin: 12px auto 0 auto;
+    display: inline-block;
+    width: auto;
+    padding: 12px 48px;
+}
+
+/* Dashboard */
+.dashboard { max-width: 1100px; margin: 2.5rem auto; padding: 0 1rem; }
+.dash-header { text-align: left; margin-bottom: 1.5rem }
+.dash-header h1 { margin: 0 0 6px 0; color: var(--accent) }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px }
+.card { background: var(--header-bg); padding: 20px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.06) }
+.card h3 { margin: 0 0 8px 0 }
+.muted { color: rgba(0,0,0,0.6); margin-top: 12px }
+
 /* Gomb kicsúszás */
 #login-btn {
   transition: transform 0.6s ease, opacity 0.6s ease;
@@ -270,6 +325,15 @@ footer {
 #login-btn.slide-out {
   transform: translateX(-200%);
   opacity: 0;
+}
+
+#register-btn {
+    transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+#register-btn.slide-out {
+    transform: translateX(200%);
+    opacity: 0;
 }
 
 /* Középső tartalom eltűnik */
