@@ -1,0 +1,420 @@
+:root {
+    --bg: #ffffff;
+    --text: #111827;
+    --header-bg: #f8fafc;
+    --accent: #2563eb;
+}
+
+* {
+    box-sizing: border-box
+}
+
+body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+    color: var(--text);
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* HEADER */
+.site-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 20px;
+    background: var(--header-bg);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 160px;
+    cursor: pointer;
+}
+
+.logo-wrap img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.site-title {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--accent);
+    user-select: none;
+    flex-grow: 1;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Oldalsó menü */
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    width: 260px;
+    height: 100%;
+    background: var(--header-bg);
+    border-right: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    padding: 80px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: left 0.3s ease;
+    z-index: 90;
+}
+
+.side-menu.open {
+    left: 0;
+}
+
+.menu-items ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-items a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+    margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.menu-items a:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+.menu-items select {
+    width: 100%;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 15px;
+    margin-top: 10px;
+}
+
+.menu-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding-top: 12px;
+}
+
+.btn {
+    padding: 10px 16px;
+    border-radius: 25px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+.btn:hover {
+    background: #1e40af;
+}
+
+.btn-theme{
+    padding: 10px 65px;
+    border-radius: 25px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+.btn-theme:hover {
+    background: #1e40af;
+}
+main {
+    flex: 1;
+    padding: 24px;
+}
+
+.button-group {
+    margin-top: 24px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+footer {
+    background: var(--header-bg);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    text-align: center;
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.btn-to {
+    padding: 12px 48px;
+    border-radius: 25px;
+    border: none;
+    background: var(--accent);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 5px;
+    text-align: center;
+    margin: 0px 200px;
+    height: 48px;
+    transition: transform 0.3s ease;
+}
+
+.btn-to:hover {
+    transform: translateY(-10px);
+}
+
+.mid {
+    padding: 4rem 2rem;
+    background-color: var(--bg-light);
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.mid h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: var(--accent);
+    transition: transform 0.3s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.self-intro {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.intro-item {
+    background-color: #1e293b;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    text-align: left;
+    transition: transform 0.3s ease;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- LOGIN FORM --- */
+.login-form {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  text-align: center;
+  opacity: 0;
+  transition: all 0.6s ease;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.login-form.active {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+
+.login-form input {
+  display: block;
+  width: 250px;
+  margin: 10px auto;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+/* Registration form */
+.register-section {
+        max-width: 480px;
+        margin: 4rem auto;
+        text-align: center;
+}
+
+.login-form.register-section {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    text-align: center;
+    opacity: 0;
+    transition: all 0.6s ease;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.login-form.register-section.active {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+}
+
+.register-form input,
+.register-form select {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.12);
+}
+
+.register-form .btn-to {
+    margin: 12px auto 0 auto;
+    display: inline-block;
+    width: auto;
+    padding: 12px 48px;
+}
+
+/* Dashboard */
+.dashboard { max-width: 1100px; margin: 2.5rem auto; padding: 0 1rem; }
+.dash-header { text-align: left; margin-bottom: 1.5rem }
+.dash-header h1 { margin: 0 0 6px 0; color: var(--accent) }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px }
+.card { background: var(--header-bg); padding: 20px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.06) }
+.card h3 { margin: 0 0 8px 0 }
+.muted { color: rgba(0,0,0,0.6); margin-top: 12px }
+
+/* Gomb kicsúszás */
+#login-btn {
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+#login-btn.slide-out {
+  transform: translateX(-200%);
+  opacity: 0;
+}
+
+#register-btn {
+    transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+#register-btn.slide-out {
+    transform: translateX(200%);
+    opacity: 0;
+}
+
+/* Középső tartalom eltűnik */
+.mid.hide {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.6s ease;
+}
+
+/* --- RESZPONZÍV BEÁLLÍTÁSOK --- */
+@media (max-width: 1024px) {
+    .site-title {
+        font-size: 24px;
+    }
+
+    .btn-to {
+        margin: 12px auto;
+        display: block;
+        width: 70%;
+    }
+}
+
+@media (max-width: 768px) {
+    .site-header {
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: 10px;
+    }
+
+    .site-title {
+        font-size: 20px;
+        text-align: center;
+        flex: 1 1 100%;
+        margin-top: 8px;
+    }
+
+    .side-menu {
+        width: 220px;
+    }
+
+    .btn-to {
+        width: 90%;
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+
+    .button-group {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .mid h2 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .site-header {
+        gap: 8px;
+    }
+
+    .logo-wrap {
+        width: 120px;
+    }
+
+    .site-title {
+        font-size: 18px;
+    }
+
+    .btn-theme {
+        padding: 8px 30px;
+        font-size: 14px;
+    }
+
+    .intro-item {
+        padding: 1.2rem;
+        font-size: 14px;
+    }
+
+    footer {
+        font-size: 12px;
+        padding: 12px;
+    }
+}
