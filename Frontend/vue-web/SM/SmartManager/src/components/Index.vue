@@ -1,0 +1,51 @@
+<template>
+  <header>
+    <h1>Smart Manager</h1>
+    <button id="menuToggle" aria-label="Menü megnyitása">☰</button>
+    <nav id="mainNav">
+      <a href="index.vue">Kezdőlap</a>
+      <a href="rolunk.vue">Rólunk</a>
+      <a href="kapcsolat.vue">Kapcsolat</a>
+      <button id="themeToggle" aria-label="Téma váltása">🌙</button>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h2>Mi is az a <u>Smart Manager</u>?</h2>
+    <p>↘️Ha érdekel itt el tudod olvasni!↙️</p>
+    <a href="about.vue"><button class="btn">Érdekel</button></a>
+  </section>
+
+  <section class="mid-section" id="mid-section">
+    <h2>Csatlakozz hozzánk!</h2>
+    <div class="mid-content-grid">
+      <div class="mid-content-card">
+        <h3>Ha már van fiókod, jelentkezz be, és kezd el használni a Smart Managert!</h3>
+        <a href="login.vue"><button class="btn">Bejelentkezés</button></a>
+      </div>
+      <div></div>
+      <div class="mid-content-card">
+        <h3>Ha még nincs fiókod, regisztrálj, és csatlakozz a Smart Manager közösségéhez!</h3>
+        <a href="register.vue"><button class="btn">Regisztráció</button></a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-content">
+      <h3>Smart Manager</h3>
+      <p>&copy; 2025 Smart Manager. Minden jog fenntartva.</p>
+      <div class="footer-links">
+        <a href="index.vue">Kezdőlap</a>
+        <a href="kapcsolat.vue">Kapcsolat</a>
+      </div>
+    </div>
+  </footer>
+
+</template>
+
+<script>
+export default {
+  name: "Home"
+}
+</script>
