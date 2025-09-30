@@ -1,13 +1,11 @@
-<script setup>
-import Index from './components/Index.vue'
+<script>
+
 </script>
 
 <template>
-  <div id="app">
-    <index></index>
-  </div>
+  <router-view></router-view>
 </template>
 
-<style scoped>
-@import "./style.css";
+<style>
+
 </style>

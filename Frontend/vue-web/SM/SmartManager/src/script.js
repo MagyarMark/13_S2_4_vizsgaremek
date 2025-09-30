@@ -1,6 +1,4 @@
-// menu
-document.getElementById("menuToggle").addEventListener("click", function () {
-document.getElementById("mainNav").classList.toggle("active");
-});
+// menu 
+document.getElementById("menuToggle").addEventListener("click", function () { document.getElementById("mainNav").classList.toggle("active"); });
 
 // téma váltás
