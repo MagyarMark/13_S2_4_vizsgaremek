@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="hu">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dashboard</title>
+    <style>
+        :root {
+            --bg: #0f1724;
+            --card: #0b1220;
+            --accent: #2563eb;
+            --muted: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.03);
+            --danger: #ef4444;
+            --success: #10b981;
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, Segoe UI, Roboto, "Helvetica Neue", Arial;
+            background: linear-gradient(180deg, #071026 0%, #071826 100%);
+            color: #e6eef8;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+        }
+
+        /* Header responsive tweaks */
+        .header-left {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hamburger {
+            display: none;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .top-controls.collapsed {
+            display: none;
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--accent)
+        }
+
+        .top-controls {
+            display: flex;
+            gap: 12px;
+            margin-left: auto;
+            align-items: center
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            background: var(--card);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 8px;
+            color: inherit;
+            border-radius: 6px;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: 0;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            overflow: hidden
+        }
+
+        /* Left pane - Kanban */
+        .kanban-wrap {
+            flex: 1;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            gap: 12px;
+            overflow: auto
+        }
+
+        .column {
+            min-width: 260px;
+            background: var(--glass);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 140px)
+        }
+
+        .column h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px
+        }
+
+        .list {
+            flex: 1;
+            overflow: auto;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            padding: 10px;
+            border-radius: 8px;
+            cursor: grab;
+            border: 1px solid rgba(255, 255, 255, 0.03)
+        }
+
+        .card .meta {
+            font-size: 12px;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+            gap: 8px
+        }
+
+        .card .title {
+            font-weight: 600;
+            margin: 6px 0
+        }
+
+        .card .badges {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            flex-wrap: wrap
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 4px 6px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.02)
+        }
+
+        .controls {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px
+        }
+
+        .controls button {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--muted);
+            padding: 6px 8px;
+            border-radius: 6px
+        }
+
+        .overdue {
+            border-left: 4px solid var(--danger)
+        }
+
+        /* Right pane - chat & files */
+        .side {
+            width: 360px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .panel {
+            background: var(--glass);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column
+        }
+
+        .chat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 180px;
+            overflow: auto
+        }
+
+        .room {
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .room.active {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.12), rgba(37, 99, 235, 0.06));
+            border-color: rgba(37, 99, 235, 0.25)
+        }
+
+        .messages {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 340px;
+            overflow: auto;
+            padding: 8px 4px
+        }
+
+        .msg {
+            padding: 8px 10px;
+            border-radius: 10px;
+            max-width: 80%
+        }
+
+        .msg.me {
+            align-self: flex-end;
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.16), rgba(16, 185, 129, 0.06))
+        }
+
+        .msg.other {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.02)
+        }
+
+        .msg small {
+            display: block;
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 6px
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px
+        }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow: auto
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.03)
+        }
+
+        footer {
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--muted);
+            border-top: 1px solid rgba(255, 255, 255, 0.02)
+        }
+
+        /* forms */
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .modal {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(2, 6, 23, 0.6);
+            z-index: 50;
+            width: 720px;
+            max-width: 96%
+        }
+
+        .hidden {
+            display: none
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .small {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .chip {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 8px;
+            border-radius: 999px;
+            font-size: 12px
+        }
+
+        .tag-high {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+            padding: 4px 6px;
+            border-radius: 6px;
+            font-weight: 600
+        }
+
+        /* responsive */
+        @media (max-width:980px) {
+            .side {
+                width: 320px
+            }
+        }
+
+        @media (max-width:760px) {
+            header {
+                align-items: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .hamburger {
+                display: inline-flex;
+            }
+
+            .header-left {
+                width: 100%;
+            }
+
+            .header-actions {
+                margin-left: auto;
+            }
+
+            .top-controls {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 8px;
+                flex-wrap: wrap;
+            }
+
+            .top-controls.collapsed {
+                display: none;
+            }
+
+            main {
+                flex-direction: column
+            }
+
+            .side {
+                width: 100%;
+                order: 2;
+                max-height: 300px;
+                overflow-x: auto;
+            }
+
+            .kanban-wrap {
+                order: 1;
+                overflow-x: auto
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <div class="brand">Csapatmunka & Kommunikációs - Dashboard</div>
+            <div style="margin-left:auto; display:flex; align-items:center;">
+                <button class="hamburger" id="hdrToggle" aria-expanded="false" aria-label="Menü megnyitása">☰</button>
+            </div>
+        </div>
+
+        <div class="top-controls header-actions" id="topControls">
+            <label class="small">Név: <input id="userName" type="text" placeholder="Te" /></label>
+            <label class="small">Szerep:
+                <select id="userRole">
+                    <option value="member">Diák</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </label>
+            <label class="small">Csapattagok (vesszővel): <input id="teamMembers" type="text"
+                    placeholder="Anna,Béla,Feri" /></label>
+            <button id="saveProfile">Mentés</button>
+            <button id="newTaskBtn">Új feladat</button>
+            <button id="uploadFileBtn">Fájl feltöltés</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="kanban-wrap" id="kanban">
+            <div class="column" data-status="todo">
+                <h3>Teendő</h3>
+                <div class="list" id="col-todo"></div>
+                <div class="row"><small class="small">Új kártya:</small></div>
+            </div>
+            <div class="column" data-status="inprogress">
+                <h3>Folyamatban</h3>
+                <div class="list" id="col-inprogress"></div>
+            </div>
+            <div class="column" data-status="blocked">
+                <h3>Hiányzik</h3>
+                <div class="list" id="col-blocked"></div>
+            </div>
+            <div class="column" data-status="done">
+                <h3>Kész</h3>
+                <div class="list" id="col-done"></div>
+            </div>
+        </section>
+
+        <aside class="side">
+            <div class="panel">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <strong>Chat</strong>
+                    <div class="chip" id="currentUserChip">Bejelentkezés szükséges</div>
+                </div>
+
+                <div style="margin-top:8px; display:flex; gap:8px;">
+                    <button id="roomTeam">Csapat</button>
+                    <button id="roomAdmin">Admin</button>
+                    <button id="newPrivate">Új 1:1 chat</button>
+                </div>
+
+                <div class="chat-list" id="rooms"></div>
+
+                <div class="messages" id="messages"></div>
+
+                <div class="chat-input">
+                    <input id="chatText" type="text" placeholder="Írj üzenetet..." style="flex:1" />
+                    <button id="sendChat">Küld</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <strong>Fájlok & Verziók</strong>
+                    <div class="small">Mentve: <span id="fileCount">0</span></div>
+                </div>
+
+                <div class="file-list" id="fileList" style="margin-top:8px"></div>
+            </div>
+
+            <div class="panel">
+                <strong>Rövid segédlet</strong>
+                <ul class="small">
+                    <li>Új feladat: "Új feladat" gomb.</li>
+                    <li>Áthúzás: fogd meg a kártyát, húzd másik oszlopba.</li>
+                    <li>Fájlok: feltöltésnél verziók jönnek létre.</li>
+                    <li>Chat: válassz szobát vagy hozz létre privát chatet.</li>
+                </ul>
+            </div>
+        </aside>
+    </main>
+
+    <footer>
+        Demo prototípus — minden adat a böngésző localStorage-ában tárolódik. (Nincs szerver.)
+    </footer>
+
+    <!-- Modals -->
+    <div id="taskModal" class="modal hidden" aria-hidden="true">
+        <h3 id="taskModalTitle">Új feladat</h3>
+        <div style="display:flex; gap:12px; margin-top:8px; flex-direction:column">
+            <label>Feladat neve: <input id="taskName" type="text" /></label>
+            <label>Leírás: <input id="taskDesc" type="text" /></label>
+            <div class="row">
+                <label>Felelős:
+                    <select id="taskAssignee" style="min-width:150px"></select>
+                </label>
+                <label>Határidő: <input id="taskDue" type="date" /></label>
+                <label>Prioritás:
+                    <select id="taskPriority">
+                        <option value="low">Alacsony</option>
+                        <option value="normal" selected>Normál</option>
+                        <option value="high">Magas</option>
+                    </select>
+                </label>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px">
+                <button id="saveTask">Mentés</button>
+                <button id="cancelTask">Mégse</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="fileModal" class="modal hidden" aria-hidden="true">
+        <h3>Fájl feltöltés</h3>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px">
+            <label>Feltöltő (név): <input id="fileOwner" type="text" /></label>
+            <label>Válassz fájlt: <input id="fileInput" type="file" /></label>
+            <div style="display:flex; gap:8px; justify-content:flex-end">
+                <button id="doUpload">Feltöltés</button>
+                <button id="cancelUpload">Mégse</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="fileViewModal" class="modal hidden" aria-hidden="true">
+        <h3 id="fileViewTitle">Fájl verziók</h3>
+        <div id="fileVersions"
+            style="margin-top:8px; display:flex; flex-direction:column; gap:8px; max-height:300px; overflow:auto"></div>
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px">
+            <button id="closeFileView">Bezár</button>
+        </div>
+    </div>
+
+    <script>
+        /* ========== DEMO DATA STORAGE ========== */
+        const storage = {
+            load(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback } },
+            save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+        };
+
+        let state = {
+            user: { name: '', role: 'member' },
+            team: [],
+            cards: storage.load('kanban_cards', []),
+            files: storage.load('kanban_files', []),
+            chats: storage.load('kanban_chats', {
+                rooms: [
+                    { id: 'team', name: 'Csapat', messages: [] },
+                    { id: 'admin', name: 'Admin', messages: [] }
+                ],
+                // private rooms will have id like 'p:Anna-Bela'
+            }),
+            currentRoom: 'team'
+        };
+
+        /* ========== UI ELEMENTS ========== */
+        const colTodo = document.getElementById('col-todo');
+        const colIn = document.getElementById('col-inprogress');
+        const colBlocked = document.getElementById('col-blocked');
+        const colDone = document.getElementById('col-done');
+        const roomsEl = document.getElementById('rooms');
+        const messagesEl = document.getElementById('messages');
+        const currentUserChip = document.getElementById('currentUserChip');
+        const fileListEl = document.getElementById('fileList');
+        const fileCountEl = document.getElementById('fileCount');
+
+        /* ========== INIT UI & HOOKS ========== */
+
+        function init() {
+            // load profile if exists
+            const savedProfile = storage.load('kanban_profile', null);
+            if (savedProfile) {
+                state.user = savedProfile.user || state.user;
+                state.team = savedProfile.team || state.team;
+                document.getElementById('userName').value = state.user.name;
+                document.getElementById('userRole').value = state.user.role;
+                document.getElementById('teamMembers').value = state.team.join(',');
+            }
+            renderProfileChip();
+            renderKanban();
+            renderRooms();
+            renderFileList();
+            attachEvents();
+            tickOverdue(); // mark overdue
+            setInterval(tickOverdue, 30 * 1000);
+        }
+
+        function attachEvents() {
+            document.getElementById('saveProfile').addEventListener('click', () => {
+                const name = document.getElementById('userName').value.trim() || 'Ismeretlen';
+                const role = document.getElementById('userRole').value;
+                const members = document.getElementById('teamMembers').value.split(',').map(s => s.trim()).filter(s => s);
+                state.user = { name, role };
+                state.team = members;
+                storage.save('kanban_profile', { user: state.user, team: state.team });
+                renderProfileChip();
+                renderAssigneeOptions();
+                renderRooms();
+                alert('Profil mentve!');
+            });
+
+            document.getElementById('newTaskBtn').addEventListener('click', openNewTaskModal);
+            document.getElementById('cancelTask').addEventListener('click', () => toggleModal('taskModal', false));
+            document.getElementById('saveTask').addEventListener('click', saveTaskFromModal);
+
+            document.getElementById('uploadFileBtn').addEventListener('click', () => toggleModal('fileModal', true));
+            document.getElementById('cancelUpload').addEventListener('click', () => toggleModal('fileModal', false));
+            document.getElementById('doUpload').addEventListener('click', handleDoUpload);
+
+            document.getElementById('roomTeam').addEventListener('click', () => switchRoom('team'));
+            document.getElementById('roomAdmin').addEventListener('click', () => switchRoom('admin'));
+            document.getElementById('newPrivate').addEventListener('click', createPrivateChat);
+
+            document.getElementById('sendChat').addEventListener('click', sendChat);
+            document.getElementById('chatText').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChat(); });
+
+            document.getElementById('closeFileView').addEventListener('click', () => toggleModal('fileViewModal', false));
+
+            // drag/drop listeners for columns
+            document.querySelectorAll('.column').forEach(col => {
+                col.addEventListener('dragover', (e) => { e.preventDefault(); col.classList.add('dragover') });
+                col.addEventListener('dragleave', () => { col.classList.remove('dragover') });
+                col.addEventListener('drop', (e) => {
+                    e.preventDefault(); col.classList.remove('dragover');
+                    const id = e.dataTransfer.getData('text/plain');
+                    moveCardToColumn(id, col.dataset.status);
+                });
+            });
+
+            // render assignees into modal
+            renderAssigneeOptions();
+        }
+
+        function renderProfileChip() {
+            currentUserChip.textContent = state.user.name ? `${state.user.name} (${state.user.role})` : 'Nincs bejelentkezve';
+        }
+
+        /* ========== KANBAN LOGIC ========== */
+
+        function renderKanban() {
+            // clear
+            [colTodo, colIn, colBlocked, colDone].forEach(c => c.innerHTML = '');
+            // ensure each card has id
+            state.cards.forEach(c => { if (!c.id) c.id = 'c_' + Math.random().toString(36).slice(2, 9) });
+            // sort by created
+            const groups = { todo: [], inprogress: [], blocked: [], done: [] };
+            state.cards.forEach(card => {
+                groups[statusKey(card.status)].push(card);
+            });
+            groups.todo.forEach(c => colTodo.appendChild(createCardEl(c)));
+            groups.inprogress.forEach(c => colIn.appendChild(createCardEl(c)));
+            groups.blocked.forEach(c => colBlocked.appendChild(createCardEl(c)));
+            groups.done.forEach(c => colDone.appendChild(createCardEl(c)));
+            storage.save('kanban_cards', state.cards);
+        }
+
+        function statusKey(s) {
+            switch (s) {
+                case 'todo': return 'todo';
+                case 'inprogress': return 'inprogress';
+                case 'blocked': return 'blocked';
+                case 'done': return 'done';
+                default: return 'todo';
+            }
+        }
+
+        function createCardEl(card) {
+            const el = document.createElement('div');
+            el.className = 'card';
+            el.draggable = true;
+            el.id = card.id;
+            if (isOverdue(card)) el.classList.add('overdue');
+            el.innerHTML = `
+    <div class="meta"><div class="chip">${card.priority || 'normal'}</div><div class="small">${card.due || ''}</div></div>
+    <div class="title">${escapeHtml(card.title)}</div>
+    <div class="small">${escapeHtml(card.description || '')}</div>
+    <div class="badges">
+      <div class="badge">Felelős: ${escapeHtml(card.assignee || '--')}</div>
+    </div>
+    <div class="controls">
+      <button class="edit">Szerk</button>
+      <button class="delete">Töröl</button>
+    </div>
+  `;
+            el.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', card.id) });
+            el.querySelector('.edit').addEventListener('click', () => openEditTask(card.id));
+            el.querySelector('.delete').addEventListener('click', () => { if (confirm('Töröl?')) { deleteCard(card.id) } });
+            return el;
+        }
+
+        function openNewTaskModal() {
+            document.getElementById('taskModalTitle').textContent = 'Új feladat';
+            document.getElementById('taskName').value = '';
+            document.getElementById('taskDesc').value = '';
+            document.getElementById('taskDue').value = '';
+            document.getElementById('taskPriority').value = 'normal';
+            document.getElementById('taskAssignee').value = (state.user.name || '');
+            document.getElementById('saveTask').dataset.editId = '';
+            toggleModal('taskModal', true);
+        }
+
+        function openEditTask(id) {
+            const c = state.cards.find(x => x.id === id);
+            if (!c) return;
+            document.getElementById('taskModalTitle').textContent = 'Feladat szerkesztése';
+            document.getElementById('taskName').value = c.title;
+            document.getElementById('taskDesc').value = c.description || '';
+            document.getElementById('taskDue').value = c.due || '';
+            document.getElementById('taskPriority').value = c.priority || 'normal';
+            document.getElementById('taskAssignee').value = c.assignee || '';
+            document.getElementById('saveTask').dataset.editId = id;
+            toggleModal('taskModal', true);
+        }
+
+        function saveTaskFromModal() {
+            const id = document.getElementById('saveTask').dataset.editId;
+            const title = document.getElementById('taskName').value.trim() || 'Új feladat';
+            const desc = document.getElementById('taskDesc').value.trim();
+            const due = document.getElementById('taskDue').value || '';
+            const assignee = document.getElementById('taskAssignee').value || '';
+            const priority = document.getElementById('taskPriority').value || 'normal';
+            if (id) {
+                const c = state.cards.find(x => x.id === id);
+                Object.assign(c, { title, description: desc, due, assignee, priority });
+            } else {
+                state.cards.push({ id: 'c_' + Math.random().toString(36).slice(2, 9), title, description: desc, due, assignee, priority, status: 'todo', created: Date.now() });
+            }
+            storage.save('kanban_cards', state.cards);
+            renderKanban();
+            toggleModal('taskModal', false);
+        }
+
+        function deleteCard(id) {
+            state.cards = state.cards.filter(c => c.id !== id);
+            storage.save('kanban_cards', state.cards);
+            renderKanban();
+        }
+
+        function moveCardToColumn(id, toStatus) {
+            const card = state.cards.find(c => c.id === id);
+            if (!card) return;
+            // map column dataset-status to our internal statuses
+            card.status = toStatus;
+            storage.save('kanban_cards', state.cards);
+            renderKanban();
+        }
+
+        /* ========== Overdue tick ========== */
+        function isOverdue(card) {
+            if (!card.due) return false;
+            try {
+                const d = new Date(card.due + 'T23:59:59');
+                return Date.now() > d.getTime() && card.status !== 'done';
+            } catch (e) { return false; }
+        }
+        function tickOverdue() {
+            document.querySelectorAll('.card').forEach(el => {
+                const cid = el.id;
+                const c = state.cards.find(x => x.id === cid);
+                if (c && isOverdue(c)) el.classList.add('overdue'); else el.classList.remove('overdue');
+            });
+        }
+
+        /* ========== Files ========== */
+
+        function handleDoUpload() {
+            const owner = document.getElementById('fileOwner').value.trim() || state.user.name || 'Ismeretlen';
+            const input = document.getElementById('fileInput');
+            if (!input.files.length) { alert('Válassz fájlt'); return; }
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                const data = evt.target.result;
+                // check if file name exists
+                let entry = state.files.find(f => f.name === file.name);
+                const version = { ts: Date.now(), owner, size: file.size, data };
+                if (entry) {
+                    entry.versions.push(version);
+                    entry.updated = Date.now();
+                } else {
+                    entry = { id: 'f_' + Math.random().toString(36).slice(2, 9), name: file.name, created: Date.now(), updated: Date.now(), versions: [version] };
+                    state.files.push(entry);
+                }
+                storage.save('kanban_files', state.files);
+                renderFileList();
+                toggleModal('fileModal', false);
+                input.value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderFileList() {
+            fileListEl.innerHTML = '';
+            fileCountEl.textContent = state.files.length;
+            if (state.files.length === 0) { fileListEl.innerHTML = '<div class="small">Nincsenek fájlok.</div>'; return; }
+            state.files.forEach(f => {
+                const el = document.createElement('div');
+                el.className = 'file-item';
+                el.innerHTML = `<div><strong>${escapeHtml(f.name)}</strong><div class="small">Verziók: ${f.versions.length} • Utoljára: ${new Date(f.updated).toLocaleString()}</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="view">Verziók</button>
+        <button class="download">Letölt</button>
+        <button class="remove">Töröl</button>
+      </div>`;
+                el.querySelector('.view').addEventListener('click', () => openFileVersions(f.id));
+                el.querySelector('.download').addEventListener('click', () => downloadLatest(f.id));
+                el.querySelector('.remove').addEventListener('click', () => { if (confirm('Fájl törlése?')) { state.files = state.files.filter(x => x.id !== f.id); storage.save('kanban_files', state.files); renderFileList(); } });
+                fileListEl.appendChild(el);
+            });
+        }
+
+        function openFileVersions(fileId) {
+            const f = state.files.find(x => x.id === fileId);
+            if (!f) return;
+            document.getElementById('fileViewTitle').textContent = f.name + ' — verziók';
+            const container = document.getElementById('fileVersions');
+            container.innerHTML = '';
+            f.versions.slice().reverse().forEach((v, idx) => {
+                const el = document.createElement('div');
+                el.style.border = '1px solid rgba(255,255,255,0.03)';
+                el.style.padding = '8px';
+                el.style.borderRadius = '8px';
+                el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div class="small">${new Date(v.ts).toLocaleString()}</div>
+        <div class="small">Feltöltő: ${escapeHtml(v.owner)} • Méret: ${Math.round(v.size / 1024)} KB</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="downloadVer">Letölt</button>
+      </div>
+    </div>`;
+                el.querySelector('.downloadVer').addEventListener('click', () => downloadDataURL(v.data, f.name));
+                container.appendChild(el);
+            });
+            toggleModal('fileViewModal', true);
+        }
+
+        function downloadLatest(fileId) {
+            const f = state.files.find(x => x.id === fileId);
+            if (!f) return;
+            const v = f.versions[f.versions.length - 1];
+            downloadDataURL(v.data, f.name);
+        }
+        function downloadDataURL(dataUrl, filename) {
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        /* ========== Chat ========== */
+
+        function renderRooms() {
+            roomsEl.innerHTML = '';
+            state.chats.rooms.forEach(r => {
+                const el = document.createElement('div');
+                el.className = 'room' + (r.id === state.currentRoom ? ' active' : '');
+                el.dataset.roomId = r.id;
+                const unread = countUnread(r.id);
+                el.innerHTML = `<div>${escapeHtml(r.name)}</div><div class="small">${unread ? ('+' + unread) : ''}</div>`;
+                el.addEventListener('click', () => { switchRoom(r.id) });
+                roomsEl.appendChild(el);
+            });
+            // also add private rooms (ids starting with p:)
+            Object.keys(state.chats).forEach(k => { }); // placeholder
+            storage.save('kanban_chats', state.chats);
+            renderMessages();
+        }
+
+        function countUnread(roomId) {
+            const room = state.chats.rooms.find(r => r.id === roomId);
+            if (!room) return 0;
+            // simple: count messages last minute? demo: 0
+            return 0;
+        }
+
+        function switchRoom(roomId) {
+            state.currentRoom = roomId;
+            renderRooms();
+            renderMessages();
+        }
+
+        function renderMessages() {
+            messagesEl.innerHTML = '';
+            const room = state.chats.rooms.find(r => r.id === state.currentRoom);
+            if (!room) { messagesEl.innerHTML = '<div class="small">Válassz szobát.</div>'; return; }
+            room.messages.forEach(m => {
+                const el = document.createElement('div');
+                el.className = 'msg ' + (m.sender === state.user.name ? 'me' : 'other');
+                el.innerHTML = `<div><strong>${escapeHtml(m.sender || 'Anonim')}</strong> <small class="small">${new Date(m.ts).toLocaleString()}</small></div>
+      <div style="margin-top:6px">${escapeHtml(m.text)}</div>`;
+                messagesEl.appendChild(el);
+            });
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        function sendChat() {
+            const txt = document.getElementById('chatText').value.trim();
+            if (!txt) return;
+            if (!state.user.name) { alert('Add meg a neved a felső sávban!'); return; }
+            const room = state.chats.rooms.find(r => r.id === state.currentRoom);
+            if (!room) { alert('Válassz szobát!'); return; }
+            room.messages.push({ sender: state.user.name, ts: Date.now(), text: txt });
+            storage.save('kanban_chats', state.chats);
+            document.getElementById('chatText').value = '';
+            renderMessages();
+        }
+
+        /* Private chat creation */
+        function createPrivateChat() {
+            const partner = prompt('Add meg a partner nevét (pontosan):');
+            if (!partner) return;
+            const id = 'p:' + [state.user.name || 'Me', partner].sort().join('-');
+            const exists = state.chats.rooms.find(r => r.id === id);
+            if (!exists) {
+                state.chats.rooms.push({ id, name: `1:1 ${partner}`, messages: [] });
+                storage.save('kanban_chats', state.chats);
+            }
+            switchRoom(id);
+        }
+
+        /* ========== Helpers ========== */
+        function toggleModal(id, show) {
+            const el = document.getElementById(id);
+            if (show) { el.classList.remove('hidden'); el.setAttribute('aria-hidden', 'false'); }
+            else { el.classList.add('hidden'); el.setAttribute('aria-hidden', 'true'); }
+        }
+
+        function renderAssigneeOptions() {
+            const sel = document.getElementById('taskAssignee');
+            sel.innerHTML = '';
+            // Use team members, if none, allow free text
+            const members = state.team.length ? state.team : (state.user.name ? [state.user.name] : []);
+            if (members.length === 0) { const o = document.createElement('option'); o.value = ''; o.textContent = '--'; sel.appendChild(o); }
+            members.forEach(m => {
+                const o = document.createElement('option'); o.value = m; o.textContent = m; sel.appendChild(o);
+            });
+        }
+
+        /* escaping */
+        function escapeHtml(s) {
+            if (!s && s !== 0) return '';
+            return String(s).replace(/[&<>"']/g, function (m) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]; });
+        }
+
+        // simple helper to open modals via buttons (used for file modal)
+        document.getElementById('fileModal').querySelector('#fileOwner').value = state.user.name || '';
+        document.getElementById('fileModal').querySelector('#fileInput').addEventListener('change', (e) => { /* placeholder */ });
+
+        /* ========== Small utilities ========== */
+        function downloadDataURL_autoName(dataUrl, prefix) {
+            // omitted in demo
+        }
+
+        /* initialize */
+        init();
+
+        // Header toggle for small screens
+        (function () {
+            const btn = document.getElementById('hdrToggle');
+            const controls = document.getElementById('topControls');
+            function updateOnResize() {
+                if (window.innerWidth <= 760) {
+                    // start collapsed on small screens
+                    controls.classList.add('collapsed');
+                    btn.setAttribute('aria-expanded', 'false');
+                } else {
+                    controls.classList.remove('collapsed');
+                    btn.setAttribute('aria-expanded', 'true');
+                }
+            }
+            btn.addEventListener('click', () => {
+                const isCollapsed = controls.classList.toggle('collapsed');
+                btn.setAttribute('aria-expanded', String(!isCollapsed));
+            });
+            window.addEventListener('resize', updateOnResize);
+            updateOnResize();
+        })();
+
+        /* Quick demo data if empty (optional) */
+        if (state.cards.length === 0 && confirm('Szeretnél demo tartalmat betölteni?')) {
+            state.cards = [
+                { id: 'c_demo1', title: 'Weboldal landing tervezése', description: 'Mockup + tartalom', assignee: state.team[0] || 'Anna', due: tomorrow(3), priority: 'high', status: 'todo', created: Date.now() },
+                { id: 'c_demo2', title: 'API végpontok dokumentálása', description: 'Auth + felhasználó', assignee: state.team[1] || 'Béla', due: tomorrow(5), priority: 'normal', status: 'inprogress', created: Date.now() },
+                { id: 'c_demo3', title: 'Hiányzó képek keresése', description: 'Stock fotók', assignee: state.team[2] || 'Charlie', due: tomorrow(-1), priority: 'low', status: 'blocked', created: Date.now() },
+                { id: 'c_demo4', title: 'Tesztelés', description: 'Unit + E2E', assignee: state.user.name || 'Te', due: tomorrow(1), priority: 'normal', status: 'done', created: Date.now() },
+            ];
+            storage.save('kanban_cards', state.cards);
+            renderKanban();
+        }
+        function tomorrow(n) { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+
+    </script>
+</body>
+
+</html>
