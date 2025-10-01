@@ -7,7 +7,7 @@
       <router-link to="/Home">Kezdőlap</router-link>
       <router-link to="/rolunk">Rólunk</router-link>
       <router-link to="/kapcsolat">Kapcsolat</router-link>        
-      <button class="theme" id="themeToggle" aria-label="Téma váltása" @click="toggleTheme">{{ darkTheme ? "🌞" : "🌙" }}</button>
+      <button class="theme" id="themeToggle" aria-label="Téma váltása" @click="toggleTheme">{{ darkTheme ? "🌙" : "🌞" }}</button>
     </nav>
   </header>
 
