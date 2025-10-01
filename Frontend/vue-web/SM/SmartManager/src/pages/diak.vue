@@ -11,26 +11,49 @@
     </nav>
   </header>
 
-  <section class="hero">
-    <h2>Mi is az a <u>Smart Manager</u>?</h2>
-    <p>↘️Ha érdekel itt el tudod olvasni!↙️</p>
-    <router-link to="/about"><button class="btn">Érdekel</button></router-link>
-  </section>
+    <section class="hero">
+        <h2>Üdv, Diák!</h2>
+        <p>Kellemes időtöltést kívánunk!</p>
+    </section>
 
-  <section class="mid-section" id="mid-section">
-    <h2>Csatlakozz hozzánk!</h2>
-    <div class="mid-content-grid">
-      <div class="mid-content-card">
-        <h3>Ha már van fiókod, jelentkezz be, és kezd el használni a Smart Managert!</h3>
-        <router-link to="/login"><button class="btn">Bejelentkezés</button></router-link>
-      </div>
-      <div></div>
-      <div class="mid-content-card">
-        <h3>Ha még nincs fiókod, regisztrálj, és csatlakozz a Smart Manager közösségéhez!</h3>
-        <router-link to="/register"><button class="btn">Regisztráció</button></router-link>
-      </div>
-    </div>
-  </section>
+    <section class="mid-section" id="mid-section">
+        <h2>Válassz egy lehetőséget és kezd el használni a Smart Managert!</h2>
+        <div class="mid-content-grid">
+            <div class="mid-content-card">
+                <h3>Feladatok és Határidők</h3>
+                <p>Itt kezelheted a feladataidat és nyomon követheted a határidőket.</p>
+                <a href="tasks.html"><button class="btn">Feladatok</button></a>
+            </div>
+            <div class="mid-content-card">
+                <h3>Statisztika és Beállítások</h3>
+                <p>Itt nyomon követheted a teljesítményedet és módosíthatod a beállításokat.</p>
+                <a href="settings.html"><button class="btn">Beállítások</button></a>
+            </div>
+            <div class="mid-content-card">
+                <h3>Csapatmunka és Kommunikáció</h3>
+                <p>Itt együttműködhetsz a csapattagokkal és kommunikálhatsz velük.</p>
+                <a href="dashboard.html"><button class="btn">Dashboard</button></a>
+            </div>
+        </div>
+    </section>
+
+    <section class="news-section" id="hirek">
+        <h2>📰 Újdonságok</h2>
+        <div class="news-container">
+            <div class="news-item">
+                <h3>info1</h3>
+                <p>info</p>
+            </div>
+            <div class="news-item">
+                <h3>info2</h3>
+                <p>info</p>
+            </div>
+            <div class="news-item">
+                <h3>info3</h3>
+                <p>info</p>
+            </div>
+        </div>
+    </section>
 
   <footer>
     <div class="footer-content">
@@ -47,7 +70,7 @@
 
 <script>
 export default {
-  name: "Home",
+  name: "Diak",
   data() {
     return {
       navActive: false,

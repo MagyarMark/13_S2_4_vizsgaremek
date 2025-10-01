@@ -5,6 +5,8 @@ import Login from './pages/login.vue'
 import Register from './pages/register.vue'
 import Kapcsolat from './pages/kapcsolat.vue'
 import Rolunk from './pages/rolunk.vue'
+import Diak from './pages/diak.vue'
+import Tanar from './pages/tanar.vue'
 
 const routes = [
   {
@@ -32,10 +34,20 @@ const routes = [
     name: 'Kapcsolat',
     component: Kapcsolat
   },
-    {
+  {
     path: '/rolunk',
     name: 'Rolunk',
     component: Rolunk
+  },
+  {
+    path: '/diak',
+    name: 'Diak',
+    component: Diak
+  },
+  {
+    path: '/tanar',
+    name: 'Tanar',
+    component: Tanar
   }
 ]
 

@@ -67,6 +67,15 @@ nav a:hover {
     cursor: pointer;
 }
 
+.theme {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
 /* Hero Section */
 .hero {
     display: flex;
