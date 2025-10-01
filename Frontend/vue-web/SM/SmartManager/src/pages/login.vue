@@ -1,0 +1,48 @@
+<template>
+    <header>
+        <h1>Smart Manager</h1>
+        <button id="menuToggle" aria-label="Menü megnyitása">☰</button>
+        <nav id="mainNav">
+            <router-link to="/Home">Kezdőlap</router-link>
+            <router-link to="/rolunk">Rólunk</router-link>
+            <router-link to="/kapcsolat">Kapcsolat</router-link>
+            <button id="themeToggle" aria-label="Téma váltása">🌙</button>
+        </nav>
+  </header>
+
+      <main>
+        <section class="mid-section" style="padding-top:3rem;">
+            <div class="mid-content-grid">
+                <div class="mid-content-card" style="margin:0 auto;">
+                    <h2>Bejelentkezés</h2>
+                    <form action="#" method="post" style="margin-top:1rem;display:flex;flex-direction:column;gap:12px;">
+                        <input type="text" name="username" placeholder="Felhasználónév" required
+                            style="padding:10px;border-radius:8px;border:1px solid #2b3646;background:#0f172a;color:var(--text);">
+                        <input type="password" name="password" placeholder="Jelszó" required
+                            style="padding:10px;border-radius:8px;border:1px solid #2b3646;background:#0f172a;color:var(--text);">
+                        <button class="btn" type="submit">Bejelentkezés</button>
+                    </form>
+                    <p style="margin-top:12px;color:var(--gray);">Még nincs fiókod? <router-link
+                            to="/register">Regisztráció</router-link></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <h3>Smart Manager</h3>
+            <p>&copy; 2025 Smart Manager. Minden jog fenntartva.</p>
+                <div class="footer-links">
+                    <router-link to="/Home">Kezdőlap</router-link>
+                    <router-link to="/kapcsolat">Kapcsolat</router-link>
+                </div>
+        </div>
+  </footer>
+</template>
+
+<script>
+export default {
+        name: "Login"
+    }
+</script>
