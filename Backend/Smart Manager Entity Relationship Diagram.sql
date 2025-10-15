@@ -31,8 +31,13 @@ CREATE TABLE "Szerepek" (
   "szerepkor" "VARCHAR(255)"
 );
 
+CREATE TABLE "Engedelyek" (
+  "engedely_id" "VARCHAR(255)",
+  "hozzaferesiszint" "VARCHAR(255)"
+);
+
 CREATE TABLE "Projekt" (
-  "projekt_id" "VARCAHR(255)" PRIMARY KEY,
+  "projekt_id" "VARCHAR(255)" PRIMARY KEY,
   "felhasznalo_id" "VARCHAR(255)",
   "projekt_nev" "VARCHAR(255)",
   "projekt_tagok" "VARCHAR(255)"
@@ -48,7 +53,15 @@ CREATE TABLE "ProjektTag" (
 CREATE TABLE "Feladatok" (
   "feladat_id" "VARCHAR(255)",
   "projekt_id" "VARCHAR(255)" PRIMARY KEY,
-  "feladat_nev" "VARCHAR(255)"
+  "feladat_nev" "VARCHAR(255)",
+  "hatarido" "VARCHAR(255)"
+);
+
+CREATE TABLE "Fileok" (
+  "feladat_id" "VARCHAR(255)",
+  "file_id" "VARCHAR(255)",
+  "filenev" "VARCHAR(255)",
+  "filetipus" "VARCHAR(255)"
 );
 
 ALTER TABLE "Uzenet" ADD CONSTRAINT "kuld" FOREIGN KEY ("felhasznalo_id") REFERENCES "Felhasznalo" ("felhasznalo_id");
@@ -64,3 +77,7 @@ ALTER TABLE "Feladatok" ADD FOREIGN KEY ("projekt_id") REFERENCES "Projekt" ("pr
 ALTER TABLE "Csapat" ADD FOREIGN KEY ("csapat_id") REFERENCES "CsapatTag" ("csapat_id");
 
 ALTER TABLE "ProjektTag" ADD FOREIGN KEY ("projekt_id") REFERENCES "CsapatTag" ("felhasznalo_id");
+
+ALTER TABLE "Engedelyek" ADD FOREIGN KEY ("engedely_id") REFERENCES "Szerepek" ("szerepkor");
+
+ALTER TABLE "Fileok" ADD FOREIGN KEY ("feladat_id") REFERENCES "Feladatok" ("feladat_id");
