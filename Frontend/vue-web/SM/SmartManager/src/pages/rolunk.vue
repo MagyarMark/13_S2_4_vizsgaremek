@@ -59,6 +59,13 @@
       <h3>🚀 Merre tartunk?</h3>
     <p>A Smart Manager folyamatosan fejlődik: új funkciókat, automatizált riportokat és integrációkat vezetünk be, hogy még hatékonyabbá tegyük a vállalkozások mindennapjait. Célunk egy átlátható, könnyen kezelhető és mobilbarát rendszer kialakítása, amely támogatja a modern üzleti igényeket és segíti a felhasználókat a sikeres működésben.</p>
     </section>
+    <section class="about-future" style="margin-top: 2em;">
+      <h3>📢 Fedezd fel a kódolás izgalmas világát a ProgiSuli-val!</h3>
+      <p>
+        Tanulj HTML-t, CSS-t, Python-t, JavaScript-et és C#-t interaktív leckéken keresztül – kezdőknek és lelkes amatőröknek is.
+        Csatlakozz most, formáld saját digitális jövődet és kezdj el alkotni még ma! <button><a href="https://magyarmark.github.io/ProgiSuli/index.html" target="_blank" rel="noopener noreferrer"> Katt ide </a></button></p>
+        
+    </section>
   </main>
 
     <footer>
