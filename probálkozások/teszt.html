@@ -19,6 +19,43 @@
             --shadow: 0 8px 30px rgba(2, 6, 15, 0.6);
         }
 
+        /* -- LOADER STYLES -- */
+        #loader {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, var(--bg), #041020 80%);
+            z-index: 3000;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #loader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 72px;
+            height: 72px;
+            border: 8px solid rgba(255, 255, 255, 0.06);
+            border-top-color: var(--accent2);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.06);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        /* -- END LOADER STYLES -- */
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -391,6 +428,10 @@
 </head>
 
 <body>
+    <div id="loader" aria-hidden="true">
+        <div class="spinner" role="status" aria-label="Betöltés"></div>
+    </div>
+
     <header>
         <div class="logo">Smart<span>Manager</span></div>
         <nav>
@@ -419,7 +460,7 @@
 
         <section id="features">
             <div class="section-title">
-                <h2>Miért válassza a SmartManager-t?</h2>
+                <h2 class="logo">Miért válassza a Smart<span>Manager</span>-t?</h2>
                 <p>Fedezze fel a hatékony projektmenedzsment kulcsfontosságú funkcióit</p>
             </div>
             <div class="features-grid">
@@ -441,17 +482,17 @@
                 <div class="feature-card">
                     <div class="feature-icon">🔒</div>
                     <h3>Biztonságos adattárolás</h3>
-                    <p>Adatai biztonságban vannak titkosított felhőtárolással és biztonsági mentésekkel.</p>
+                    <p>Adatai biztonságban vannak titkosított felhőtárolással<!--és biztonsági mentésekkel.-->.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📱</div>
                     <h3>Mobil alkalmazás</h3>
-                    <p>Működjön bárhol, bármikor iOS és Android alkalmazásunkkal.</p>
+                    <p>Használja bárhol, bármikor iOS és Android eszközön egyaránt.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🔄</div>
-                    <h3>Integrációk</h3>
-                    <p>Kapcsolja össze kedvenc eszközeit, mint a Slack, Google Drive és egyebek.</p>
+                    <div class="feature-icon">💬</div>
+                    <h3>Valós idejű kommunikáció</h3>
+                    <p>Beépített csevegés és kommentelés a gyors csapatkommunikációért.</p>
                 </div>
             </div>
         </section>
@@ -465,10 +506,10 @@
                 <div class="contact-info">
                     <h3>Kapcsolati információk</h3>
                     <ul class="contact-details">
-                        <li><i>📍</i> 1061 Budapest, Andrássy út 1.</li>
-                        <li><i>📞</i> +36 1 234 5678</li>
+                        <li><i>📍</i> 6100 kiskunfélegyháza, Kossuth Lajos utca 24.</li>
                         <li><i>✉️</i> info@smartmanager.hu</li>
-                        <li><i>🕒</i> Hétfő - Péntek: 9:00 - 17:00</li>
+                        <!--<li><i>📞</i> +36 1 234 5678</li>
+                        <li><i>🕒</i> Hétfő - Péntek: 9:00 - 17:00</li>-->
                     </ul>
                 </div>
                 <div class="contact-form">
@@ -497,27 +538,23 @@
                 <p>Modern projektmenedzsment megoldás csapatok számára. Egyszerű, hatékony és biztonságos.</p>
             </div>
             <div class="footer-column">
-                <h4>Termék</h4>
+                <h4>Megoldások</h4>
                 <ul class="footer-links">
-                    <li><a href="#">Funkciók</a></li>
+                    <li><a href="#features">Funkciók</a></li>
                     <li><a href="#">Frissítések</a></li>
                 </ul>
             </div>
             <div class="footer-column">
                 <h4>Támogatás</h4>
                 <ul class="footer-links">
-                    <li><a href="#">Segítségközpont</a></li>
-                    <li><a href="#">Közösségi fórum</a></li>
-                    <li><a href="#">Webináriumok</a></li>
-                    <li><a href="#">Kapcsolat</a></li>
+                    <li><a href="#contact">Segítségközpont</a></li>
+                    <li><a href="#contact">Kapcsolat</a></li>
                 </ul>
             </div>
             <div class="footer-column">
                 <h4>Vállalat</h4>
                 <ul class="footer-links">
                     <li><a href="#">Rólunk</a></li>
-                    <li><a href="#">Karrier</a></li>
-                    <li><a href="#">Adatvédelem</a></li>
                     <li><a href="#">Általános Szerződési Feltételek</a></li>
                 </ul>
             </div>
@@ -528,12 +565,21 @@
     </footer>
 
     <script>
-        // Mobil menü kezelése
+        window.addEventListener('load', function () {
+            setTimeout(function () {
+                const loader = document.getElementById('loader');
+                if (!loader) return;
+                loader.classList.add('fade-out');
+                setTimeout(function () {
+                    loader.remove();
+                }, 700);
+            }, 2500);
+        });
+
         document.querySelector('.mobile-menu-btn').addEventListener('click', function () {
             document.querySelector('nav ul').classList.toggle('show');
         });
 
-        // Görgetéskor a fejléc stílusának módosítása
         window.addEventListener('scroll', function () {
             const header = document.querySelector('header');
             if (window.scrollY > 50) {
@@ -543,7 +589,6 @@
             }
         });
 
-        // Gombok kattintás eseményei
         document.querySelectorAll('.btn.primary').forEach(button => {
             button.addEventListener('click', function () {
                 alert('Köszönjük az érdeklődését! A funkció hamarosan elérhető lesz.');

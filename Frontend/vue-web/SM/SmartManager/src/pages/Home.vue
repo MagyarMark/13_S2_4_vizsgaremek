@@ -1,84 +1,611 @@
 <template>
-<div :class="{ dark: darkTheme }">
-<header>
-    <h1>Smart Manager</h1>
-    <button id="menuToggle" aria-label="Menü megnyitása" @click="toggleMenu">☰</button>
-    <nav id="mainNav" :class="{ active: navActive }">
-      <router-link to="/Home">Kezdőlap</router-link>
-      <router-link to="/rolunk">Rólunk</router-link>
-      <router-link to="/kapcsolat">Kapcsolat</router-link>        
-      <button class="theme" id="themeToggle" aria-label="Téma váltása" @click="toggleTheme">{{ darkTheme ? "🌙" : "🌞" }}</button>
-    </nav>
-  </header>
-
-  <section class="hero">
-    <h2>Mi is az a <u>Smart Manager</u>?</h2>
-    <p>↘️Ha érdekel itt el tudod olvasni!↙️</p>
-    <router-link to="/about"><button class="btn">Érdekel</button></router-link>
-  </section>
-
-  <section class="mid-section" id="mid-section">
-    <h2>Csatlakozz hozzánk!</h2>
-    <div class="mid-content-grid">
-      <div class="mid-content-card">
-        <h3>Ha már van fiókod, jelentkezz be, és kezd el használni a Smart Managert!</h3>
-        <router-link to="/login"><button class="btn">Bejelentkezés</button></router-link>
-      </div>
-      <div></div>
-      <div class="mid-content-card">
-        <h3>Ha még nincs fiókod, regisztrálj, és csatlakozz a Smart Manager közösségéhez!</h3>
-        <router-link to="/register"><button class="btn">Regisztráció</button></router-link>
-      </div>
+  <div id="loader" aria-hidden="true">
+        <div class="spinner" role="status" aria-label="Betöltés"></div>
     </div>
-  </section>
 
-  <footer>
-    <div class="footer-content">
-      <h3>Smart Manager</h3>
-      <p>&copy; 2025 Smart Manager. Minden jog fenntartva.</p>
-      <div class="footer-links">
-        <router-link to="/Home">Kezdőlap</router-link>
-        <router-link to="/kapcsolat">Kapcsolat</router-link>
-      </div>
-    </div>
-  </footer>
-</div>
+      <header>
+        <div class="logo">Smart<span>Manager</span></div>
+        <nav>
+            <button class="mobile-menu-btn" @click="toggleMenu">☰</button>
+            <ul :class="{ active: navActive }">
+              <li><a href="#landing">Kezdőlap</a></li>
+              <li><a href="#features">Funkciók</a></li>
+              <li><a href="#contact">Kapcsolat</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="landing">
+            <h1>Üdv a <span>SmartManager</span> oldalán</h1>
+            <p>
+                Modern és könnyen használható projektmenedzsment rendszer, amely segít átláthatóan kezelni a
+                feladatokat,
+                projekteket és csapatmunkát – mindezt letisztult felületen.
+            </p>
+            <div>
+                <button class="btn primary">Bejelentkezés</button>
+                <button class="btn">Regisztráció</button>
+            </div>
+        </section>
+
+        <section id="features">
+            <div class="section-title">
+                <h2 class="logo">Miért válassza a Smart<span>Manager</span>-t?</h2>
+                <p>Fedezze fel a hatékony projektmenedzsment kulcsfontosságú funkcióit</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Valós idejű elemzés</h3>
+                    <p>Követhesse projektjeit valós időben, részletes jelentésekkel és statisztikákkal.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Csapatmenedzsment</h3>
+                    <p>Könnyedén osszon fel feladatokat, kövesse a haladást és kommunikáljon a csapattal.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <h3>Hatékony ütemezés</h3>
+                    <p>Tervezze meg projekteit részletes idővonalakkal és határidő-kezeléssel.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Biztonságos adattárolás</h3>
+                    <p>Adatai biztonságban vannak titkosított felhőtárolással<!--és biztonsági mentésekkel.-->.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobil alkalmazás</h3>
+                    <p>Használja bárhol, bármikor iOS és Android eszközön egyaránt.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3>Valós idejű kommunikáció</h3>
+                    <p>Beépített csevegés és kommentelés a gyors csapatkommunikációért.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <div class="section-title">
+                <h2>Lépjen kapcsolatba velünk</h2>
+                <p>Kérdése van? Szívesen segítünk!</p>
+            </div>
+            <div class="contact-container">
+                <div class="contact-info">
+                    <h3>Kapcsolati információk</h3>
+                    <ul class="contact-details">
+                        <li><i>📍</i> 6100 kiskunfélegyháza, Kossuth Lajos utca 24.</li>
+                        <li><i>✉️</i> info@smartmanager.hu</li>
+                        <!--<li><i>📞</i> +36 1 234 5678</li>
+                        <li><i>🕒</i> Hétfő - Péntek: 9:00 - 17:00</li>-->
+                    </ul>
+                </div>
+                <div class="contact-form">
+                    <div class="form-group">
+                        <label for="name">Név</label>
+                        <input type="text" id="name" placeholder="Adja meg a nevét">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email cím</label>
+                        <input type="email" id="email" placeholder="Adja meg az email címét">
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Üzenet</label>
+                        <textarea id="message" rows="5" placeholder="Írja le üzenetét..."></textarea>
+                    </div>
+                    <button class="btn primary">Üzenet küldése</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+<footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4 class="logo">Smart<span>Manager</span></h4>
+                <p>Modern projektmenedzsment megoldás csapatok számára. Egyszerű, hatékony és biztonságos.</p>
+            </div>
+            <div class="footer-column">
+                <h4>Megoldások</h4>
+                <ul class="footer-links">
+                    <li><a href="#features">Funkciók</a></li>
+                    <li><a href="#">Frissítések</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Támogatás</h4>
+                <ul class="footer-links">
+                    <li><a href="#contact">Segítségközpont</a></li>
+                    <li><a href="#contact">Kapcsolat</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Vállalat</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Rólunk</a></li>
+                    <li><a href="#">Általános Szerződési Feltételek</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; 2025 SmartManager. Minden jog fenntartva.
+        </div>
+    </footer>
 </template>
 
 <script>
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const loader = document.getElementById('loader');
+    if (!loader) return;
+    loader.classList.add('fade-out');
+    setTimeout(() => {
+      loader.remove();
+    }, 700);
+  }, 2500);
+});
+
+const menuBtn = document.getElementById('menuToggle');
+const mainNav = document.getElementById('mainNav');
+const headerEl = document.querySelector('header');
+
+function toggleMobileNav() {
+  if (!mainNav) return;
+  mainNav.classList.toggle('active');
+}
+
+if (menuBtn) menuBtn.addEventListener('click', toggleMobileNav);
+
+function onScroll() {
+  if (!headerEl) return;
+  headerEl.style.background = window.scrollY > 50
+    ? 'rgba(8, 24, 39, 0.95)'
+    : 'rgba(8, 24, 39, 0.85)';
+}
+
+window.addEventListener('scroll', onScroll);
+
+// Cleanup listeners when the page is unloaded/reloaded
+window.addEventListener('beforeunload', () => {
+  if (menuBtn) menuBtn.removeEventListener('click', toggleMobileNav);
+  window.removeEventListener('scroll', onScroll);
+});
+
 export default {
   name: "Home",
   data() {
     return {
       navActive: false,
-      darkTheme: false
     }
   },
   methods: {
     toggleMenu() {
       this.navActive = !this.navActive;
-    },
-    toggleTheme() {
-      this.darkTheme = !this.darkTheme;
-      if (this.darkTheme) {
-        document.documentElement.style.setProperty('--bg', '#0f172a');
-        document.documentElement.style.setProperty('--bg-light', '#1e293b');
-        document.documentElement.style.setProperty('--text', '#f1f5f9');
-        document.documentElement.style.setProperty('--accent', '#3b82f6');
-        document.documentElement.style.setProperty('--accent-hover', '#2563eb');
-        document.documentElement.style.setProperty('--gray', '#94a3b8');
-        document.querySelectorAll('h3').forEach(el => {
-          el.style.color = '#fff';
-        });
-      } else {
-        document.documentElement.style.setProperty('--bg', '#f1f5f9');
-        document.documentElement.style.setProperty('--bg-light', '#e2e8f0');
-        document.documentElement.style.setProperty('--text', '#222');
-        document.documentElement.style.setProperty('--accent', '#2563eb');
-        document.documentElement.style.setProperty('--accent-hover', '#3b82f6');
-        document.documentElement.style.setProperty('--gray', '#64748b');
-      }
     }
   }
 }
 </script>
+
+<style>
+        :root {
+            --bg: #071226;
+            --panel: #081827;
+            --muted: #9fb3c8;
+            --text: #e6f1f8;
+            --accent: #06b6d4;
+            --accent2: #60a5fa;
+            --card: #0b2230;
+            --glass: rgba(255, 255, 255, 0.02);
+            --radius: 12px;
+            --shadow: 0 8px 30px rgba(2, 6, 15, 0.6);
+        }
+
+        /* -- LOADER STYLES -- */
+        #loader {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, var(--bg), #041020 80%);
+            z-index: 3000;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #loader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 72px;
+            height: 72px;
+            border: 8px solid rgba(255, 255, 255, 0.06);
+            border-top-color: var(--accent2);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.06);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        /* -- END LOADER STYLES -- */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            color: var(--text);
+            background: linear-gradient(180deg, var(--bg), #041020 80%);
+            line-height: 1.6;
+        }
+
+        /* Navigáció */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: rgba(8, 24, 39, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .logo span {
+            color: var(--accent2);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: var(--accent);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Fő tartalom */
+        main {
+            margin-top: 70px;
+        }
+
+        section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Landing section */
+        #landing {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            gap: 20px;
+            padding-top: 0;
+        }
+
+        #landing h1 {
+            font-size: 42px;
+            margin: 0;
+        }
+
+        #landing h1 span {
+            color: var(--accent2);
+        }
+
+        #landing p {
+            max-width: 600px;
+            color: var(--muted);
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        #landing div {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        /* Gombok */
+        .btn.primary {
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            color: #042;
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.08);
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.15);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text);
+        }
+
+        /* Funkciók */
+        #features {
+            background: var(--panel);
+            border-radius: var(--radius);
+            margin: 2rem auto;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            color: var(--muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .feature-card h3 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .feature-card p {
+            color: var(--muted);
+        }
+
+        /* Kapcsolat */
+        #contact {
+            background: var(--panel);
+            border-radius: var(--radius);
+            margin: 2rem auto;
+            box-shadow: var(--shadow);
+        }
+
+        .contact-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+        }
+
+        .contact-info h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .contact-details {
+            list-style: none;
+        }
+
+        .contact-details li {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .contact-details li i {
+            margin-right: 0.8rem;
+            color: var(--accent);
+            width: 20px;
+            text-align: center;
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            color: var(--muted);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 0.8rem 1rem;
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Lábléc */
+        footer {
+            background: var(--panel);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: left;
+        }
+
+        .footer-column h4 {
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .copyright {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        /* Reszponzív design */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+
+            nav ul {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: var(--panel);
+                flex-direction: column;
+                padding: 1rem;
+                box-shadow: var(--shadow);
+            }
+
+            nav ul.show {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            #landing h1 {
+                font-size: 2rem;
+            }
+
+            #landing p {
+                font-size: 1rem;
+            }
+
+            #landing div {
+                flex-direction: column;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            section {
+                padding: 3rem 1rem;
+            }
+        }
+</style>
