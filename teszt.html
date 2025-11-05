@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        :root {
+            --bg: #071226;
+            --panel: #081827;
+            --muted: #9fb3c8;
+            --text: #e6f1f8;
+            --accent: #06b6d4;
+            --accent2: #60a5fa;
+            --card: #0b2230;
+            --glass: rgba(255, 255, 255, 0.02);
+            --radius: 12px;
+            --shadow: 0 8px 30px rgba(2, 6, 15, 0.6);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            color: var(--text);
+            background: linear-gradient(180deg, var(--bg), #041020 80%);
+        }
+
+        #landing {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            gap: 20px;
+        }
+
+        #landing h1 {
+            font-size: 42px;
+            margin: 0;
+        }
+
+        #landing h1 span {
+            color: var(--accent2);
+        }
+
+        #landing p {
+            max-width: 600px;
+            color: var(--muted);
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        #landing div {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn.primary {
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            color: #042;
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.08)
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--muted);
+            cursor: pointer
+        }
+    </style>
+</head>
+
+<body>
+    <section id="landing">
+        <h1>Üdv a <span>SmartManager</span> oldalán</h1>
+        <p>
+            Modern és könnyen használható projektmenedzsment rendszer, amely segít átláthatóan kezelni a feladatokat,
+            projekteket és csapatmunkát – mindezt letisztult felületen.
+        </p>
+        <div>
+            <button class="btn primary">Bejelentkezés</button>
+            <button class="btn">Regisztráció</button>
+        </div>
+    </section>
+</body>
+
+</html>
