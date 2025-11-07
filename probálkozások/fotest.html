@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>Diák</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #4361ee;
@@ -81,6 +81,14 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
+        }
+
+        .notifications-button {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--dark);
         }
 
         /* Sidebar */
@@ -203,6 +211,7 @@
             padding: 1.5rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
         }
 
         .section-header {
@@ -312,6 +321,7 @@
             border-radius: 5px;
             padding: 1rem;
             min-height: 400px;
+            background-color: #e0e0e0;
         }
 
         .kanban-column h4 {
@@ -375,10 +385,12 @@
             padding: 1rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
         }
 
         .chat-list {
             list-style: none;
+            
         }
 
         .chat-item {
@@ -387,6 +399,7 @@
             margin-bottom: 0.5rem;
             cursor: pointer;
             transition: background 0.3s;
+            
         }
 
         .chat-item:hover, .chat-item.active {
@@ -399,6 +412,7 @@
             background: white;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
         }
 
         .chat-header {
@@ -413,6 +427,7 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            
         }
 
         .message {
@@ -493,11 +508,10 @@
         </div>
         <ul class="nav-links">
             <li><a href="#" class="active"><i class="fas fa-home"></i> Áttekintés</a></li>
-            <li><a href="#"><i class="fas fa-tasks"></i> Feladatok</a></li>
-            <li><a href="#"><i class="fas fa-chart-bar"></i> Statisztika</a></li>
-            <li><a href="#"><i class="fas fa-users"></i> Csapatmunka</a></li>
-            <li><a href="#"><i class="fas fa-comments"></i> Üzenetek</a></li>
-            <li><a href="#"><i class="fas fa-cog"></i> Beállítások</a></li>
+            <li><a href="#"><i class="fas fa-tasks"></i> Feladatok</a></li> <!--jelenlegi Projekt munka helye-->
+            <li><a href="#"><i class="fas fa-users"></i> Csapatmunka</a></li> <!--befejezett Projekt munkák helye-->
+            <li><a href="#"><i class="fas fa-comments"></i> Üzenetek</a></li> <!--Tanár - Diák üzenetek-->
+            <li><a href="#"><i class="fas fa-cog"></i> Beállítások</a></li> <!--Profil beállítások helye email jelszó név törlés-->
         </ul>
     </aside>
 
@@ -508,7 +522,7 @@
         </div>
         <div class="header-right">
             <div class="notifications">
-                <button><i class="fas fa-bell"></i></button>
+                <button class="notifications-button"><i class="fas fa-bell"></i></button>
             </div>
             <div class="user-profile">
                 <div class="avatar">DK</div>
@@ -534,7 +548,7 @@
                     <i class="fas fa-tasks"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>xx</h3>
+                    <h3>12</h3>
                     <p>Összes feladat</p>
                 </div>
             </div>
@@ -543,7 +557,7 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>x</h3>
+                    <h3>8</h3>
                     <p>Befejezett</p>
                 </div>
             </div>
@@ -552,7 +566,7 @@
                     <i class="fas fa-exclamation-circle"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>x</h3>
+                    <h3>3</h3>
                     <p>Folyamatban</p>
                 </div>
             </div>
@@ -561,7 +575,7 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>x</h3>
+                    <h3>1</h3>
                     <p>Késésben</p>
                 </div>
             </div>
@@ -573,13 +587,13 @@
                 <h3><i class="fas fa-clock"></i> Közelgő határidők</h3>
                 <a href="#">Összes megtekintése</a>
             </div>
-            <!--<div class="tasks-container">
+            <div class="tasks-container">
                 <div class="task-card">
                     <div class="task-header">
-                        <div class="task-title">Matematika házi</div>
-                        <div class="task-date">2023.11.15</div>
+                        <div class="task-title">Vizsgaremek</div>
+                        <div class="task-date">2025.12.12</div>
                     </div>
-                    <div class="task-desc">5 feladat a 3. fejezetből</div>
+                    <div class="task-desc">adatbázisnak kész kell lenni kell backend api és kell frontend működőképesen</div>
                     <div class="task-footer">
                         <div class="task-status status-inprogress">Folyamatban</div>
                         <button class="btn btn-primary">Beadás</button>
@@ -587,10 +601,10 @@
                 </div>
                 <div class="task-card warning">
                     <div class="task-header">
-                        <div class="task-title">Történelem esszé</div>
-                        <div class="task-date">2023.11.18</div>
+                        <div class="task-title">Vizsgaremek</div>
+                        <div class="task-date">2025.12.12</div>
                     </div>
-                    <div class="task-desc">5 oldalas esszé a reformációról</div>
+                    <div class="task-desc">adatbázisnak kész kell lenni kell backend api és kell frontend működőképesen</div>
                     <div class="task-footer">
                         <div class="task-status status-todo">Elkezdve</div>
                         <button class="btn btn-primary">Beadás</button>
@@ -598,16 +612,16 @@
                 </div>
                 <div class="task-card danger">
                     <div class="task-header">
-                        <div class="task-title">Fizika labor</div>
-                        <div class="task-date">2023.11.10</div>
+                        <div class="task-title">Vizsgaremek</div>
+                        <div class="task-date">2025.12.12</div>
                     </div>
-                    <div class="task-desc">Hőtágulás mérések feldolgozása</div>
+                    <div class="task-desc">adatbázisnak kész kell lenni kell backend api és kell frontend működőképesen</div>
                     <div class="task-footer">
                         <div class="task-status status-late">Késésben</div>
                         <button class="btn btn-primary">Beadás</button>
                     </div>
                 </div>
-            </div>-->
+            </div>
         </section>
 
         <!-- Kanban tábla -->
@@ -616,7 +630,7 @@
                 <h3><i class="fas fa-columns"></i> Projekt: Webfejlesztés</h3>
                 <a href="#">További projektek</a>
             </div>
-            <!--<div class="kanban-container">
+            <div class="kanban-container">
                 <div class="kanban-column">
                     <h4>Teendő</h4>
                     <div class="kanban-card">
@@ -624,7 +638,7 @@
                         <p>UI/UX tervek elkészítése</p>
                         <div class="card-meta">
                             <span>Határidő: 11.20.</span>
-                            <span>D.K.</span>
+                            <span>monogram</span>
                         </div>
                     </div>
                 </div>
@@ -635,7 +649,7 @@
                         <p>Főoldal komponensek</p>
                         <div class="card-meta">
                             <span>Határidő: 11.25.</span>
-                            <span>B.J.</span>
+                            <span>monogram</span>
                         </div>
                     </div>
                 </div>
@@ -646,7 +660,7 @@
                         <p>ER diagram és séma</p>
                         <div class="card-meta">
                             <span>Határidő: 11.18.</span>
-                            <span>K.P.</span>
+                            <span>monogram</span>
                         </div>
                     </div>
                 </div>
@@ -657,7 +671,7 @@
                         <p>Részletes projektterv</p>
                         <div class="card-meta">
                             <span>Beadva: 11.05.</span>
-                            <span>D.K.</span>
+                            <span>monogram</span>
                         </div>
                     </div>
                 </div>
@@ -672,35 +686,13 @@
                         </div>
                     </div>
                 </div>
-            </div>-->
-        </section>
-
-        <!-- Statisztika -->
-        <section class="section">
-            <div class="section-header">
-                <h3><i class="fas fa-chart-line"></i> Teljesítmény statisztika</h3>
-                <div>
-                    <select>
-                        <option>Utolsó 30 nap</option>
-                        <option>Utolsó 3 hónap</option>
-                        <option>Ezév</option>
-                    </select>
-                </div>
-            </div>
-            <div class="charts-container">
-                <div class="chart-card">
-                    <canvas id="progressChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <canvas id="statusChart"></canvas>
-                </div>
             </div>
         </section>
 
         <!-- Chat -->
         <section class="section">
             <div class="section-header">
-                <h3><i class="fas fa-comments"></i> Csapat kommunikáció</h3>
+                <h3><i class="fas fa-comments"></i>kommunikáció</h3>
                 <a href="#">Chat előzmények</a>
             </div>
             <div class="chat-container">
@@ -738,5 +730,61 @@
         </section>
     </main>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Move (ne duplicálódjon) alapú drag & drop a Kanbanhoz
+            const kanbanColumns = document.querySelectorAll('.kanban-column');
+
+            // biztosítsunk egyedi azonosítókat minden kártyának
+            let idCounter = 0;
+            document.querySelectorAll('.kanban-card').forEach(card => {
+                if (!card.dataset.id) card.dataset.id = `card-${++idCounter}`;
+                card.setAttribute('draggable', 'true');
+
+                card.addEventListener('dragstart', function (e) {
+                    // küldjük át az egyedi id-t, ne a belső HTML-t
+                    e.dataTransfer.setData('text/plain', card.dataset.id);
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 0);
+                });
+
+                card.addEventListener('dragend', function () {
+                    card.style.display = 'block';
+                });
+            });
+
+            kanbanColumns.forEach(column => {
+                column.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                });
+
+                column.addEventListener('drop', function (e) {
+                    e.preventDefault();
+                    const id = e.dataTransfer.getData('text/plain');
+                    if (!id) return;
+
+                    const dragged = document.querySelector(`.kanban-card[data-id="${id}"]`);
+                    if (!dragged) return;
+
+                    // ha már ugyanabban az oszlopban van, nem csinálunk semmit
+                    if (column.contains(dragged)) {
+                        dragged.style.display = 'block';
+                        return;
+                    }
+
+                    // ha véletlenül már létezik azonos id-vel az oszlopban, ne duplikáljunk
+                    if (column.querySelector(`.kanban-card[data-id="${id}"]`)) {
+                        dragged.style.display = 'block';
+                        return;
+                    }
+
+                    // mozgatás: appendChild áthelyezi az eredeti elemet (nem duplikál)
+                    column.appendChild(dragged);
+                    dragged.style.display = 'block';
+                });
+            });
+        });
+    </script>
 </body>
 </html>
