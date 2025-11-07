@@ -40,7 +40,7 @@
     <main>
       <div class="page-title">
         <h2>Áttekintés</h2>
-        <button class="btn btn-primary"><i class="fas fa-plus"></i> Új feladat</button>
+        <button class="btn btn-primary" id="new-task-button"><i class="fas fa-plus"></i> Új feladat</button>
       </div>
 
       <!-- Stats Cards -->
@@ -194,7 +194,7 @@
       <!-- Chat -->
       <section class="section">
         <div class="section-header">
-          <h3><i class="fas fa-comments"></i>kommunikáció</h3>
+          <h3><i class="fas fa-comments"></i> Kommunikáció</h3>
           <a href="#">Chat előzmények</a>
         </div>
         <div class="chat-container">
@@ -289,7 +289,7 @@ margin: 0;
   justify-content: space-between;
   align-items: center;
   padding: 0 2rem;
-  z-index: 1000;
+  z-index: 1100;
   border-bottom: 1px solid var(--border);
   position: fixed;
   top: 0;
@@ -309,11 +309,13 @@ margin: 0;
   align-items: center;
   gap: 1.5rem;
   color: var(--dark);
+  z-index: 1110;
 }
 
 .dashboard-wrapper .header-right .notifications-button {
   margin-left: 1rem;
   color: var(--dark);
+  margin-left: -450px;
 }
 
 .dashboard-wrapper .user-profile {
@@ -322,6 +324,7 @@ margin: 0;
   gap: 0.5rem;
   cursor: pointer;
   color: var(--dark);
+  margin-left: -425px;
 }
 
 .dashboard-wrapper .avatar {
@@ -329,11 +332,16 @@ margin: 0;
   height: 40px;
   border-radius: 50%;
   background: var(--primary);
-  color: var(--dark);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
+}
+
+.dashboard-wrapper .user-role {
+  font-size: 0.85rem;
+  color: var(--muted);
 }
 
 .dashboard-wrapper .user-name {
@@ -515,7 +523,10 @@ margin: 0;
 .dashboard-wrapper .btn-primary {
   background: var(--primary);
   color: white;
-  
+}
+
+#new-task-button{
+  margin-right: 255px;
 }
 
 .dashboard-wrapper .btn-primary:hover {
@@ -636,20 +647,6 @@ margin: 0;
   color: var(--muted);
 }
 
-/* Charts */
-.dashboard-wrapper .charts-container {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
-}
-
-.dashboard-wrapper .chart-card {
-  background: white;
-  border-radius: 10px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-
 /* Chat */
 .dashboard-wrapper .chat-container {
   display: grid;
@@ -756,30 +753,169 @@ margin: 0;
   cursor: pointer;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
+/* Közepes képernyők (tablet) */
+@media (max-width: 992px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
-    grid-template-rows: 60px 1fr;
-    grid-template-areas: 
+    grid-template-areas:
       "header"
       "main";
   }
-  
+
+  .dashboard-wrapper header {
+    left: 0;
+    padding: 0 1rem;
+  }
+
+  .dashboard-wrapper main {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
   .dashboard-wrapper .sidebar {
     display: none;
   }
-  
+
+  .dashboard-wrapper .stats-cards {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .dashboard-wrapper .kanban-container {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .dashboard-wrapper .chat-container {
+    grid-template-columns: 1fr;
+  }
+
+  /* Új feladat gomb jobbra igazítva */
+  #new-task-button {
+    margin-right: 0;
+    margin-left: auto;
+    display: block;
+  }
+
+  /* Profil és értesítés ikon kisebb */
+  .dashboard-wrapper .avatar {
+    width: 35px;
+    height: 35px;
+  }
+
+  .dashboard-wrapper .user-name {
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobil képernyők (max 768px) */
+@media (max-width: 768px) {
+  .dashboard-wrapper header {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    padding: 0.5rem 1rem;
+  }
+
+  .dashboard-wrapper .header-left h1 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .dashboard-wrapper .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dashboard-wrapper .user-profile {
+    margin-left: 0;
+  }
+
+  .dashboard-wrapper .page-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  #new-task-button {
+    align-self: flex-end;
+    margin-left: auto;
+  }
+
+  .dashboard-wrapper .stats-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-wrapper .tasks-container {
+    grid-template-columns: 1fr;
+  }
+
   .dashboard-wrapper .kanban-container {
     grid-template-columns: 1fr;
   }
-  
-  .dashboard-wrapper .charts-container {
-    grid-template-columns: 1fr;
-  }
-  
+
   .dashboard-wrapper .chat-container {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dashboard-wrapper .chat-main {
+    height: 300px;
+  }
+
+  .dashboard-wrapper .chat-input input {
+    font-size: 0.9rem;
+  }
+
+  /* Sidebar mobilmenü */
+  .dashboard-wrapper .sidebar.active {
+    display: block;
+    position: fixed;
+    z-index: 2000;
+    width: 200px;
+    height: 100vh;
+    background: var(--sidebar);
+    top: 0;
+    left: 0;
+    animation: slideIn 0.3s ease forwards;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+}
+
+/* Nagyon kis mobilok (max 480px) */
+@media (max-width: 480px) {
+  .dashboard-wrapper header {
+    padding: 0.5rem;
+  }
+
+  .dashboard-wrapper .user-profile {
+    flex-direction: row;
+    gap: 0.4rem;
+  }
+
+  .dashboard-wrapper .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .dashboard-wrapper .user-name {
+    font-size: 0.8rem;
+  }
+
+  .dashboard-wrapper .user-role {
+    font-size: 0.7rem;
+  }
+
+  .dashboard-wrapper .page-title h2 {
+    font-size: 1.2rem;
+  }
+
+  .dashboard-wrapper .btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
   }
 }
 </style>
