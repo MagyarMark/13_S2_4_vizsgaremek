@@ -27,10 +27,10 @@
           <button class="notifications-button"><i class="fas fa-bell"></i></button>
         </div>
         <div class="user-profile">
-          <div class="avatar">DK</div>
+          <div class="avatar">{{ userProfile.initials }}</div>
           <div>
-            <div class="user-name">Diós Katalin</div>
-            <div class="user-role">Diák</div>
+            <div class="user-name">{{ userProfile.name }}</div>
+            <div class="user-role">{{ userProfile.role }}</div>
           </div>
         </div>
       </div>
@@ -921,16 +921,43 @@ margin: 0;
 </style>
 
 <script>
+import { ref, onMounted } from 'vue'
+
 export default {
   name: "Diak",
-  data() {
-    return {
-      navActive: false,
+  setup() {
+    // Reactive state
+    const navActive = ref(false)
+    const userProfile = ref({
+      initials: 'DK',
+      name: 'Diós Katalin',
+      role: 'Diák'
+    })
+    
+    // Methods
+    const toggleMenu = () => {
+      navActive.value = !navActive.value
     }
-  },
-  methods: {
-    toggleMenu() {
-      this.navActive = !this.navActive;
+    
+    // Lifecycle hooks
+    onMounted(() => {
+      // Loader eltüntetése
+      setTimeout(() => {
+        const loader = document.getElementById('loader')
+        if (loader) {
+          loader.classList.add('fade-out')
+          setTimeout(() => {
+            loader.remove()
+          }, 700)
+        }
+      }, 1000)
+    })
+    
+    // Template refs and methods exposed to template
+    return {
+      navActive,
+      userProfile,
+      toggleMenu
     }
   }
 }

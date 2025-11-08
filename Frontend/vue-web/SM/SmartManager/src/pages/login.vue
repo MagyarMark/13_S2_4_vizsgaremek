@@ -94,7 +94,7 @@ export default {
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         // Sikeres bejelentkezés után átirányítás
-        this.$router.push('/dashboard');
+        this.$router.push('/diak');
       } catch (error) {
         console.error('Bejelentkezési hiba:', error);
       } finally {

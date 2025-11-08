@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,7 +37,7 @@
             display: grid;
             grid-template-columns: 250px 1fr;
             grid-template-rows: 60px 1fr;
-            grid-template-areas: 
+            grid-template-areas:
                 "sidebar header"
                 "sidebar main";
             min-height: 100vh;
@@ -46,7 +47,7 @@
         header {
             grid-area: header;
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -94,7 +95,7 @@
 
         .logo {
             padding: 0 1.5rem 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 1.5rem;
         }
 
@@ -119,13 +120,14 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.75rem 1.5rem;
-            color: rgba(255,255,255,0.8);
+            color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
             transition: all 0.3s;
         }
 
-        .nav-links a:hover, .nav-links a.active {
-            background: rgba(255,255,255,0.1);
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: rgba(255, 255, 255, 0.1);
             color: white;
             border-left: 4px solid var(--success);
         }
@@ -165,7 +167,7 @@
             background: white;
             border-radius: 10px;
             padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             display: flex;
             align-items: center;
             gap: 1rem;
@@ -192,17 +194,28 @@
             font-size: 0.9rem;
         }
 
-        .bg-primary { background: var(--primary); }
-        .bg-success { background: var(--success); }
-        .bg-warning { background: var(--warning); }
-        .bg-danger { background: var(--danger); }
+        .bg-primary {
+            background: var(--primary);
+        }
+
+        .bg-success {
+            background: var(--success);
+        }
+
+        .bg-warning {
+            background: var(--warning);
+        }
+
+        .bg-danger {
+            background: var(--danger);
+        }
 
         /* Sections */
         .section {
             background: white;
             border-radius: 10px;
             padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             margin-bottom: 2rem;
         }
 
@@ -258,7 +271,8 @@
             border-collapse: collapse;
         }
 
-        th, td {
+        th,
+        td {
             padding: 0.75rem;
             text-align: left;
             border-bottom: 1px solid var(--border);
@@ -281,10 +295,25 @@
             font-weight: 500;
         }
 
-        .status-submitted { background: #d1ecf1; color: #0c5460; }
-        .status-graded { background: #d4edda; color: #155724; }
-        .status-late { background: #f8d7da; color: #721c24; }
-        .status-missing { background: #e9ecef; color: var(--dark); }
+        .status-submitted {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-graded {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-late {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-missing {
+            background: #e9ecef;
+            color: var(--dark);
+        }
 
         /* Assignment Cards */
         .assignments-grid {
@@ -297,7 +326,7 @@
             background: white;
             border-radius: 10px;
             padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             border-left: 4px solid var(--primary);
         }
 
@@ -349,7 +378,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -394,7 +423,9 @@
             font-weight: 500;
         }
 
-        .form-group input, .form-group textarea, .form-group select {
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid var(--border);
@@ -418,7 +449,7 @@
             background: white;
             border-radius: 10px;
             padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
 
         /* Responsive */
@@ -426,21 +457,22 @@
             body {
                 grid-template-columns: 1fr;
                 grid-template-rows: 60px 1fr;
-                grid-template-areas: 
+                grid-template-areas:
                     "header"
                     "main";
             }
-            
+
             .sidebar {
                 display: none;
             }
-            
+
             .charts-container {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Sidebar -->
     <aside class="sidebar">
@@ -452,7 +484,7 @@
             <li><a href="#" class="active"><i class="fas fa-home"></i> Áttekintés</a></li>
             <li><a href="#"><i class="fas fa-tasks"></i> Feladatok</a></li>
             <li><a href="#"><i class="fas fa-check-circle"></i> Értékelés</a></li>
-            <li><a href="#"><i class="fas fa-chart-bar"></i> Statisztika</a></li>
+            <li><a href="#statPeriod"><i class="fas fa-chart-bar"></i> Statisztika</a></li>
             <li><a href="#"><i class="fas fa-comments"></i> Üzenetek</a></li>
             <li><a href="#"><i class="fas fa-cog"></i> Beállítások</a></li>
         </ul>
@@ -545,9 +577,9 @@
                     <tbody>
                         <tr>
                             <td>Dobos Katalin</td>
-                            <td>Matematika házi - 3. fejezet</td>
-                            <td>2023.11.14 14:30</td>
-                            <td>2023.11.15</td>
+                            <td>Adatbázis terv - 3. fejezet</td>
+                            <td>2025.12.14 14:30</td>
+                            <td>2025.12.15</td>
                             <td><span class="status-badge status-submitted">Beadva</span></td>
                             <td>
                                 <button class="btn btn-primary">Értékelés</button>
@@ -555,9 +587,9 @@
                         </tr>
                         <tr>
                             <td>Nagy Bence</td>
-                            <td>Történelem esszé</td>
-                            <td>2023.11.13 16:45</td>
-                            <td>2023.11.18</td>
+                            <td>Projekt munka</td>
+                            <td>2025.12.13 16:45</td>
+                            <td>2025.12.18</td>
                             <td><span class="status-badge status-graded">Értékelve (85%)</span></td>
                             <td>
                                 <button class="btn btn-success">Megtekintés</button>
@@ -565,9 +597,9 @@
                         </tr>
                         <tr>
                             <td>Kiss Péter</td>
-                            <td>Fizika labor</td>
-                            <td>2023.11.12 09:15</td>
-                            <td>2023.11.10</td>
+                            <td>Admin jogok szerkesztése</td>
+                            <td></td>
+                            <td>2020.12.10</td>
                             <td><span class="status-badge status-late">Késésben</span></td>
                             <td>
                                 <button class="btn btn-warning">Értékelés</button>
@@ -576,8 +608,8 @@
                         <tr>
                             <td>Szabó Anna</td>
                             <td>Webfejlesztés projekt</td>
-                            <td>2023.11.11 20:20</td>
-                            <td>2023.11.12</td>
+                            <td>2025.12.12 20:20</td>
+                            <td>2025.12.12</td>
                             <td><span class="status-badge status-graded">Értékelve (92%)</span></td>
                             <td>
                                 <button class="btn btn-success">Megtekintés</button>
@@ -597,8 +629,8 @@
             <div class="assignments-grid">
                 <div class="assignment-card">
                     <div class="assignment-header">
-                        <div class="assignment-title">Matematika házi</div>
-                        <div class="assignment-date">Határidő: 2023.11.15</div>
+                        <div class="assignment-title">Frontend Projekt</div>
+                        <div class="assignment-date">Határidő: 2025.12.15</div>
                     </div>
                     <div class="assignment-stats">
                         <div class="stat">
@@ -606,7 +638,7 @@
                             <div class="stat-label">Beadva</div>
                         </div>
                         <div class="stat">
-                            <div class="stat-value">4</div>
+                            <div class="stat-value">0</div>
                             <div class="stat-label">Késés</div>
                         </div>
                         <div class="stat">
@@ -621,8 +653,8 @@
                 </div>
                 <div class="assignment-card warning">
                     <div class="assignment-header">
-                        <div class="assignment-title">Történelem esszé</div>
-                        <div class="assignment-date">Határidő: 2023.11.18</div>
+                        <div class="assignment-title">Backend Projekt</div>
+                        <div class="assignment-date">Határidő: 2025.12.18</div>
                     </div>
                     <div class="assignment-stats">
                         <div class="stat">
@@ -630,7 +662,7 @@
                             <div class="stat-label">Beadva</div>
                         </div>
                         <div class="stat">
-                            <div class="stat-value">1</div>
+                            <div class="stat-value">0</div>
                             <div class="stat-label">Késés</div>
                         </div>
                         <div class="stat">
@@ -645,8 +677,8 @@
                 </div>
                 <div class="assignment-card">
                     <div class="assignment-header">
-                        <div class="assignment-title">Fizika labor</div>
-                        <div class="assignment-date">Határidő: 2023.11.10</div>
+                        <div class="assignment-title">Flowchart készítése</div>
+                        <div class="assignment-date">Határidő: 2025.12.10</div>
                     </div>
                     <div class="assignment-stats">
                         <div class="stat">
@@ -654,7 +686,7 @@
                             <div class="stat-label">Beadva</div>
                         </div>
                         <div class="stat">
-                            <div class="stat-value">2</div>
+                            <div class="stat-value">0</div>
                             <div class="stat-label">Késés</div>
                         </div>
                         <div class="stat">
@@ -702,55 +734,48 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Helyezés</th>
-                            <th>Diák</th>
-                            <th>Átlagpontszám</th>
-                            <th>Beadási arány</th>
-                            <th>Legutóbbi értékelés</th>
+                            <th></th>
+                            <th style="text-align: center;">Helyezés</th>
+                            <th style="text-align: center;">Diák</th>
+                            <th style="text-align: center;">Legutóbbi értékelés</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>1.</td>
-                            <td>Szabó Anna</td>
-                            <td>92%</td>
-                            <td>100%</td>
-                            <td>Matematika házi - 95%</td>
+                            <th></th>
+                            <td style="text-align: center;">1.</td>
+                            <td style="text-align: center;">Szabó Anna</td>
+                            <td style="text-align: center;">Játék készítés C# - 95%</td>
                         </tr>
                         <tr>
-                            <td>2.</td>
-                            <td>Nagy Bence</td>
-                            <td>87%</td>
-                            <td>95%</td>
-                            <td>Történelem esszé - 85%</td>
+                            <th></th>
+                            <td style="text-align: center;">2.</td>
+                            <td style="text-align: center;">Nagy Bence</td>
+                            <td style="text-align: center;">Űrlap készítés - 85%</td>
                         </tr>
                         <tr>
-                            <td>3.</td>
-                            <td>Kovács Eszter</td>
-                            <td>84%</td>
-                            <td>100%</td>
-                            <td>Fizika labor - 80%</td>
+                            <th></th>
+                            <td style="text-align: center;">3.</td>
+                            <td style="text-align: center;">Kovács Eszter</td>
+                            <td style="text-align: center;">Adatbázis fejlesztés - 80%</td>
                         </tr>
                         <tr>
-                            <td>26.</td>
-                            <td>Tóth Gábor</td>
-                            <td>62%</td>
-                            <td>75%</td>
-                            <td>Matematika házi - 58%</td>
+                            <th></th>
+                            <td style="text-align: center;">26.</td>
+                            <td style="text-align: center;">Tóth Gábor</td>
+                            <td style="text-align: center;">Játék készítés C# - 58%</td>
                         </tr>
                         <tr>
-                            <td>27.</td>
-                            <td>Molnár Dávid</td>
-                            <td>58%</td>
-                            <td>68%</td>
-                            <td>Fizika labor - 52%</td>
+                            <th></th>
+                            <td style="text-align: center;">27.</td>
+                            <td style="text-align: center;">Molnár Dávid</td>
+                            <td style="text-align: center;">Adatbázis fejlesztés - 52%</td>
                         </tr>
                         <tr>
-                            <td>28.</td>
-                            <td>Horváth Zsolt</td>
-                            <td>51%</td>
-                            <td>60%</td>
-                            <td>Történelem esszé - 45%</td>
+                            <th></th>
+                            <td style="text-align: center;">28.</td>
+                            <td style="text-align: center;">Horváth Zsolt</td>
+                            <td style="text-align: center;">Űrlap készítés - 45%</td>
                         </tr>
                     </tbody>
                 </table>
@@ -784,7 +809,7 @@
                         <option value="">Válassz osztályt</option>
                         <option value="10.A">10.A</option>
                         <option value="10.B">10.B</option>
-                        <option value="11.A">11.A</option>
+                        <option value="12.A">12.A</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -802,21 +827,21 @@
 
     <script>
         // Modal kezelés
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const modal = document.getElementById('assignmentModal');
             const newAssignmentBtn = document.getElementById('newAssignmentBtn');
             const closeModal = document.getElementById('closeModal');
             const assignmentForm = document.getElementById('assignmentForm');
 
-            newAssignmentBtn.addEventListener('click', function() {
+            newAssignmentBtn.addEventListener('click', function () {
                 modal.classList.add('active');
             });
 
-            closeModal.addEventListener('click', function() {
+            closeModal.addEventListener('click', function () {
                 modal.classList.remove('active');
             });
 
-            assignmentForm.addEventListener('submit', function(e) {
+            assignmentForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 alert('Feladat sikeresen kiadva!');
                 modal.classList.remove('active');
@@ -828,7 +853,7 @@
             const performanceChart = new Chart(performanceCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['10.A', '10.B', '11.A', '11.B', '12.A', '12.B'],
+                    labels: ['10.A', '10.B', '12.A', '12.B', '12.A', '12.B'],
                     datasets: [{
                         label: 'Átlagos pontszám',
                         data: [78, 82, 75, 79, 85, 81],
@@ -886,7 +911,7 @@
             // Értékelés gombok eseménykezelése
             document.querySelectorAll('.btn-primary').forEach(button => {
                 if (button.textContent.includes('Értékelés')) {
-                    button.addEventListener('click', function() {
+                    button.addEventListener('click', function () {
                         alert('Értékelési felület megnyitása...');
                     });
                 }
@@ -894,4 +919,5 @@
         });
     </script>
 </body>
+
 </html>
