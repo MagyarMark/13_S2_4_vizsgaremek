@@ -24,7 +24,7 @@
                 projekteket és csapatmunkát – mindezt letisztult felületen.
             </p>
             <div>
-               <router-link to="/tanar"><button class="btn primary">Bejelentkezés</button></router-link>
+               <router-link to="/login"><button class="btn primary">Bejelentkezés</button></router-link>
                <router-link to="/register"><button class="btn">Regisztráció</button></router-link>
             </div>
         </section>

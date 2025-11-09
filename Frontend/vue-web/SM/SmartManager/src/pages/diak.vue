@@ -235,7 +235,6 @@
 </template>
 
 <style>
-/* Globális változók */
 :root {
   --primary: #4361ee;
   --secondary: #3f37c9;
@@ -252,7 +251,6 @@
   --border: #dee2e6;
 }
 
-/* Reset csak a dashboardon belül */
 .dashboard-wrapper {
   margin: 0;
   padding: 0;
@@ -280,7 +278,7 @@ margin: 0;
   position: relative;
 }
 
-/* Header - FIXED */
+/* Header - FIXÁLVA*/
 .dashboard-wrapper header {
   grid-area: header;
   background: white;
@@ -356,7 +354,7 @@ margin: 0;
   color: var(--dark);
 }
 
-/* Sidebar - FIXED */
+/* Sidebar - FIXÁLVA */
 .dashboard-wrapper .sidebar {
   grid-area: sidebar;
   background: var(--sidebar);
@@ -423,7 +421,7 @@ margin: 0;
   text-align: center;
 }
 
-/* Main Content - Módosított padding */
+/* Main Content - FIXÁLVA A PADDING */
 .dashboard-wrapper main {
   grid-area: main;
   background: var(--bg-light);
@@ -753,7 +751,7 @@ margin: 0;
   cursor: pointer;
 }
 
-/* Közepes képernyők (tablet) */
+/* Közepes képernyők */
 @media (max-width: 992px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
@@ -788,14 +786,12 @@ margin: 0;
     grid-template-columns: 1fr;
   }
 
-  /* Új feladat gomb jobbra igazítva */
   #new-task-button {
     margin-right: 0;
     margin-left: auto;
     display: block;
   }
 
-  /* Profil és értesítés ikon kisebb */
   .dashboard-wrapper .avatar {
     width: 35px;
     height: 35px;
@@ -806,7 +802,7 @@ margin: 0;
   }
 }
 
-/* Mobil képernyők (max 768px) */
+/* Mobil képernyők */
 @media (max-width: 768px) {
   .dashboard-wrapper header {
     flex-direction: column;
@@ -865,7 +861,6 @@ margin: 0;
     font-size: 0.9rem;
   }
 
-  /* Sidebar mobilmenü */
   .dashboard-wrapper .sidebar.active {
     display: block;
     position: fixed;
@@ -884,7 +879,7 @@ margin: 0;
   }
 }
 
-/* Nagyon kis mobilok (max 480px) */
+/* Nagyon kis mobilok */
 @media (max-width: 480px) {
   .dashboard-wrapper header {
     padding: 0.5rem;
@@ -939,7 +934,6 @@ export default {
       navActive.value = !navActive.value
     }
     
-    // Lifecycle hooks
     onMounted(() => {
       // Loader eltüntetése
       setTimeout(() => {
@@ -953,7 +947,6 @@ export default {
       }, 1000)
     })
     
-    // Template refs and methods exposed to template
     return {
       navActive,
       userProfile,

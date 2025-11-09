@@ -2,7 +2,7 @@
     <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" :class="{ open: showSidebar }">
         <div class="logo">
             <h2>Smart<span>Manager</span></h2>
             <p>Tanári Portál</p>
@@ -20,6 +20,9 @@
     <!-- Header -->
     <header>
         <div class="header-left">
+            <button class="hamburger" @click="showSidebar = !showSidebar" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1>Tanári Dashboard</h1>
         </div>
         <div class="header-right">
@@ -40,7 +43,7 @@
     <main>
         <div class="page-title">
             <h2>Áttekintés</h2>
-            <button class="btn btn-primary" id="newAssignmentBtn"><i class="fas fa-plus"></i> Új feladat</button>
+            <button class="btn btn-primary new-task-button" id="new-task-button" @click="showModal = true"><i class="fas fa-plus"></i> Új feladat</button>
         </div>
 
         <!-- Stats Cards -->
@@ -125,7 +128,7 @@
                         <tr>
                             <td>Kiss Péter</td>
                             <td>Admin jogok szerkesztése</td>
-                            <td></td>
+                            <td><span class="status-badge status-late">Késésben</span></td>
                             <td>2020.12.10</td>
                             <td><span class="status-badge status-late">Késésben</span></td>
                             <td>
@@ -360,6 +363,7 @@ export default {
   name: "Tanar",
   setup() {
     const showModal = ref(false);
+    const showSidebar = ref(false);
     const performanceChart = ref(null);
     const submissionChart = ref(null);
 
@@ -384,53 +388,59 @@ export default {
     };
 
     onMounted(() => {
-      // Chart.js inicializálás
-      new Chart(performanceChart.value.getContext("2d"), {
-        type: "bar",
-        data: {
-          labels: ["10.A", "10.B", "12.A", "12.B"],
-          datasets: [
-            {
-              label: "Átlagos pontszám",
-              data: [78, 82, 75, 79],
-              backgroundColor: "#4361ee",
-              borderColor: "#3f37c9",
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: { display: true, text: "Osztályonkénti átlag" },
+      // Chart.js inicializálás és rögzítése
+      if (performanceChart.value) {
+        new Chart(performanceChart.value.getContext("2d"), {
+          type: "bar",
+          data: {
+            labels: ["10.A", "10.B", "12.A", "12.B"],
+            datasets: [
+              {
+                label: "Átlagos pontszám",
+                data: [78, 82, 75, 79],
+                backgroundColor: "#4361ee",
+                borderColor: "#3f37c9",
+                borderWidth: 1,
+              },
+            ],
           },
-          scales: { y: { beginAtZero: true, max: 100 } },
-        },
-      });
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              title: { display: true, text: "Osztályonkénti átlag" },
+            },
+            scales: { y: { beginAtZero: true, max: 100 } },
+          },
+        });
+      }
 
-      new Chart(submissionChart.value.getContext("2d"), {
-        type: "doughnut",
-        data: {
-          labels: ["Időben beadva", "Késéssel beadva", "Hiányzó"],
-          datasets: [
-            {
-              data: [42, 5, 3],
-              backgroundColor: ["#4cc9f0", "#f72585", "#e63946"],
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: "bottom" },
-            title: { display: true, text: "Beadási statisztika" },
+      if (submissionChart.value) {
+        new Chart(submissionChart.value.getContext("2d"), {
+          type: "doughnut",
+          data: {
+            labels: ["Időben beadva", "Késéssel beadva", "Hiányzó"],
+            datasets: [
+              {
+                data: [42, 5, 3],
+                backgroundColor: ["#4cc9f0", "#f72585", "#e63946"],
+                borderWidth: 1,
+              },
+            ],
           },
-        },
-      });
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: "bottom" },
+              title: { display: true, text: "Beadási statisztika" },
+            },
+          },
+        });
+      }
     });
 
-    return { showModal, performanceChart, submissionChart, assignment, submitAssignment };
+    return { showModal, showSidebar, performanceChart, submissionChart, assignment, submitAssignment };
   },
 };
 </script>
@@ -483,6 +493,21 @@ export default {
             z-index: 100;
         }
 
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--muted);
+        }
+
         .header-left h1 {
             font-size: 1.5rem;
             color: var(--primary);
@@ -499,6 +524,16 @@ export default {
             align-items: center;
             gap: 0.5rem;
             cursor: pointer;
+        }
+
+        .user-role{
+            font-size: 0.85rem;
+            color: var(--dark);
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--primary);
         }
 
         .avatar {
@@ -528,7 +563,7 @@ export default {
         }
 
         .logo h2 {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
         }
 
         .logo span {
@@ -570,6 +605,12 @@ export default {
             grid-area: main;
             padding: 2rem;
             overflow-y: auto;
+        }
+        
+        .new-task-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .page-title {
@@ -692,6 +733,7 @@ export default {
         /* Table Styles */
         .table-container {
             overflow-x: auto;
+            color: var(--dark);
         }
 
         table {
@@ -756,6 +798,7 @@ export default {
             padding: 1.5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             border-left: 4px solid var(--primary);
+            color: var(--dark);
         }
 
         .assignment-card.warning {
@@ -782,6 +825,7 @@ export default {
             display: flex;
             gap: 1rem;
             margin-bottom: 1rem;
+            flex-wrap: wrap;
         }
 
         .stat {
@@ -798,7 +842,6 @@ export default {
             color: var(--muted);
         }
 
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -810,6 +853,7 @@ export default {
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
         }
 
         .modal.active {
@@ -833,6 +877,11 @@ export default {
             margin-bottom: 1.5rem;
         }
 
+        .modal-header h3 {
+            font-size: 1.5rem;
+            color: var(--dark);
+        }
+
         .modal-close {
             background: none;
             border: none;
@@ -849,6 +898,7 @@ export default {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
+            color: var(--dark);
         }
 
         .form-group input,
@@ -859,6 +909,7 @@ export default {
             border: 1px solid var(--border);
             border-radius: 5px;
             font-size: 1rem;
+            color: var(--dark);
         }
 
         .form-group textarea {
@@ -866,7 +917,6 @@ export default {
             resize: vertical;
         }
 
-        /* Charts */
         .charts-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -878,99 +928,172 @@ export default {
             border-radius: 10px;
             padding: 1.5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            height: 300px;
         }
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            body {
-                grid-template-columns: 1fr;
-                grid-template-rows: 60px 1fr;
-                grid-template-areas:
-                    "header"
-                    "main";
-            }
+/* Tablet nézet */
+@media (max-width: 1024px) {
+  .dashboard-wrapper {
+    grid-template-columns: 1fr;
+    grid-template-rows: 60px 1fr;
+    grid-template-areas:
+      "header"
+      "main";
+  }
 
-            .sidebar {
-                display: none;
-            }
+  /* Sidebar teljesen elrejtve */
+  .sidebar {
+    display: none !important;
+  }
 
-            .charts-container {
-                grid-template-columns: 1fr;
-            }
-        }
+  .hamburger {
+    display: none !important;
+  }
 
-        /* ugyan az van alkalmazva mind a diák vueban*/
-        .dashboard-wrapper {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            grid-template-rows: 60px 1fr;
-            grid-template-areas:
-                "sidebar header"
-                "sidebar main";
-            min-height: 100vh;
-            position: relative;
-        }
+  header h1 {
+    font-size: 1.2rem;
+  }
 
-        .dashboard-wrapper header {
-            grid-area: header;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2rem;
-            z-index: 1100;
-            border-bottom: 1px solid var(--border);
-            position: fixed;
-            top: 0;
-            left: 250px;
-            right: 0;
-            height: 60px;
-        }
+  main {
+    padding: 1rem;
+  }
 
-        .dashboard-wrapper .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            color: var(--dark);
-            z-index: 1110;
-        }
+  .charts-container {
+    grid-template-columns: 1fr;
+  }
 
-        .dashboard-wrapper .sidebar {
-            grid-area: sidebar;
-            background: var(--sidebar);
-            color: white;
-            padding: 1.5rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 1001;
-        }
+  .stat-card {
+    flex-direction: row;
+    padding: 1rem;
+  }
 
-        .dashboard-wrapper main {
-            grid-area: main;
-            margin-left: 250px;
-            margin-top: 60px;
-            padding: 2rem;
-        }
+  .chart-card {
+    height: 240px;
+  }
+}
 
-        /* Ensure responsive behavior remains correct on smaller screens */
-        @media (max-width: 1024px) {
-            .dashboard-wrapper header {
-                left: 0;
-                padding: 0 1rem;
-            }
+/* Mobil nézet */
+@media (max-width: 600px) {
+  header {
+    padding: 0 1rem;
+  }
 
-            .dashboard-wrapper .sidebar {
-                display: none;
-            }
+  .header-right {
+    gap: 0.5rem;
+  }
 
-            .dashboard-wrapper main {
-                margin-left: 0;
-                padding: 1rem;
-            }
-        }
+  .header-right .user-name,
+  .header-right .user-role {
+    display: none;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+
+  .page-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .page-title h2 {
+    font-size: 1.3rem;
+  }
+
+  .btn {
+    width: 100%;
+    text-align: center;
+    font-size: 0.95rem;
+  }
+
+  /* automatikusan törés a stat kártyákra */
+  .stats-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    overflow-x: hidden;
+  }
+
+  .stat-card {
+    flex: 1 1 100%;
+    min-width: 150px;
+    max-width: 48%;
+    box-sizing: border-box;
+  }
+
+  .assignments-grid {
+    grid-template-columns: 1fr;
+  }
+
+  table {
+    font-size: 0.85rem;
+  }
+
+  th, td {
+    padding: 0.5rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-content {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    padding: 1rem;
+  }
+
+  .chart-card {
+    height: 200px;
+  }
+
+  .assignment-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .assignment-stats {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+/* kis képernyő */
+@media (max-width: 400px) {
+  header h1 {
+    font-size: 1rem;
+  }
+
+  .btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+  }
+
+  .stat-card {
+    flex: 1 1 100%;
+    align-items: flex-start;
+  }
+
+  .section-header h3 {
+    font-size: 1rem;
+  }
+
+  table {
+    font-size: 0.8rem;
+  }
+
+  th, td {
+    white-space: nowrap;
+  }
+}
+
 </style>
