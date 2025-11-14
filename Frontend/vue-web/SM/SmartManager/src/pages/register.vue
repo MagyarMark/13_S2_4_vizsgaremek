@@ -114,6 +114,11 @@
       </div>
     </div>
   </main>
+
+  <footer>
+  &copy; 2025 SmartManager. Minden jog fenntartva.
+</footer>
+
 </template>
 
 <script>
@@ -206,11 +211,10 @@ export default {
 
 <style scoped>
 .auth-container {
-  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 100px 2rem 2rem;
+  padding: 50px 2rem 2rem;
 }
 
 .auth-card {

@@ -1,12 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from './pages/Home.vue'
-import About from './pages/about.vue'
+import Settings from './pages/settings.vue'
 import Login from './pages/login.vue'
 import Register from './pages/register.vue'
 import Kapcsolat from './pages/kapcsolat.vue'
 import Rolunk from './pages/rolunk.vue'
 import Diak from './pages/diak.vue'
 import Tanar from './pages/tanar.vue'
+import Chat from './pages/chat.vue'
 
 const routes = [
   {
@@ -15,9 +16,9 @@ const routes = [
     component: Home
   },
   {
-    path: '/about',
-    name: 'About',
-    component: About
+    path: '/settings',
+    name: 'Settings',
+    component: Settings
   },
   {
     path: '/login',
@@ -48,6 +49,11 @@ const routes = [
     path: '/tanar',
     name: 'Tanar',
     component: Tanar
+  },
+  {
+    path: '/chat',
+    name: 'Chat',
+    component: Chat
   }
 ]
 

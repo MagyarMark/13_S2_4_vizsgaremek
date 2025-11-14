@@ -12,8 +12,8 @@
         <li><a href="#" class="active"><i class="fas fa-home"></i> Áttekintés</a></li>
         <li><a href="#"><i class="fas fa-tasks"></i> Feladatok</a></li>
         <li><a href="#"><i class="fas fa-users"></i> Csapatmunka</a></li>
-        <li><a href="#"><i class="fas fa-comments"></i> Üzenetek</a></li>
-        <li><a href="#"><i class="fas fa-cog"></i> Beállítások</a></li>
+        <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
+        <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
     </aside>
 
