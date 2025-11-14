@@ -360,7 +360,7 @@ export default {
 }
 
 /* Settings panel */
-.settings-panel { display:flex; gap:20px; }
+.settings-panel { display:flex; gap:20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);}
 .settings-nav {
   width: 200px;
   display:flex;
@@ -375,14 +375,16 @@ export default {
   border: none;
   cursor: pointer;
   color:#374151;
+  box-shadow: 0px 3px 0px rgba(0, 0, 0, 0.5);
 }
 .settings-nav button.active {
   background:#fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 6px rgba(2,6,23,0.06);
   color:#111827;
 }
 .settings-content {
   flex:1;
+  box-shadow: 0 1px 6px rgba(2,6,23,0.06);
 }
 
 /* Card */
@@ -390,8 +392,8 @@ export default {
   background:#fff;
   padding:18px;
   border-radius:10px;
-  box-shadow: 0 1px 6px rgba(2,6,23,0.06);
   margin-bottom: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
 }
 .card h2 { 
   color: var(--dark);

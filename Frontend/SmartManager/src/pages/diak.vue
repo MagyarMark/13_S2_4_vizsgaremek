@@ -190,46 +190,6 @@
           </div>
         </div>
       </section>
-
-      <!-- Chat -->
-      <section class="section">
-        <div class="section-header">
-          <h3><i class="fas fa-comments"></i> Kommunikáció</h3>
-          <a href="#">Chat előzmények</a>
-        </div>
-        <div class="chat-container">
-          <div class="chat-sidebar">
-            <h4>Beszélgetések</h4>
-            <ul class="chat-list">
-              <li class="chat-item active">Webfejlesztés csapat</li>
-              <li class="chat-item">... csoport</li>
-              <li class="chat-item">... projekt</li>
-              <li class="chat-item">Tanár - Kovács Anna</li>
-            </ul>
-          </div>
-          <div class="chat-main">
-            <div class="chat-header">
-              <h4>Webfejlesztés csapat</h4>
-              <p>3 résztvevő</p>
-            </div>
-            <div class="chat-messages">
-              <div class="message received">
-                <strong>Bence:</strong> Sziasztok! A frontend komponensek készen vannak.
-              </div>
-              <div class="message sent">
-                <strong>Te:</strong> Nagyon király! Én holnap kezdem a backend-et.
-              </div>
-              <div class="message received">
-                <strong>Kata:</strong> Az adatbázis design-t ma este befejezem.
-              </div>
-            </div>
-            <div class="chat-input">
-              <input type="text" placeholder="Írj üzenetet...">
-              <button><i class="fas fa-paper-plane"></i></button>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
   </div>
 </template>
@@ -933,7 +893,7 @@ export default {
     const toggleMenu = () => {
       navActive.value = !navActive.value
     }
-    
+
     onMounted(() => {
       // Loader eltüntetése
       setTimeout(() => {
