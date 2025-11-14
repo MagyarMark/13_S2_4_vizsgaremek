@@ -221,146 +221,15 @@ export default {
 </script>
 
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
 .dashboard-wrapper {
-  display: flex;
   min-height: 100vh;
   background-color: #f5f7fb;
-}
-
-/* Sidebar Styles */
-.sidebar {
-  width: 250px;
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-  color: white;
-  padding: 20px 0;
-}
-
-.logo {
-  padding: 0 20px 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 20px;
-}
-
-.logo h2 {
-  font-size: 1.5rem;
-  margin-bottom: 5px;
-}
-
-.logo h2 span {
-  color: #ffd700;
-}
-
-.logo p {
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-.nav-links {
-  list-style: none;
-}
-
-.nav-links a {
-  display: block;
-  color: white;
-  text-decoration: none;
-  padding: 15px 20px;
-  transition: all 0.3s ease;
-}
-
-.nav-links a:hover,
-.nav-links a.active {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-left: 4px solid #ffd700;
-}
-
-.nav-links i {
-  margin-right: 10px;
-  width: 20px;
-  text-align: center;
-}
-
-/* Main Content Styles */
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 30px;
-  background-color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.header-left h1 {
-  color: #2d3748;
-  font-size: 1.8rem;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.notifications-button {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  color: #4a5568;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
-.notifications-button:hover {
-  background-color: #f7fafc;
-  color: #4a6ee0;
-}
-
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  background-color: #4a6ee0;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-.user-name {
-  font-weight: 600;
-  color: #2d3748;
-}
-
-.user-role {
-  font-size: 0.8rem;
-  color: #718096;
 }
 
 /* Chat Section Styles */
 .section {
   flex: 1;
-  margin: 20px;
+  margin: 0;
   background-color: white;
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
