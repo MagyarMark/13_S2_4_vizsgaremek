@@ -10,7 +10,7 @@
       </div>
       <ul class="nav-links">
         <li><a href="#" class="active"><i class="fas fa-home"></i> Áttekintés</a></li>
-        <li><a href="#"><i class="fas fa-tasks"></i> Feladatok</a></li>
+        <router-link to="/task"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
         <li><a href="#"><i class="fas fa-users"></i> Csapatmunka</a></li>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>

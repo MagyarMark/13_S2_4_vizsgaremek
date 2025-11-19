@@ -4,7 +4,7 @@ import Settings from './pages/settings.vue'
 import Login from './pages/login.vue'
 import Register from './pages/register.vue'
 import Kapcsolat from './pages/kapcsolat.vue'
-import Rolunk from './pages/rolunk.vue'
+import Task from './pages/task.vue'
 import Diak from './pages/diak.vue'
 import Tanar from './pages/tanar.vue'
 import Chat from './pages/chat.vue'
@@ -36,9 +36,9 @@ const routes = [
     component: Kapcsolat
   },
   {
-    path: '/rolunk',
-    name: 'Rolunk',
-    component: Rolunk
+    path: '/task',
+    name: 'Task',
+    component: Task
   },
   {
     path: '/diak',
