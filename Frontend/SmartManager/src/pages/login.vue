@@ -1,9 +1,5 @@
 <!-- Login.vue -->
 <template>
-  <div id="loader" aria-hidden="true">
-    <div class="spinner" role="status" aria-label="Betöltés"></div>
-  </div>
-
   <header>
     <div class="logo">Smart<span>Manager</span></div>
     <nav>
@@ -23,12 +19,12 @@
 
       <form @submit.prevent="handleLogin" class="auth-form">
         <div class="form-group">
-          <label for="email">Email cím</label>
+          <label for="username">Felhasználónév</label>
           <input 
-            type="email" 
-            id="email" 
-            v-model="form.email"
-            placeholder="email@pelda.hu" 
+            type="text" 
+            id="username" 
+            v-model="form.username"
+            placeholder="PéldaBence" 
             required
           >
         </div>
@@ -80,7 +76,7 @@ export default {
       navActive: false,
       loading: false,
       form: {
-        email: '',
+        username: '',
         password: '',
         remember: false
       }
@@ -94,11 +90,25 @@ export default {
       this.loading = true;
       
       try {
-        // Itt lenne a valós bejelentkezési logika
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Backend API hívás
+        const response = await fetch('http://localhost:3000/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            felhasznalonev: this.form.username,
+            jelszo: this.form.password
+          })
+        });
+        const data = await response.json();
         
         // Sikeres bejelentkezés után átirányítás
-        this.$router.push('/diak');
+        if (data.success) {
+          this.$router.push('/diak');
+        } else {
+          alert(data.message);
+        }
       } catch (error) {
         console.error('Bejelentkezési hiba:', error);
       } finally {
@@ -109,18 +119,6 @@ export default {
       alert(`${provider} bejelentkezés hamarosan elérhető!`);
     }
   },
-  mounted() {
-    // Loader eltüntetése
-    setTimeout(() => {
-      const loader = document.getElementById('loader');
-      if (loader) {
-        loader.classList.add('fade-out');
-        setTimeout(() => {
-          loader.remove();
-        }, 700);
-      }
-    }, 1000);
-  }
 }
 </script>
 

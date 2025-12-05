@@ -1,9 +1,5 @@
 <!-- Register.vue -->
 <template>
-  <div id="loader" aria-hidden="true">
-    <div class="spinner" role="status" aria-label="Betöltés"></div>
-  </div>
-
   <header>
     <div class="logo">Smart<span>Manager</span></div>
     <nav>
@@ -190,22 +186,16 @@ export default {
         this.loading = false;
       }
     },
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Alerts the user that social registration is not available yet.
+ * @param {string} provider - The name of the social provider.
+ */
+/*******  5c111655-e771-43a0-8904-461f8abcea89  *******/
     socialRegister(provider) {
       alert(`${provider} regisztráció hamarosan elérhető!`);
     }
   },
-  mounted() {
-    // Loader eltüntetése
-    setTimeout(() => {
-      const loader = document.getElementById('loader');
-      if (loader) {
-        loader.classList.add('fade-out');
-        setTimeout(() => {
-          loader.remove();
-        }, 700);
-      }
-    }, 1000);
-  }
 }
 </script>
 
