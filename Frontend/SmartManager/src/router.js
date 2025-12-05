@@ -8,6 +8,7 @@ import Task from './pages/task.vue'
 import Diak from './pages/diak.vue'
 import Tanar from './pages/tanar.vue'
 import Chat from './pages/chat.vue'
+import Terms from './pages/terms.vue'
 
 const routes = [
   {
@@ -54,6 +55,11 @@ const routes = [
     path: '/chat',
     name: 'Chat',
     component: Chat
+  },
+  {
+    path: '/terms',
+    name: 'Terms',
+    component: Terms
   }
 ]
 

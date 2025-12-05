@@ -18,27 +18,26 @@
       </div>
 
       <form @submit.prevent="handleRegister" class="auth-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="firstName">Keresztnév</label>
-            <input 
-              type="text" 
-              id="firstName" 
-              v-model="form.firstName"
-              placeholder="Keresztnév" 
-              required
-            >
-          </div>
-          <div class="form-group">
-            <label for="lastName">Vezetéknév</label>
-            <input 
-              type="text" 
-              id="lastName" 
-              v-model="form.lastName"
-              placeholder="Vezetéknév" 
-              required
-            >
-          </div>
+        <div class="form-group">
+          <label for="username">Felhasználónév</label>
+          <input
+            type="text"
+            id="username"
+            v-model="form.username"
+            placeholder="Felhasználónév"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="fullName">Teljes név</label>
+          <input 
+            type="text" 
+            id="fullName" 
+            v-model="form.fullName"
+            placeholder="Teljes név" 
+            required
+          >
         </div>
 
         <div class="form-group">
@@ -92,7 +91,7 @@
         <div class="form-group">
           <label class="checkbox">
             <input type="checkbox" v-model="form.agreeTerms" required>
-            <span>Elfogadom az <a href="#" class="link">Általános Szerződési Feltételeket</a></span>
+            <span>Elfogadom az  <router-link to="/terms">Általános Szerződési Feltételeket</router-link></span>
           </label>
         </div>
 
@@ -125,8 +124,8 @@ export default {
       navActive: false,
       loading: false,
       form: {
-        firstName: '',
-        lastName: '',
+        username: '',
+        fullName: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -175,25 +174,34 @@ export default {
       this.loading = true;
       
       try {
-        // Itt lenne a valós regisztrációs logika
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Sikeres regisztráció után átirányítás
-        this.$router.push('/login?registered=true');
+        // Valós regisztráció a backend felé
+        const response = await fetch('http://localhost:3000/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            felhasznalonev: this.form.username,
+            jelszo: this.form.password,
+            email: this.form.email,
+            teljes_nev: this.form.fullName,
+            szerep_tipus: this.form.role
+          })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+          // Átirányítás bejelentkezéshez
+          this.$router.push('/login?registered=true');
+        } else {
+          // Sikertelen regisztráció, hiba üzenet
+          const msg = data && data.message ? data.message : 'Regisztráció sikertelen';
+          alert(msg);
+        }
       } catch (error) {
         console.error('Regisztrációs hiba:', error);
+        alert('Szerverhiba történt a regisztráció során.');
       } finally {
         this.loading = false;
       }
-    },
-/*************  ✨ Windsurf Command ⭐  *************/
-/**
- * Alerts the user that social registration is not available yet.
- * @param {string} provider - The name of the social provider.
- */
-/*******  5c111655-e771-43a0-8904-461f8abcea89  *******/
-    socialRegister(provider) {
-      alert(`${provider} regisztráció hamarosan elérhető!`);
     }
   },
 }
@@ -237,11 +245,7 @@ export default {
   margin-bottom: 2rem;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
+
 
 .form-group {
   margin-bottom: 1.5rem;

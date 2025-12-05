@@ -103,7 +103,7 @@ router.post('/login', [
     const userResult = await pool.query(
       `SELECT id, felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, aktiv, elerheto 
        FROM "Felhasznalo" 
-       WHERE felhasznalonev = felhasznalonev`,
+       WHERE felhasznalonev = $1`,
       [felhasznalonev]
     );
 

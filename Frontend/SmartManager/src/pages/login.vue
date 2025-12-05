@@ -103,20 +103,24 @@ export default {
         });
         const data = await response.json();
         
-        // Sikeres bejelentkezés után átirányítás
+        // Sikeres bejelentkezés után átirányítás szerepkör alapján
         if (data.success) {
-          this.$router.push('/diak');
+          const role = data && data.data && data.data.user && data.data.user.szerep_tipus;
+          if (role === 'diak') {
+            this.$router.push('/diak');
+          } else if (role === 'tanar') {
+            this.$router.push('/tanar');
+          } else {
+            this.$router.push('/');
+          }
         } else {
-          alert(data.message);
+          alert(data.message || 'Bejelentkezés sikertelen');
         }
       } catch (error) {
         console.error('Bejelentkezési hiba:', error);
       } finally {
         this.loading = false;
       }
-    },
-    socialLogin(provider) {
-      alert(`${provider} bejelentkezés hamarosan elérhető!`);
     }
   },
 }
