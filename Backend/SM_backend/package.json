@@ -1,7 +1,7 @@
 {
   "name": "sm_backend",
   "version": "1.0.0",
-  "description": "API a Smar Manager platformhoz",
+  "description": "API a Smart Manager platformhoz",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

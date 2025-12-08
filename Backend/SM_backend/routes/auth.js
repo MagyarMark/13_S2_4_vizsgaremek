@@ -2,7 +2,6 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const pool = require('../config/database');
-const auth = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -67,7 +66,7 @@ router.post('/register', [
     });
 
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('Szerver hiba a regisztráció során:', error);
     res.status(500).json({
       success: false,
       message: 'Szerver hiba a regisztráció során'
@@ -154,13 +153,16 @@ router.post('/login', [
 
 
 
-router.get('/profile', auth, async (req, res) => {
+router.get('/profile', async (req, res) => {
   try {
+    const allUsers = await pool.query(
+      `SELECT id, felhasznalonev, email, teljes_nev, szerep_tipus, aktiv, elerheto, letrehozas_idopont
+       FROM "Felhasznalo"`
+    );
+
     res.json({
       success: true,
-      data: {
-        user: req.user
-      }
+      data: { users: allUsers.rows }
     });
   } catch (error) {
     console.error('Profile error:', error);
@@ -171,8 +173,38 @@ router.get('/profile', auth, async (req, res) => {
   }
 });
 
+router.get('/profile/:felhasznalonev', async (req, res) => {
+  try {
+    const { felhasznalonev } = req.params;
 
-router.put('/profile', auth, [
+    const userResult = await pool.query(
+      `SELECT id, felhasznalonev, email, teljes_nev, szerep_tipus, aktiv, elerheto, letrehozas_idopont
+       FROM "Felhasznalo" WHERE felhasznalonev = $1`,
+      [felhasznalonev]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Felhasználó nem található.'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { user: userResult.rows[0] }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a felhasználó lekérése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a felhasználó lekérése során'
+    });
+  }
+});
+
+
+router.put('/profile', [
   body('email')
     .optional()
     .isEmail()
@@ -190,8 +222,15 @@ router.put('/profile', auth, [
       });
     }
 
-    const { email, teljes_nev } = req.body;
-    const userId = req.user.id;
+    const { email, teljes_nev, id } = req.body;
+    const userId = id;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'A frissítéshez adja meg a felhasználó azonosítóját (id).'
+      });
+    }
 
     if (email) {
       const emailExists = await pool.query(
@@ -250,7 +289,7 @@ router.put('/profile', auth, [
     });
 
   } catch (error) {
-    console.error('Profile update error:', error);
+    console.error('Szerver hiba a profil frissítése során:', error);
     res.status(500).json({
       success: false,
       message: 'Szerver hiba a profil frissítése során'
