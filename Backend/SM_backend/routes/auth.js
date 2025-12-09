@@ -151,28 +151,6 @@ router.post('/login', [
   }
 });
 
-
-
-router.get('/profile', async (req, res) => {
-  try {
-    const allUsers = await pool.query(
-      `SELECT id, felhasznalonev, email, teljes_nev, szerep_tipus, aktiv, elerheto, letrehozas_idopont
-       FROM "Felhasznalo"`
-    );
-
-    res.json({
-      success: true,
-      data: { users: allUsers.rows }
-    });
-  } catch (error) {
-    console.error('Profile error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Szerver hiba a profil lekérése során'
-    });
-  }
-});
-
 router.get('/profile/:felhasznalonev', async (req, res) => {
   try {
     const { felhasznalonev } = req.params;
