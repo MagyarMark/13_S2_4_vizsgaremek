@@ -285,24 +285,41 @@ router.put('/profile', [
   }
 });
 
-router.get('/projektTag', async(req, res) => {
-try {
-  const {projektTag} = req.body;
+router.get('/projektTag/:felhasznaloid', async (req, res) => {
+  try {
+    let { felhasznaloid } = req.params;
 
-  const ptResult = await pool.query(
-    'SELECT projekt_id, felhasznalo_id FROM "ProjektTag" WHERE felhasznalo_id = $1 AND projekt_id = $2',
-    [felhasznaloid, projektid]
-  )
+    if (!felhasznaloid) {
+      return res.status(400).json({ success: false, message: 'Nincs megadva felhasznaloid.' });
+    }
 
-  res.json({
-    success: true,
-    data: (ptResult.rows)
-  })
-}
-catch (errror){
+    let userId = null;
+    if (/^\d+$/.test(felhasznaloid)) {
+      userId = Number(felhasznaloid);
+    } else {
+      const userRes = await pool.query(
+        'SELECT id FROM "Felhasznalo" WHERE felhasznalonev = $1',
+        [felhasznaloid]
+      );
+      if (userRes.rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Felhasználó nem található ezzel a felhasználónévvel.' });
+      }
+      userId = userRes.rows[0].id;
+    }
 
-}
-})
+    const ptResult = await pool.query(
+      'SELECT projekt_id FROM "ProjektTag" WHERE felhasznalo_id = $1',
+      [userId]
+    );
+
+    const projektIds = (ptResult.rows || []).map(r => r.projekt_id);
+
+    return res.json({ success: true, data: { projektIds, rows: ptResult.rows } });
+  } catch (error) {
+    console.error('Szerver hiba a projekt tag lekérése során:', error);
+    return res.status(500).json({ success: false, message: 'Szerver hiba a projekt tag lekérése során' });
+  }
+});
 
 module.exports = router;
 
