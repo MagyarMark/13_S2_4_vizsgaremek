@@ -188,6 +188,8 @@ router.put('/profile', [
     .isEmail()
     .withMessage('Érvényes email cím megadása kötelező'),
   body('teljes_nev')
+    .optional(),
+  body('jelszo')
     .optional()
 ], async (req, res) => {
   try {
@@ -200,7 +202,7 @@ router.put('/profile', [
       });
     }
 
-    const { email, teljes_nev, id } = req.body;
+    const { email, teljes_nev, jelszo, id } = req.body;
     const userId = id;
 
     if (!userId) {
@@ -240,6 +242,14 @@ router.put('/profile', [
       paramCount++;
     }
 
+    if (jelszo) {
+      updateFields.push(`jelszo = $${paramCount}`);
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(jelszo, saltRounds);
+      updateValues.push(hashedPassword);
+      paramCount++;
+    }
+    
     if (updateFields.length === 0) {
       return res.status(400).json({
         success: false,
@@ -274,6 +284,25 @@ router.put('/profile', [
     });
   }
 });
+
+router.get('/projektTag', async(req, res) => {
+try {
+  const {projektTag} = req.body;
+
+  const ptResult = await pool.query(
+    'SELECT projekt_id, felhasznalo_id FROM "ProjektTag" WHERE felhasznalo_id = $1 AND projekt_id = $2',
+    [felhasznaloid, projektid]
+  )
+
+  res.json({
+    success: true,
+    data: (ptResult.rows)
+  })
+}
+catch (errror){
+
+}
+})
 
 module.exports = router;
 
