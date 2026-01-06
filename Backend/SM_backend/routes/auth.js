@@ -321,5 +321,78 @@ router.get('/projektTag/:felhasznaloid', async (req, res) => {
   }
 });
 
-module.exports = router;
+router.put('/ujFeladat', [
+  body('feladat_nev')
+    .notEmpty()
+    .withMessage('Feladat név kötelező'),
+  body('feladat_leiras')
+    .optional(),
+  body('letrehozo_id')
+    .notEmpty()
+    .withMessage('Létrehozó azonosító kötelező'),
+  body('felelos_id')
+    .optional(),
+  body('prioritas')
+    .isIn(['alacsony', 'közepes', 'magas']),
+  body('statusz')
+    .isIn(['folyamatban', 'elvégezve']),
+  body('hatarido')
+    .optional()
+  ], async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Hibás adatok',
+          errors: errors.array()
+        });
+      }
+      const { feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido } = req.body;
 
+      const newTask = await pool.query(`INSERT INTO "Feladat" ( feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7) 
+        RETURNING id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido, letrehozas_idopont`,
+        [feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido]
+      );
+      res.status(201).json({
+        success: true,
+        message: 'Sikeres feladat létrehozás',
+        data: {
+          task: newTask.rows[0]
+        }
+      });
+    } catch (error) {
+      console.error('Szerver hiba a feladat létrehozása során:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Szerver hiba a feladat létrehozása során'
+      });
+    }
+});
+
+  router.get('/feladatok/:felhasznaloid', async (req, res) => {
+    try {
+      const { felhasznaloid } = req.params;
+      const tasksResult = await pool.query(
+        `SELECT id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido, letrehozas_idopont
+         FROM "Feladat"
+          WHERE letrehozo_id = $1 OR felelos_id = $1`,
+        [felhasznaloid]
+      );
+      res.json({
+        success: true,
+        data: {
+          tasks: tasksResult.rows
+        }
+      });
+    } catch (error) {
+      console.error('Szerver hiba a feladatok lekérése során:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Szerver hiba a feladatok lekérése során'
+      });
+    }
+});
+
+module.exports = router;
