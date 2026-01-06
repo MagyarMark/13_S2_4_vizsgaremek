@@ -321,7 +321,47 @@ router.get('/projektTag/:felhasznaloid', async (req, res) => {
   }
 });
 
-router.put('/ujFeladat', [
+router.post('/projektTag', [
+  body('projekt_id')
+    .notEmpty(),
+  body('felhasznalo_id')
+    .notEmpty(),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Hibás adatok',
+          errors: errors.array()
+        });
+      }
+      const {projekt_id, felhasznalo_id} = req.body;
+
+      const newProjektTag = await pool.query (`INSERT INTO "ProjektTag" (projekt_id, felhasznalo_id)
+      VALUES ($1, $2)
+      RETURNING projekt_id, felhasznalo_id, csatlakozas_idopont`,
+      [projekt_id, felhasznalo_id]
+    );
+    res.status(201).json({
+        success: true,
+        message: 'Projekttag sikeres hozzáadása',
+        data: {
+          projekttag: newProjekttag.rows[0]
+        }
+      });
+    } catch (error) {
+      console.error('Szerver hiba a projekttag hozzáadása során:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Szerver hiba a projekttag hozzáadása során'
+      });
+    }
+});
+
+    
+
+router.post('/ujFeladat', [
   body('feladat_nev')
     .notEmpty()
     .withMessage('Feladat név kötelező'),
@@ -394,5 +434,48 @@ router.put('/ujFeladat', [
       });
     }
 });
+
+ router.post('/ujStat',[
+  body('felhasznalo_id')
+   .notEmpty(),
+  body('projekt_id')
+   .notEmpty(),
+  body('statisztika_nev')
+    .notEmpty(),
+  body('ertek')
+    .optional(),
+  body('pontszam')
+    .optional(),
+ ], async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Hibás adatok',
+          errors: errors.array()
+        });
+      }
+      const {felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam} = req.body;
+
+      const newStat = await pool.query(`INSERT INTO "Statisztika" (felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam`
+      [felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam]);
+    res.status(201).json({
+          success: true,
+          message: 'Sikeres statisztika létrehozás',
+          data: {
+            statistics: newStatistics.rows[0]
+          }
+        });
+      } catch (error) {
+        console.error('Szerver hiba a statisztika létrehozása során:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Szerver hiba a statisztika létrehozása során'
+        });
+      }
+  });
 
 module.exports = router;
