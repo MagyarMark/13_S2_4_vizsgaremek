@@ -2,6 +2,10 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const pool = require('../config/database');
+const fileUpload = require('express-fileupload');
+const filesPayloadExists = require('../middleware/filesPayloadExists');
+const fileExtLimiter = require('../middleware/fileExtLimiter');
+const fileSizeLimiter = require('../middleware/fileSizeLimiter');
 
 const router = express.Router();
 
@@ -347,7 +351,7 @@ router.post('/projektTag', [
         success: true,
         message: 'Projekttag sikeres hozzáadása',
         data: {
-          projekttag: newProjekttag.rows[0]
+          projekttag: newProjektTag.rows[0]
         }
       });
     } catch (error) {
@@ -458,15 +462,17 @@ router.post('/ujFeladat', [
       }
       const {felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam} = req.body;
 
-      const newStat = await pool.query(`INSERT INTO "Statisztika" (felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam`
-      [felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam]);
+      const newStat = await pool.query(
+        `INSERT INTO "Statisztika" (felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam`,
+        [felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam]
+      );
     res.status(201).json({
           success: true,
           message: 'Sikeres statisztika létrehozás',
           data: {
-            statistics: newStatistics.rows[0]
+            statistics: newStat.rows[0]
           }
         });
       } catch (error) {
