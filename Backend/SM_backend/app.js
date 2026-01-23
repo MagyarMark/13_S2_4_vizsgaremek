@@ -42,10 +42,8 @@ app.post('/upload',
                     const fileType = path.extname(file.name);
                     const feltoltes_idopont = new Date();
 
-                    // Fájl mentése
                     await file.mv(filepath);
 
-                    // Metaadat mentése az adatbázisba
                     const query = `
                         INSERT INTO "File" (beadas_id, felhasznalo_id, file_nev, file_meret, file_tipus, feltoltes_idopont, file_eleresiut)
                         VALUES ($1, $2, $3, $4, $5, $6, $7)

@@ -1,13 +1,37 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const pool = require('../config/database');
 const fileUpload = require('express-fileupload');
 const filesPayloadExists = require('../middleware/filesPayloadExists');
 const fileExtLimiter = require('../middleware/fileExtLimiter');
 const fileSizeLimiter = require('../middleware/fileSizeLimiter');
+const { verifyToken, verifyRefreshToken } = require('../middleware/auth');
+const { accessTokenSecret, refreshTokenSecret, accessTokenExpiration, refreshTokenExpiration } = require('../config/jwt');
 
 const router = express.Router();
+
+const generateTokens = (user) => {
+  const accessToken = jwt.sign(
+    {
+      id: user.id,
+      felhasznalonev: user.felhasznalonev,
+      email: user.email,
+      szerep_tipus: user.szerep_tipus
+    },
+    accessTokenSecret,
+    { expiresIn: accessTokenExpiration }
+  );
+
+  const refreshToken = jwt.sign(
+    { id: user.id, felhasznalonev: user.felhasznalonev },
+    refreshTokenSecret,
+    { expiresIn: refreshTokenExpiration }
+  );
+
+  return { accessToken, refreshToken };
+};
 
 router.post('/register', [
   body('felhasznalonev')
@@ -137,12 +161,15 @@ router.post('/login', [
     );
 
     const { jelszo: _, ...userWithoutPassword } = user;
+    const { accessToken, refreshToken } = generateTokens(user);
 
     res.json({
       success: true,
       message: 'Sikeres bejelentkezés',
       data: {
-        user: userWithoutPassword
+        user: userWithoutPassword,
+        accessToken,
+        refreshToken
       }
     });
 
@@ -155,14 +182,15 @@ router.post('/login', [
   }
 });
 
-router.get('/profile/:felhasznalonev', async (req, res) => {
+
+router.get('/profileData', verifyToken, async (req, res) => {
   try {
-    const { felhasznalonev } = req.params;
+    const userId = req.user.id;
 
     const userResult = await pool.query(
       `SELECT id, felhasznalonev, email, teljes_nev, szerep_tipus, aktiv, elerheto, letrehozas_idopont
-       FROM "Felhasznalo" WHERE felhasznalonev = $1`,
-      [felhasznalonev]
+       FROM "Felhasznalo" WHERE id = $1`,
+      [userId]
     );
 
     if (userResult.rows.length === 0) {
@@ -186,7 +214,7 @@ router.get('/profile/:felhasznalonev', async (req, res) => {
 });
 
 
-router.put('/profile', [
+router.put('/profile', verifyToken, [
   body('email')
     .optional()
     .isEmail()
@@ -206,15 +234,8 @@ router.put('/profile', [
       });
     }
 
-    const { email, teljes_nev, jelszo, id } = req.body;
-    const userId = id;
-
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        message: 'A frissítéshez adja meg a felhasználó azonosítóját (id).'
-      });
-    }
+    const { email, teljes_nev, jelszo } = req.body;
+    const userId = req.user.id;
 
     if (email) {
       const emailExists = await pool.query(
@@ -289,27 +310,9 @@ router.put('/profile', [
   }
 });
 
-router.get('/projektTag/:felhasznaloid', async (req, res) => {
+router.get('/projektTag', verifyToken, async (req, res) => {
   try {
-    let { felhasznaloid } = req.params;
-
-    if (!felhasznaloid) {
-      return res.status(400).json({ success: false, message: 'Nincs megadva felhasznaloid.' });
-    }
-
-    let userId = null;
-    if (/^\d+$/.test(felhasznaloid)) {
-      userId = Number(felhasznaloid);
-    } else {
-      const userRes = await pool.query(
-        'SELECT id FROM "Felhasznalo" WHERE felhasznalonev = $1',
-        [felhasznaloid]
-      );
-      if (userRes.rows.length === 0) {
-        return res.status(404).json({ success: false, message: 'Felhasználó nem található ezzel a felhasználónévvel.' });
-      }
-      userId = userRes.rows[0].id;
-    }
+    const userId = req.user.id;
 
     const ptResult = await pool.query(
       'SELECT projekt_id FROM "ProjektTag" WHERE felhasznalo_id = $1',
@@ -325,10 +328,8 @@ router.get('/projektTag/:felhasznaloid', async (req, res) => {
   }
 });
 
-router.post('/projektTag', [
+router.post('/projektTag', verifyToken, [
   body('projekt_id')
-    .notEmpty(),
-  body('felhasznalo_id')
     .notEmpty(),
 ], async (req, res) => {
   try {
@@ -340,7 +341,8 @@ router.post('/projektTag', [
           errors: errors.array()
         });
       }
-      const {projekt_id, felhasznalo_id} = req.body;
+      const { projekt_id } = req.body;
+      const felhasznalo_id = req.user.id;
 
       const newProjektTag = await pool.query (`INSERT INTO "ProjektTag" (projekt_id, felhasznalo_id)
       VALUES ($1, $2)
@@ -365,15 +367,12 @@ router.post('/projektTag', [
 
     
 
-router.post('/ujFeladat', [
+router.post('/ujFeladat', verifyToken, [
   body('feladat_nev')
     .notEmpty()
     .withMessage('Feladat név kötelező'),
   body('feladat_leiras')
     .optional(),
-  body('letrehozo_id')
-    .notEmpty()
-    .withMessage('Létrehozó azonosító kötelező'),
   body('felelos_id')
     .optional(),
   body('prioritas')
@@ -392,7 +391,8 @@ router.post('/ujFeladat', [
           errors: errors.array()
         });
       }
-      const { feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido } = req.body;
+      const { feladat_nev, feladat_leiras, felelos_id, prioritas, statusz, hatarido } = req.body;
+      const letrehozo_id = req.user.id;
 
       const newTask = await pool.query(`INSERT INTO "Feladat" ( feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido) 
         VALUES ($1, $2, $3, $4, $5, $6, $7) 
@@ -415,14 +415,14 @@ router.post('/ujFeladat', [
     }
 });
 
-  router.get('/feladatok/:felhasznaloid', async (req, res) => {
+  router.get('/feladatok', verifyToken, async (req, res) => {
     try {
-      const { felhasznaloid } = req.params;
+      const userId = req.user.id;
       const tasksResult = await pool.query(
         `SELECT id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido, letrehozas_idopont
          FROM "Feladat"
           WHERE letrehozo_id = $1 OR felelos_id = $1`,
-        [felhasznaloid]
+        [userId]
       );
       res.json({
         success: true,
@@ -439,9 +439,7 @@ router.post('/ujFeladat', [
     }
 });
 
- router.post('/ujStat',[
-  body('felhasznalo_id')
-   .notEmpty(),
+ router.post('/ujStat', verifyToken, [
   body('projekt_id')
    .notEmpty(),
   body('statisztika_nev')
@@ -460,7 +458,8 @@ router.post('/ujFeladat', [
           errors: errors.array()
         });
       }
-      const {felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam} = req.body;
+      const { projekt_id, statisztika_nev, ertek, pontszam } = req.body;
+      const felhasznalo_id = req.user.id;
 
       const newStat = await pool.query(
         `INSERT INTO "Statisztika" (felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam)
@@ -483,5 +482,43 @@ router.post('/ujFeladat', [
         });
       }
   });
+
+router.post('/refresh-token', verifyRefreshToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const userResult = await pool.query(
+      `SELECT id, felhasznalonev, email, teljes_nev, szerep_tipus
+       FROM "Felhasznalo" 
+       WHERE id = $1`,
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Felhasználó nem található'
+      });
+    }
+
+    const user = userResult.rows[0];
+    const { accessToken, refreshToken } = generateTokens(user);
+
+    res.json({
+      success: true,
+      message: 'Token sikeresen frissítve',
+      data: {
+        accessToken,
+        refreshToken
+      }
+    });
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a token frissítése során'
+    });
+  }
+});
 
 module.exports = router;
