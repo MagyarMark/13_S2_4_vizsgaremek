@@ -483,6 +483,64 @@ router.post('/ujFeladat', verifyToken, [
       }
   });
 
+  router.get('/statisztika', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const statsResult = await pool.query(
+      `SELECT id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam
+       FROM "Statisztika"
+       WHERE felhasznalo_id = $1
+       ORDER BY meresi_idopont DESC`,
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        statistics: statsResult.rows,
+        count: statsResult.rows.length
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a statisztika lekérése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a statisztika lekérése során'
+    });
+  }
+});
+
+
+router.get('/statisztika/:projektId', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { projektId } = req.params;
+
+    const statsResult = await pool.query(
+      `SELECT id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam
+       FROM "Statisztika"
+       WHERE felhasznalo_id = $1 AND projekt_id = $2
+       ORDER BY meresi_idopont DESC`,
+      [userId, projektId]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        statistics: statsResult.rows,
+        count: statsResult.rows.length
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a statisztika lekérése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a statisztika lekérése során'
+    });
+  }
+});
+
 router.post('/refresh-token', verifyRefreshToken, async (req, res) => {
   try {
     const userId = req.user.id;
