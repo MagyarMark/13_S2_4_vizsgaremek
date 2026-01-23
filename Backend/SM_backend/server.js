@@ -1,14 +1,7 @@
-const express = require('express');
-const cors = require('cors');
 require('dotenv').config({ path: './.env' });
 
+const app = require('./app');
 const authRoutes = require('./routes/auth');
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
 
@@ -18,6 +11,10 @@ app.get('/api/health', (req, res) => {
     message: 'A Smart Manager API fut',
     timestamp: new Date().toISOString()
   });
+});
+
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
 });
 
 app.use((req, res) => {
