@@ -1,9 +1,9 @@
 require('dotenv').config({ path: './.env' });
 
 const app = require('./app');
-const authRoutes = require('./routes/auth');
 
-app.use('/api/auth', authRoutes);
+// Auth routes már az app.js-ben vannak regisztrálva
+// app.use('/api/auth', authRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ 
