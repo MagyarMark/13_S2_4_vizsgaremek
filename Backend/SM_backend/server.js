@@ -1,9 +1,11 @@
 require('dotenv').config({ path: './.env' });
 
 const app = require('./app');
+const http = require('http');
+const server = http.createServer(app);
 
-// Auth routes már az app.js-ben vannak regisztrálva
-// app.use('/api/auth', authRoutes);
+const initializeChat = require('./chat/application');
+initializeChat(server);
 
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -34,7 +36,7 @@ app.use((error, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`A szerver a következő porton fut:${PORT}`);
   console.log(`Környezet: ${process.env.NODE_ENV || 'fejlesztői'}`);
 });
