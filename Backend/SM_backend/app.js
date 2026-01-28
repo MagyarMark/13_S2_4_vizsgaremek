@@ -8,6 +8,7 @@ const pool = require('./config/database');
 const filesPayloadExists = require('./middleware/filesPayloadExists');
 const fileExtLimiter = require('./middleware/fileExtLimiter');
 const fileSizeLimiter = require('./middleware/fileSizeLimiter');
+const { verifyToken } = require('./middleware/auth');
 
 const app = express();
 
@@ -19,7 +20,8 @@ app.get("/", (req,res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 })
 
-app.post('/upload', 
+app.post('/api/upload', 
+    verifyToken,
     fileUpload({ createParentPath: true }),
     filesPayloadExists,
     //fileExtLimiter(['.png','.jpg','.jpeg']),
@@ -27,9 +29,27 @@ app.post('/upload',
     async (req, res) => {
         try {
             const files = req.files;
-            //Később dinamikusan beolvasni a jelenlegi felhasználó ID-t és beadas ID-t
-            const beadas_id = 2;
-            const felhasznalo_id = 3;
+            const felhasznalo_id = req.user.id;
+            const beadas_id = req.query.beadas_id || req.body.beadas_id;
+            
+            if (!beadas_id) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'A beadas_id (feladat ID) megadása kötelező'
+                });
+            }
+            
+            const beadasCheck = await pool.query(
+                'SELECT id FROM "Beadas" WHERE id = $1',
+                [beadas_id]
+            );
+            
+            if (beadasCheck.rows.length === 0) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Az adott beadas (feladat) nem létezik'
+                });
+            }
             
             const uploadedFiles = [];
             const errors = [];
@@ -79,7 +99,11 @@ app.post('/upload',
                     status: 'success',
                     message: `${uploadedFiles.length} fájl sikeresen feltöltve`,
                     uploadedFiles: uploadedFiles,
-                    errors: errors.length > 0 ? errors : undefined
+                    uploadInfo: {
+                        felhasznalo_id: felhasznalo_id,
+                        felhasznalonev: req.user.felhasznalonev,
+                        beadas_id: beadas_id
+                    }
                 });
             } else {
                 return res.status(500).json({
@@ -99,6 +123,15 @@ app.post('/upload',
         }
     }
 )
+
+const fileRoutes = require('./routes/files');
+app.use('/api/files', fileRoutes);
+
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
+const projectRoutes = require('./routes/project');
+app.use('/api/project', projectRoutes);
 
 module.exports = app;
 
