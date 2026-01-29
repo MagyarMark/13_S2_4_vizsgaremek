@@ -5,7 +5,7 @@ const http = require('http');
 const server = http.createServer(app);
 
 const initializeChat = require('./chat/application');
-initializeChat(server);
+initializeChat(server, app);
 
 app.get('/api/health', (req, res) => {
   res.json({ 
