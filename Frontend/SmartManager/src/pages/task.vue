@@ -243,12 +243,6 @@ export default {
             <button class="complete-btn" data-id="${task.id}">
               <i class="far ${task.completed ? 'fa-check-square' : 'fa-square'}"></i>
             </button>
-            <button class="edit-btn" data-id="${task.id}">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="delete-btn" data-id="${task.id}">
-              <i class="fas fa-trash"></i>
-            </button>
           </div>
         `
         taskListEl.appendChild(taskItem)
@@ -354,7 +348,12 @@ export default {
 
         const data = await response.json()
         if (data.success && data.data && data.data.tasks) {
-          tasks.value = data.data.tasks.map(task => ({
+
+          const filteredTasks = data.data.tasks.filter(task => 
+            task.statusz !== 'beadva' && task.statusz !== 'elvégezve'
+          )
+          
+          tasks.value = filteredTasks.map(task => ({
             id: task.id,
             felelos_id: task.felelos_id,
             title: task.feladat_nev,
@@ -434,6 +433,9 @@ export default {
           taskFormEl.reset()
           closeTaskModal()
           await refreshTasksList()
+          if (result.data && result.data.task) {
+            const taskId = result.data.task.id
+           }
         } else {
           throw new Error(result.message || 'Ismeretlen hiba')
         }
@@ -447,8 +449,46 @@ export default {
       const id = e.currentTarget.getAttribute('data-id')
       const task = tasks.value.find(t => t.id == id)
       if (task) {
-        task.completed = !task.completed
-        renderTasks()
+        if (confirm('Biztos befejezed a feladatot?')) {
+          completeTask(id)
+        }
+      }
+    }
+
+    async function completeTask(taskId) {
+      try {
+        const token = localStorage.getItem('accessToken')
+        if (!token) {
+          alert('Nincs bejelentkezett felhasználó')
+          return
+        }
+
+        const response = await fetch(`http://localhost:3000/api/project/feladat/${taskId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            statusz: 'beadva'
+          })
+        })
+
+        const result = await response.json()
+
+        if (!response.ok) {
+          throw new Error(result.message || `Hiba: ${response.status}`)
+        }
+
+        if (result.success) {
+          await refreshTasksList()
+          alert('Feladat sikeresen beadva!')
+        } else {
+          throw new Error(result.message || 'Ismeretlen hiba')
+        }
+      } catch (error) {
+        console.error('Hiba a feladat beadása során:', error)
+        alert('Hiba: ' + error.message)
       }
     }
 

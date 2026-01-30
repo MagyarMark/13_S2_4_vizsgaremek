@@ -20,7 +20,7 @@
       <ul v-else class="nav-links">
         <router-link to="/diak"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
         <router-link to="/task"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
-        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Csapatmunka</li></router-link>
+        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Projektmunka</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" class="active"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>

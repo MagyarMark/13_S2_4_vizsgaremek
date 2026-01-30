@@ -45,7 +45,7 @@
             <i class="fas fa-tasks"></i>
           </div>
           <div class="stat-info">
-            <h3>12</h3>
+            <h3>{{ stats.total }}</h3>
             <p>Összes feladat</p>
           </div>
         </div>
@@ -54,7 +54,7 @@
             <i class="fas fa-check-circle"></i>
           </div>
           <div class="stat-info">
-            <h3>8</h3>
+            <h3>{{ stats.completed }}</h3>
             <p>Befejezett</p>
           </div>
         </div>
@@ -63,7 +63,7 @@
             <i class="fas fa-exclamation-circle"></i>
           </div>
           <div class="stat-info">
-            <h3>3</h3>
+            <h3>{{ stats.inProgress }}</h3>
             <p>Folyamatban</p>
           </div>
         </div>
@@ -72,7 +72,7 @@
             <i class="fas fa-clock"></i>
           </div>
           <div class="stat-info">
-            <h3>1</h3>
+            <h3>{{ stats.late }}</h3>
             <p>Késésben</p>
           </div>
         </div>
@@ -81,39 +81,20 @@
       <section class="section">
         <div class="section-header">
           <h3><i class="fas fa-clock"></i> Közelgő határidők</h3>
-          <a href="#">Összes megtekintése</a>
+          <router-link to="/task">Összes megtekintése</router-link>
         </div>
         <div class="tasks-container">
-          <div class="task-card">
-            <div class="task-header">
-              <div class="task-title">Vizsgaremek</div>
-              <div class="task-date">2025.12.12</div>
-            </div>
-            <div class="task-desc">adatbázisnak kész kell lenni kell backend api és kell frontend működőképesen</div>
-            <div class="task-footer">
-              <div class="task-status status-inprogress">Folyamatban</div>
-              <button class="btn btn-primary">Beadás</button>
-            </div>
+          <div v-if="upcomingTasks.length === 0" style="padding: 2rem; text-align: center; color: #6c757d;">
+            Nincsenek feladatok
           </div>
-          <div class="task-card warning">
+          <div v-for="task in upcomingTasks" :key="task.id" class="task-card" :class="getTaskStatusClass(task.statusz)">
             <div class="task-header">
-              <div class="task-title">Vizsgaremek</div>
-              <div class="task-date">2025.12.12</div>
+              <div class="task-title">{{ task.feladat_nev }}</div>
+              <div class="task-date">{{ formatDate(task.hatarido) }}</div>
             </div>
-            <div class="task-desc">adatbázisnak kész kell lenni kell backend api és kell frontend működőképesen</div>
+            <div class="task-desc">{{ task.feladat_leiras }}</div>
             <div class="task-footer">
-              <div class="task-status status-todo">Elkezdve</div>
-              <button class="btn btn-primary">Beadás</button>
-            </div>
-          </div>
-          <div class="task-card danger">
-            <div class="task-header">
-              <div class="task-title">Vizsgaremek</div>
-              <div class="task-date">2025.12.12</div>
-            </div>
-            <div class="task-desc">adatbázisnak kész kell lenni kell backend api és kell frontend működőképesen</div>
-            <div class="task-footer">
-              <div class="task-status status-late">Késésben</div>
+              <div class="task-status" :class="getStatusBadgeClass(task.statusz)">{{ getStatusLabel(task.statusz) }}</div>
               <button class="btn btn-primary">Beadás</button>
             </div>
           </div>
@@ -122,28 +103,31 @@
 
       <section class="section">
         <div class="section-header">
-          <h3><i class="fas fa-columns"></i> Projekt: Webfejlesztés</h3>
-          <a href="#">További projektek</a>
+          <h3><i class="fas fa-columns"></i> Projekt: {{ currentProjectName }}</h3>
+          <router-link to="/teamwork">További projektek</router-link>
         </div>
         <div class="kanban-container">
+          <div v-if="kanbanColumns.length === 0" style="padding: 2rem; text-align: center; color: #6c757d; grid-column: 1 / -1;">
+            Nincsenek feladatok ehhez a projekthez
+          </div>
           <div class="kanban-column" 
                v-for="column in kanbanColumns" 
                :key="column.id"
                @dragover="dragOver"
                @drop="drop(column.id)"
                @dragleave="dragLeave">
-            <h4>{{ column.title }}</h4>
+            <h4>{{ column.title }} ({{ column.cards.length }})</h4>
             <div class="kanban-card"
                  v-for="card in column.cards" 
                  :key="card.id"
                  draggable="true"
                  @dragstart="dragStart(card, column.id)"
                  @dragend="dragEnd">
-              <h5>{{ card.title }}</h5>
-              <p>{{ card.description }}</p>
+              <h5>{{ card.feladat_nev }}</h5>
+              <p>{{ card.feladat_leiras }}</p>
               <div class="card-meta">
-                <span>{{ card.deadline }}</span>
-                <span>{{ card.assignee }}</span>
+                <span>{{ formatDate(card.hatarido) }}</span>
+                <span>{{ card.felelos_nev || 'Nincs hozzárendelve' }}</span>
               </div>
             </div>
           </div>
@@ -849,73 +833,43 @@ export default {
         szerep_tipus: 'diak',
         initials: ''
       },
+      stats: {
+        total: 0,
+        completed: 0,
+        inProgress: 0,
+        late: 0
+      },
+      upcomingTasks: [],
+      currentProjectName: 'Projektek',
+      currentProjectId: null,
+      allTasks: [],
       draggedCard: null,
       draggedFromColumn: null,
       kanbanColumns: [
         {
-          id: 'todo',
-          title: 'Teendő',
-          cards: [
-            {
-              id: 1,
-              title: 'Design tervek',
-              description: 'UI/UX tervek elkészítése',
-              deadline: 'Határidő: 11.20.',
-              assignee: 'monogram'
-            }
-          ]
+          id: 'uncategorized',
+          title: 'Kategórizálatlan',
+          cards: []
         },
         {
-          id: 'inprogress',
-          title: 'Folyamatban',
-          cards: [
-            {
-              id: 2,
-              title: 'Frontend fejlesztés',
-              description: 'Főoldal komponensek',
-              deadline: 'Határidő: 11.25.',
-              assignee: 'monogram'
-            }
-          ]
+          id: 'magas',
+          title: 'MAGAS Prioritás',
+          cards: []
         },
         {
-          id: 'review',
-          title: 'Ellenőrzés',
-          cards: [
-            {
-              id: 3,
-              title: 'Adatbázis design',
-              description: 'ER diagram és séma',
-              deadline: 'Határidő: 11.18.',
-              assignee: 'monogram'
-            }
-          ]
+          id: 'közepes',
+          title: 'KÖZEPES Prioritás',
+          cards: []
         },
         {
-          id: 'submitted',
-          title: 'Beadva',
-          cards: [
-            {
-              id: 4,
-              title: 'Projekt terv',
-              description: 'Részletes projektterv',
-              deadline: 'Beadva: 11.05.',
-              assignee: 'monogram'
-            }
-          ]
+          id: 'alacsony',
+          title: 'ALACSONY Prioritás',
+          cards: []
         },
         {
-          id: 'done',
-          title: 'Kész',
-          cards: [
-            {
-              id: 5,
-              title: 'Követelmények',
-              description: 'Funkcionális specifikáció',
-              deadline: 'Kész: 10.30.',
-              assignee: 'Csapat'
-            }
-          ]
+          id: 'befejezett',
+          title: 'Elvégezve',
+          cards: []
         }
       ]
     }
@@ -937,7 +891,36 @@ export default {
       const parts = name.split(' ');
       return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2);
     },
-        dragStart(card, columnId) {
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('hu-HU');
+    },
+    getStatusLabel(status) {
+      const statusMap = {
+        'folyamatban': 'Folyamatban',
+        'befejezett': 'Befejezett',
+        'késett': 'Késett'
+      };
+      return statusMap[status] || status;
+    },
+    getStatusBadgeClass(status) {
+      const statusClass = {
+        'folyamatban': 'status-inprogress',
+        'befejezett': 'status-submitted',
+        'késett': 'status-late'
+      };
+      return statusClass[status] || '';
+    },
+    getTaskStatusClass(status) {
+      const statusClass = {
+        'folyamatban': '',
+        'befejezett': '',
+        'késett': 'danger'
+      };
+      return statusClass[status] || '';
+    },
+    dragStart(card, columnId) {
       this.draggedCard = card;
       this.draggedFromColumn = columnId;
     },
@@ -1008,15 +991,134 @@ export default {
       } catch (error) {
         console.error('Felhasználó adatainak lekérése sikertelen:', error);
       }
+    },
+    async fetchProjects() {
+      try {
+        const token = localStorage.getItem('accessToken');
+        
+        if (!token) return;
+
+        const response = await fetch('http://localhost:3000/api/project/projektek', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Projektek lekérése sikertelen');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.projects.length > 0) {
+          this.currentProjectId = data.data.projects[0].id;
+          this.currentProjectName = data.data.projects[0].projekt_nev;
+          await this.fetchTasks();
+        }
+      } catch (error) {
+        console.error('Projektek lekérése sikertelen:', error);
+      }
+    },
+    async fetchTasks() {
+      try {
+        const token = localStorage.getItem('accessToken');
+        
+        if (!token) return;
+
+        const response = await fetch('http://localhost:3000/api/project/feladatok', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Feladatok lekérése sikertelen');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.tasks) {
+          this.allTasks = data.data.tasks;
+          this.updateStats();
+          this.updateUpcomingTasks();
+          this.updateKanban();
+        }
+      } catch (error) {
+        console.error('Feladatok lekérése sikertelen:', error);
+      }
+    },
+    updateStats() {
+      this.stats.total = this.allTasks.length;
+      this.stats.completed = this.allTasks.filter(t => t.statusz === 'befejezett').length;
+      this.stats.inProgress = this.allTasks.filter(t => t.statusz === 'folyamatban').length;
+      this.stats.late = this.allTasks.filter(t => t.statusz === 'késett').length;
+    },
+    updateUpcomingTasks() {
+      this.upcomingTasks = this.allTasks
+        .sort((a, b) => new Date(a.hatarido) - new Date(b.hatarido))
+        .slice(0, 3);
+    },
+    updateKanban() {
+      this.kanbanColumns.forEach(col => col.cards = []);
+
+      this.allTasks.forEach(task => {
+        if (task.statusz === 'befejezett') {
+          const column = this.kanbanColumns.find(col => col.id === 'befejezett');
+          if (column) {
+            column.cards.push(task);
+          }
+        } else {
+          let columnId = 'uncategorized';
+          
+          if (task.prioritas === 'magas') {
+            columnId = 'magas';
+          } else if (task.prioritas === 'közepes') {
+            columnId = 'közepes';
+          } else if (task.prioritas === 'alacsony') {
+            columnId = 'alacsony';
+          }
+          
+          const column = this.kanbanColumns.find(col => col.id === columnId);
+          if (column) {
+            column.cards.push(task);
+          }
+        }
+      });
     }
   },
   mounted() {
     this.fetchUserProfile();
+    this.fetchProjects();
   },
   setup() {
     const router = useRouter();
-    const logout = () => {
+    const logout = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        
+        if (token) {
+          await fetch('http://localhost:3000/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              elerheto: false
+            })
+          });
+        }
+      } catch (error) {
+        console.error('Kijelentkezés hiba:', error);
+      }
+      
       localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('sm_settings');
       localStorage.removeItem('sm_appearance');
       

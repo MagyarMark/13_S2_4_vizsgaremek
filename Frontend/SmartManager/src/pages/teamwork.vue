@@ -168,16 +168,16 @@
         </div>
       </section>
 
-      <aside class="teamwork-stats">
+      <!----><aside class="teamwork-stats">
         <section class="teamwork-section">
           <div class="section-header">
-            <h2 class="section-title">Statisztika</h2>
+            <h2 class="section-title">Statisztika {{ selectedTeam ? `- ${selectedTeam.name}` : '- Összes' }}</h2>
           </div>
 
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-value">{{ teams.length }}</div>
-              <div class="stat-label">Projektok</div>
+              <div class="stat-value">{{ selectedTeam ? 1 : teams.length }}</div>
+              <div class="stat-label">{{ selectedTeam ? 'Projekt' : 'Projektok' }}</div>
             </div>
             <div class="stat-card">
               <div class="stat-value">{{ totalMembers }}</div>
@@ -226,7 +226,13 @@
                 <span class="file-task">{{ file.taskName }}</span>
               </div>
               <span class="file-size" v-if="file.size">{{ file.size }} KB</span> 
-              <!--meg kell csinálni a törlést--><button style="background-color: red; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;">X</button>
+              <button 
+                @click="deleteFile(file.id)"
+                style="background-color: red; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;"
+                title="Fájl törlése"
+              >
+                Törlés
+              </button>
             </div>
           </div>
           <div v-else class="no-files">
@@ -568,14 +574,23 @@ export default {
   },
   computed: {
     totalMembers() {
+      if (this.selectedTeam) {
+        return this.selectedTeam.members.length;
+      }
       return this.teams.reduce((sum, team) => sum + team.members.length, 0);
     },
     totalTasks() {
+      if (this.selectedTeam) {
+        return this.selectedTeam.tasks.length;
+      }
       return this.teams.reduce((sum, team) => sum + team.tasks.length, 0);
     },
     completedTasks() {
+      if (this.selectedTeam) {
+        return this.selectedTeam.tasks.filter(t => !t || t.completed === true).length;
+      }
       return this.teams.reduce((sum, team) => 
-        sum + team.tasks.filter(t => t.completed).length, 0
+        sum + team.tasks.filter(t => t && t.completed === true).length, 0
       );
     },
     upcomingTasks() {
@@ -618,6 +633,7 @@ export default {
       this.activeTab = 'members';
       if (this.selectedTeam) {
         this.loadTeamActivity();
+        this.loadTeamTasks();
       }
     },
     openCreateTeamModal() {
@@ -869,10 +885,17 @@ export default {
             assignee: this.formData.taskAssignee,
             priority: this.formData.taskPriority,
             deadline: data.data.task.hatarido,
-            completed: false,
+            completed: data.data.task.statusz === 'elvégezve',
             uploadedFiles: []
           };
           this.selectedTeam.tasks.push(newTask);
+          
+          await this.createActivityLog(
+            'létrehozva',
+            `"${newTask.title}" feladat létrehozva`,
+            newTask.id
+          );
+          
           this.showTaskModal = false;
           this.formData = {
             taskTitle: '',
@@ -933,9 +956,19 @@ export default {
         }
 
         if (data.success) {
+          const taskToDelete = this.selectedTeam?.tasks?.find(t => t.id === taskId);
+          const taskTitle = taskToDelete?.title || 'Ismeretlen feladat';
+          
           if (this.selectedTeam) {
             this.selectedTeam.tasks = this.selectedTeam.tasks.filter(t => t.id !== taskId);
           }
+          
+          await this.createActivityLog(
+            'törölve',
+            `"${taskTitle}" feladat sikeresen törölve`,
+            null
+          );
+          
           alert('Feladat sikeresen törölve!');
         } else {
           alert('Hiba: ' + (data.message || 'Ismeretlen hiba'));
@@ -945,12 +978,33 @@ export default {
         alert('Hiba a feladat törléskor: ' + error.message);
       }
     },
-    toggleTaskComplete(taskId) {
-      if (this.selectedTeam) {
-        const task = this.selectedTeam.tasks.find(t => t.id === taskId);
-        if (task) {
-          task.completed = !task.completed;
+    async toggleTaskComplete(taskId) {
+      if (!this.selectedTeam) return;
+
+      const task = this.selectedTeam.tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const confirmed = confirm('Biztos befejezed a feladatot?');
+      if (!confirmed) return;
+
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          alert('Authentikációs token nem található');
+          return;
         }
+
+        await this.createActivityLog(
+          'befejezve',
+          `"${task.title}" feladat sikeresen befejezve`,
+          taskId
+        );
+
+        this.selectedTeam.tasks = this.selectedTeam.tasks.filter(t => t.id !== taskId);
+        alert('Feladat sikeresen befejezve!');
+      } catch (error) {
+        console.error('Hiba a feladat befejezésekor:', error);
+        alert('Hiba a feladat befejezésekor: ' + error.message);
       }
     },
     getTabIcon(tab) {
@@ -1113,14 +1167,112 @@ export default {
         if (data.success && Array.isArray(data.data.logs)) {
           this.selectedTeam.activity = data.data.logs.map((log, index) => ({
             id: log.id || index,
-            user: 'Felhasználó',
+            user: log.teljes_nev || log.felhasznalonev || 'Ismeretlen felhasználó',
             action: log.leiras || log.muvelet,
             type: log.muvelet.includes('befejezve') ? 'complete' : 'update',
-            timestamp: new Date(log.idopont).toLocaleTimeString('hu-HU')
+            timestamp: new Date(log.idopont).toLocaleString('hu-HU')
           }));
         }
       } catch (error) {
         console.error('Aktivitás betöltésének hiba:', error);
+      }
+    },
+    async loadTeamTasks() {
+      try {
+        if (!this.selectedTeam) return;
+
+        const token = localStorage.getItem('accessToken');
+        if (!token) return;
+
+        const response = await fetch(`http://localhost:3000/api/project/feladatok?projekt_id=${this.selectedTeam.id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        
+        if (data.success && Array.isArray(data.data.tasks)) {
+
+          data.data.tasks.forEach(dbTask => {
+            const localTask = this.selectedTeam.tasks.find(t => t.id === dbTask.id);
+            if (localTask) {
+              localTask.completed = dbTask.statusz === 'elvégezve';
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Feladatok betöltésének hiba:', error);
+      }
+    },
+    async createActivityLog(muvelet, leiras, feladat_id = null) {
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (!token || !this.selectedTeam) return;
+
+        const response = await fetch('http://localhost:3000/api/project/ujNaplo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            projekt_id: this.selectedTeam.id,
+            feladat_id: feladat_id,
+            muvelet: muvelet,
+            leiras: leiras
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data.log) {
+            await this.loadTeamActivity();
+          }
+        }
+      } catch (error) {
+        console.error('Hiba az aktivitás naplóban történő rögzítéskor:', error);
+      }
+    },
+    async loadTeamFiles() {
+      try {
+        if (!this.selectedTeam) return;
+
+        const token = localStorage.getItem('accessToken');
+        if (!token) return;
+
+        for (let task of this.selectedTeam.tasks) {
+          try {
+            const response = await fetch(`http://localhost:3000/api/files/feladat/${task.id}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              }
+            });
+
+            if (!response.ok) continue;
+
+            const data = await response.json();
+            
+            if (data.success && Array.isArray(data.data.files)) {
+              const filesWithSize = data.data.files.map(file => ({
+                id: file.id,
+                name: file.file_nev,
+                size: file.file_merete ? (file.file_merete / 1024).toFixed(2) : '0'
+              }));
+              task.uploadedFiles = filesWithSize;
+            }
+          } catch (error) {
+            console.error(`Hiba a feladat (${task.id}) fájljainak lekérdezésénél:`, error);
+          }
+        }
+      } catch (error) {
+        console.error('Csapat fájljainak betöltésének hiba:', error);
       }
     },
     handleFileSelect(event) {
@@ -1180,7 +1332,6 @@ export default {
         }
 
         if (data.status === 'success' && data.uploadedFiles && data.uploadedFiles.length > 0) {
-          // Az API-tól kapott file objektumok használata, amelyek tartalmazzák az id-kat
           const filesWithData = data.uploadedFiles.map(apiFile => ({
             id: apiFile.id,
             name: apiFile.file_nev || apiFile.name,
@@ -1200,6 +1351,12 @@ export default {
 
           alert(`${data.uploadedFiles.length} fájl sikeresen feltöltve!`);
           
+          await this.createActivityLog(
+            'feltöltés',
+            `${data.uploadedFiles.length} fájlt feltöltött`,
+            this.currentTaskId
+          );
+          
           setTimeout(() => {
             const input = document.getElementById('fileInput');
             if (input) {
@@ -1207,16 +1364,6 @@ export default {
             }
             this.selectedFiles = [];
           }, 500);
-          
-          if (this.selectedTeam) {
-            this.selectedTeam.activity.unshift({
-              id: Math.random(),
-              user: this.userProfile.teljes_nev || this.userProfile.felhasznalonev,
-              action: `feltöltött ${data.uploadedFiles.length} fájlt a feladathoz`,
-              type: 'upload',
-              timestamp: 'most'
-            });
-          }
         } else {
           alert('Hiba: ' + (data.message || 'Ismeretlen hiba'));
         }
@@ -1225,6 +1372,63 @@ export default {
         alert('Hiba a fájl feltöltéskor: ' + error.message);
       } finally {
         this.isUploading = false;
+      }
+    },
+    async deleteFile(fileId) {
+      if (!confirm('Biztosan törlöd ezt a fájlt?')) {
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          alert('Authentikációs token nem található');
+          return;
+        }
+
+        console.log('Fájl törlésének kezdete:', fileId);
+
+        const response = await fetch(`http://localhost:3000/api/files/${fileId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('Törlés válasz status:', response.status);
+
+        const data = await response.json();
+        console.log('Törlés válasz adatok:', data);
+
+        if (!response.ok) {
+          alert('Hiba a fájl törléskor: ' + (data.message || 'Ismeretlen hiba'));
+          return;
+        }
+
+        if (data.success) {
+          this.uploadedFiles = this.uploadedFiles.filter(f => f.id !== fileId);
+
+          if (this.selectedTeam) {
+            const currentTask = this.selectedTeam.tasks.find(t => t.id === this.currentTaskId);
+            if (currentTask && currentTask.uploadedFiles) {
+              currentTask.uploadedFiles = currentTask.uploadedFiles.filter(f => f.id !== fileId);
+            }
+          }
+
+          alert('Fájl sikeresen törölve!');
+
+          await this.createActivityLog(
+            'törlés',
+            'Feltöltött fájlt törölt',
+            this.currentTaskId
+          );
+        } else {
+          alert('Hiba: ' + (data.message || 'Ismeretlen hiba'));
+        }
+      } catch (error) {
+        console.error('Hiba a fájl törléskor:', error);
+        alert('Hiba a fájl törléskor: ' + error.message);
       }
     },
     saveTeamIconsToLocalStorage() {
