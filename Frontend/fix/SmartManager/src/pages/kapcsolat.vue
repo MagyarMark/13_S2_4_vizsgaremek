@@ -147,7 +147,6 @@ footer h3 {
   opacity: 0.8;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   header {
     padding: 1rem;

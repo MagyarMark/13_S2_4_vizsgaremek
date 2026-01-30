@@ -2,7 +2,6 @@
 <div class="dashboard-wrapper">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <!-- Sidebar -->
   <aside class="sidebar">
     <div class="logo">
       <h2>Smart<span>Manager</span></h2>
@@ -17,7 +16,6 @@
     </ul>
   </aside>
 
-  <!-- Header -->
   <header>
     <div class="header-left">
       <h1>Értékelés</h1>
@@ -40,14 +38,11 @@
     </div>
   </header>
 
-  <!-- Main -->
   <main class="main-content">
     <div class="content-wrapper">
 
-      <!-- ÉRTÉKELÉS FORM -->
       <section class="evaluation-card">
 
-        <!-- DIÁK -->
         <div class="form-group">
           <label>Diák</label>
           <select v-model="evaluation.student">
@@ -62,7 +57,6 @@
           </select>
         </div>
 
-        <!-- FELADAT -->
         <div class="form-group">
           <label>Feladat</label>
           <select v-model="evaluation.task" :disabled="!evaluation.student">
@@ -72,12 +66,11 @@
               :key="task.id"
               :value="task"
             >
-              {{ task.title }}
+              {{ task.feladat_nev }}
             </option>
           </select>
         </div>
 
-        <!-- PONTSZÁM -->
         <div class="form-group">
           <label>Pontszám</label>
           <input
@@ -88,7 +81,18 @@
           />
         </div>
 
-        <!-- SZÖVEG -->
+        <div class="form-group">
+          <label>Osztályzat</label>
+          <select v-model.number="evaluation.grade">
+            <option :value="null">Válassz osztályzatot</option>
+            <option :value="5">5 - Kiváló</option>
+            <option :value="4">4 - Jó</option>
+            <option :value="3">3 - Közepes</option>
+            <option :value="2">2 - Elégséges</option>
+            <option :value="1">1 - Elégtelen</option>
+          </select>
+        </div>
+
         <div class="form-group">
           <label>Szöveges értékelés</label>
           <textarea v-model="evaluation.comment"></textarea>
@@ -100,13 +104,26 @@
 
       </section>
 
-      <!-- STATISZTIKA -->
       <section class="section">
         <div class="section-header">
-          <h3><i class="fas fa-chart-line"></i> Osztály statisztika</h3>
+          <h3><i class="fas fa-chart-line"></i> Személyes statisztika</h3>
         </div>
 
-        <div class="charts-container">
+        <div class="form-group">
+          <label>Diák kiválasztása</label>
+          <select v-model="selectedStudentForStats">
+            <option :value="null">-- Válassz diákot --</option>
+            <option
+              v-for="student in availableDiakUsers"
+              :key="student.id"
+              :value="student"
+            >
+              {{ student.teljes_nev }} ({{ student.felhasznalonev }})
+            </option>
+          </select>
+        </div>
+
+        <div class="charts-container" v-if="selectedStudentForStats">
           <div class="chart-card">
             <canvas ref="performanceChart"></canvas>
           </div>
@@ -114,11 +131,13 @@
             <canvas ref="submissionChart"></canvas>
           </div>
         </div>
+        <div v-else class="no-data" style="text-align: center; padding: 2rem;">
+          Válassz egy diákot a statisztika megtekintéséhez
+        </div>
       </section>
 
     </div>
 
-    <!-- ÉRTÉKELÉSEK TÁBLA -->
     <section class="grades-summary">
       <div class="section-header">
         <h3><i class="fas fa-trophy"></i> Diákok értékelése</h3>
@@ -131,6 +150,7 @@
               <th>Diák</th>
               <th>Feladat</th>
               <th>Pontszám</th>
+              <th>Osztályzat</th>
               <th>Százalék</th>
               <th>Szöveges értékelés</th>
             </tr>
@@ -143,6 +163,7 @@
               <td>{{ grade.studentName }}</td>
               <td>{{ grade.taskTitle }}</td>
               <td>{{ grade.score }}</td>
+              <td>{{ grade.grade || '-' }}</td>
               <td>
                 <span
                   :class="['percentage-badge', getPercentageClass(grade.score)]"
@@ -154,7 +175,7 @@
             </tr>
 
             <tr v-if="studentGrades.length === 0">
-              <td colspan="5" class="no-data">
+              <td colspan="6" class="no-data">
                 Nincs rögzített értékelés
               </td>
             </tr>
@@ -170,7 +191,7 @@
 
 
 <script>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { Chart, registerables } from "chart.js";
 
@@ -181,7 +202,6 @@ export default {
   setup() {
     const router = useRouter();
 
-    // -------- State --------
     const userProfile = ref({
       teljes_nev: '',
       felhasznalonev: '',
@@ -197,15 +217,16 @@ export default {
     const students = ref([]);
     const tasks = ref([]);
     const studentGrades = ref([]);
+    const selectedStudentForStats = ref(null);
 
     const evaluation = ref({
       student: null,
       task: null,
-      score: 0,
+      score: null,
+      grade: null,
       comment: ""
     });
 
-    // -------- Computed --------
     const availableDiakUsers = computed(() =>
       students.value.filter(u => u.szerep_tipus === 'diak')
     );
@@ -230,7 +251,6 @@ export default {
       return "fail";
     };
 
-    // -------- API Hívások --------
     const fetchUserProfile = async () => {
       try {
         const storedUser = localStorage.getItem('user');
@@ -274,87 +294,195 @@ export default {
   if (!evaluation.value.student) return;
   try {
     const token = localStorage.getItem('accessToken');
-    const res = await fetch(`http://localhost:3000/api/project/feladatok?diakId=${evaluation.value.student.id}`, {
+    const res = await fetch('http://localhost:3000/api/project/feladatok', {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
-    console.log("fetchUserTasks:", data); // maradhat a debug-hoz
-    tasks.value = data.data.tasks || []; // <- itt a fix
+    console.log("fetchUserTasks:", data);
+    const filteredTasks = (data.data.tasks || []).filter(
+      task => task.felelos_id === evaluation.value.student.id
+    );
+    tasks.value = filteredTasks;
   } catch (e) { console.error(e); }
 };
-    // -------- Actions --------
+
+    const fetchBeadasEvaluations = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch('http://localhost:3000/api/files/beadas', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data.beadasList)) {
+          const evaluations = data.data.beadasList.map(b => ({
+            studentId: b.felhasznalo_id,
+            studentName: b.student_name || 'Ismeretlen',
+            taskId: b.feladat_id,
+            taskTitle: b.task_name || 'Ismeretlen',
+            score: b.pontszam,
+            grade: b.jegy,
+            comment: b.visszajelzes,
+            evaluatedAt: b.ertekeles_idopont
+          }));
+          evaluations.sort((a, b) => {
+            if (!a.evaluatedAt) return 1;
+            if (!b.evaluatedAt) return -1;
+            return new Date(b.evaluatedAt) - new Date(a.evaluatedAt);
+          });
+          studentGrades.value = evaluations;
+        }
+      } catch (e) { console.error('Hiba az értékelések lekérdezésekor:', e); }
+    };
+
     const logout = () => {
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
       router.push('/home');
     };
 
-    const saveEvaluation = () => {
+    const saveEvaluation = async () => {
       if (!evaluation.value.student || !evaluation.value.task) {
         return alert("Kérlek válassz diákot és feladatot!");
       }
 
-      const newGrade = {
-        studentId: evaluation.value.student.id,
-        studentName: evaluation.value.student.teljes_nev,
-        taskId: evaluation.value.task.id,
-        taskTitle: evaluation.value.task.title,
-        score: evaluation.value.score,
-        comment: evaluation.value.comment
-      };
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch('http://localhost:3000/api/files/beadas', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            feladat_id: evaluation.value.task.id,
+            felhasznalo_id: evaluation.value.student.id,
+            tanar_id: userProfile.value.id,
+            pontszam: evaluation.value.score,
+            jegy: evaluation.value.grade,
+            statusz: 'ertekelt',
+            visszajelzes: evaluation.value.comment,
+            ertekeles_idopont: new Date().toISOString()
+          })
+        });
 
-      const idx = studentGrades.value.findIndex(
-        g => g.studentId === newGrade.studentId && g.taskId === newGrade.taskId
-      );
-      if (idx >= 0) studentGrades.value[idx] = newGrade;
-      else studentGrades.value.push(newGrade);
-
-      alert("Értékelés sikeresen elmentve!");
-      evaluation.value = { student: null, task: null, score: 0, comment: "" };
+        const data = await res.json();
+        if (data.success) {
+          await fetchBeadasEvaluations();
+          if (selectedStudentForStats.value) {
+            await nextTick();
+            updateStudentCharts(selectedStudentForStats.value);
+          }
+          evaluation.value = { student: null, task: null, score: null, grade: null, comment: "" };
+          alert("Értékelés sikeresen elmentve!");
+        } else {
+          alert("Hiba az értékelés mentésekor: " + (data.message || 'Ismeretlen hiba'));
+        }
+      } catch (e) {
+        console.error("Mentési hiba:", e);
+        alert("Hiba az értékelés mentésekor!");
+      }
     };
 
-    // -------- Watchers --------
     watch(
   () => evaluation.value.student,
   (newStudent) => {
+    evaluation.value.task = null;
     if (newStudent) fetchUserTasks();
     else tasks.value = [];
   }
 );
 
+    watch(
+  () => selectedStudentForStats.value,
+  async (newStudent) => {
+    if (newStudent) {
+      await nextTick();
+      updateStudentCharts(newStudent);
+    }
+  }
+);
 
-    // -------- Lifecycle --------
-    onMounted(() => {
-      fetchUserProfile();
-      fetchTeamUsers();
+    watch(
+  () => evaluation.value.score,
+  (newScore) => {
+    if (newScore === null || newScore === undefined || newScore === '') {
+      evaluation.value.grade = null;
+      return;
+    }
+    if (newScore >= 80) {
+      evaluation.value.grade = 5; 
+    } else if (newScore >= 70) {
+      evaluation.value.grade = 4; 
+    } else if (newScore >= 60) {
+      evaluation.value.grade = 3; 
+    } else if (newScore >= 50) {
+      evaluation.value.grade = 2; 
+    } else {
+      evaluation.value.grade = 1; 
+    }
+  }
+);
 
-      // Chart init
+    const updateStudentCharts = (student) => {
+      const studentGradesData = studentGrades.value.filter(g => g.studentId === student.id);
+      const scores = studentGradesData.map(g => g.score);
+      const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b) / scores.length) : 0;
+
+      if (performanceChart.value && performanceChart.value.chart) {
+        performanceChart.value.chart.destroy();
+      }
+      if (submissionChart.value && submissionChart.value.chart) {
+        submissionChart.value.chart.destroy();
+      }
+
       if (performanceChart.value) {
-        new Chart(performanceChart.value.getContext("2d"), {
+        const ctx = performanceChart.value.getContext("2d");
+        performanceChart.value.chart = new Chart(ctx, {
           type: "bar",
           data: {
-            labels: ["10.A", "10.B", "12.A", "12.B"],
-            datasets: [{ label: "Átlagos pontszám", data: [85, 78, 92, 88], backgroundColor: "#4361ee" }]
+            labels: studentGradesData.map(g => g.taskTitle),
+            datasets: [{ label: "Pontszám", data: scores, backgroundColor: "#4361ee" }]
           },
-          options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } }
+          options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            scales: { y: { beginAtZero: true, max: 100 } } 
+          }
         });
       }
 
       if (submissionChart.value) {
-        new Chart(submissionChart.value.getContext("2d"), {
+        const grades = studentGradesData.map(g => g.grade).filter(g => g !== null && g !== undefined);
+        const grade5Count = grades.filter(g => g === 5).length;
+        const grade4Count = grades.filter(g => g === 4).length;
+        const grade3Count = grades.filter(g => g === 3).length;
+        const grade2Count = grades.filter(g => g === 2).length;
+        const grade1Count = grades.filter(g => g === 1).length;
+
+        const ctx = submissionChart.value.getContext("2d");
+        submissionChart.value.chart = new Chart(ctx, {
           type: "doughnut",
           data: {
-            labels: ["Időben beadva", "Késéssel beadva", "Hiányzó"],
-            datasets: [{ data: [75, 15, 10], backgroundColor: ["#4cc9f0", "#f72585", "#e63946"] }]
+            labels: ["5 - Kiváló", "4 - Jó", "3 - Közepes", "2 - Elégséges", "1 - Elégtelen"],
+            datasets: [{ 
+              data: [grade5Count, grade4Count, grade3Count, grade2Count, grade1Count], 
+              backgroundColor: ["#4cc9f0", "#4361ee", "#f72585", "#fb8500", "#e63946"] 
+            }]
           },
           options: { responsive: true, maintainAspectRatio: false }
         });
       }
+    };
+
+    onMounted(() => {
+      fetchUserProfile();
+      fetchTeamUsers();
+      fetchBeadasEvaluations();
     });
 
     return {
       userProfile, showModal, showSidebar, performanceChart, submissionChart,
-      students, tasks, studentGrades, evaluation,
+      students, tasks, studentGrades, evaluation, selectedStudentForStats,
       availableDiakUsers, availableTasks,
       getRoleLabel, getPercentageClass, saveEvaluation, logout
     };
@@ -364,14 +492,13 @@ export default {
 
 
 
-
 <style scoped>
 
 .content-wrapper {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  align-items: start;
+  align-items: stretch;
   margin-top: -2rem;
   margin-left: -2rem;
   margin-bottom: 2rem;
@@ -391,7 +518,6 @@ export default {
   padding: 2rem;
   margin-bottom: 2rem;
   max-width: 500px;
-  max-height: 560px;
 }
 
 .section-header {
@@ -473,7 +599,6 @@ export default {
   box-sizing: border-box;
 }
 
-/* Grades Summary Table */
 .grades-summary {
   background: #fff;
   padding: 2rem;
@@ -553,7 +678,6 @@ export default {
   font-style: italic;
 }
 
-/* Responsive design */
 @media (max-width: 1024px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;

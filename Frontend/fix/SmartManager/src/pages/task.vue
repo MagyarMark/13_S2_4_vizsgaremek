@@ -2,7 +2,6 @@
 <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
@@ -17,15 +16,11 @@
       </ul>
     </aside>
 
-    <!-- Header -->
 <header>
       <div class="header-left">
         <h1>Feladatok</h1>
       </div>
       <div class="header-right">
-        <div class="notifications">
-          <button class="notifications-button"><i class="fas fa-bell"></i></button>
-        </div>
         <div class="user-profile">
           <div class="avatar">{{ userProfile.initials }}</div>
           <div>
@@ -39,9 +34,7 @@
       </div>
     </header>
 
-    <!-- Main Content -->
         <main class="task-dashboard">
-            <!-- Task List Section -->
             <section class="task-section">
                 <div class="section-header">
                     <h2 class="section-title">Aktív feladatok</h2>
@@ -54,9 +47,7 @@
                 </ul>
             </section>
 
-            <!-- Sidebar Stats -->
             <aside>
-                <!-- Stats Section -->
                 <section class="task-section">
                     <div class="section-header">
                         <h2 class="section-title">Áttekintés</h2>
@@ -85,7 +76,6 @@
         </main>
     </div>
 
-    <!-- Add Task Modal -->
     <div class="modal" id="taskModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -144,7 +134,6 @@ export default {
   setup() {
     const router = useRouter()
     
-    // State
     const navActive = ref(false)
     const userProfile = ref({
       teljes_nev: '',
@@ -154,7 +143,6 @@ export default {
     })
     const tasks = ref([])
 
-    // DOM elements
     let taskListEl = null
     let taskModalEl = null
     let taskFormEl = null
@@ -168,7 +156,6 @@ export default {
     let closeModalEl = null
     let cancelBtnEl = null
 
-    // Helper functions
     function generateInitials(name) {
       if (!name) return ''
       const parts = name.split(' ')
@@ -267,7 +254,6 @@ export default {
         taskListEl.appendChild(taskItem)
       })
 
-      // Attach event listeners
       taskListEl.querySelectorAll('.complete-btn').forEach(btn => {
         btn.addEventListener('click', toggleTaskCompletion)
       })
@@ -572,7 +558,6 @@ export default {
 }
 </script>
 <style>
-        /* Task Dashboard Styles */
         .task-dashboard {
             display: grid;
             grid-template-columns: 2fr 2fr;
@@ -640,7 +625,6 @@ export default {
             color: white;
         }
 
-        /* Task List Styles */
         .task-list {
           list-style: none;
           padding: 0;
@@ -754,7 +738,6 @@ export default {
             color: var(--primary);
         }
 
-        /* Stats Section */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -781,7 +764,6 @@ export default {
             color: #6c757d;
         }
 
-        /* eredmeny mutato */
         .progress-item {
             margin-bottom: 15px;
         }
@@ -805,7 +787,6 @@ export default {
             border-radius: 4px;
         }
 
-        /* task style */
         .modal {
             display: none;
             position: fixed;
@@ -894,7 +875,6 @@ export default {
             gap: 15px;
         }
 
-        /* Responsive Design */
         @media (max-width: 992px) {
             .task-dashboard {
                 grid-template-columns: 1fr;

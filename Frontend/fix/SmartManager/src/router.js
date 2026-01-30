@@ -12,6 +12,7 @@ import Terms from './pages/terms.vue'
 import TeamWork from './pages/teamwork.vue'
 import Ttask from './pages/Ttask.vue'
 import Ertekeles from './pages/ertekeles.vue'
+import Admin from './pages/admin.vue'
 
 const routes = [
   {
@@ -78,6 +79,11 @@ const routes = [
     path: '/ertekeles',
     name: 'Ertekeles',
     component: Ertekeles
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: Admin
   }
 ]
 

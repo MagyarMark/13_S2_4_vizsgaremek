@@ -104,7 +104,6 @@ export default {
     text-decoration: underline;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .terms-container {
     padding: 1rem;

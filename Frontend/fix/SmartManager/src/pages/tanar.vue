@@ -1,7 +1,7 @@
 <template>
     <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <!-- Sidebar -->
+
     <aside class="sidebar" :class="{ open: showSidebar }">
         <div class="logo">
             <h2>Smart<span>Manager</span></h2>
@@ -16,7 +16,7 @@
         </ul>
     </aside>
 
-    <!-- Header -->
+
     <header>
         <div class="header-left">
             <button class="hamburger" @click="showSidebar = !showSidebar" aria-label="Toggle menu">
@@ -41,14 +41,12 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <main>
         <div class="page-title">
             <h2>Áttekintés</h2>
             <button class="btn btn-primary new-task-button" id="new-task-button" @click="showModal = true"><i class="fas fa-plus"></i> Új feladat</button>
         </div>
 
-        <!-- Stats Cards -->
         <div class="stats-cards">
             <div class="stat-card">
                 <div class="stat-icon bg-primary">
@@ -88,7 +86,6 @@
             </div>
         </div>
 
-        <!-- Legutóbb beadott feladatok -->
         <section class="section">
             <div class="section-header">
                 <h3><i class="fas fa-history"></i> Legutóbb beadott feladatok</h3>
@@ -152,7 +149,6 @@
             </div>
         </section>
 
-        <!-- Aktív feladatok -->
         <section class="section">
             <div class="section-header">
                 <h3><i class="fas fa-clipboard-list"></i> Aktív feladatok</h3>
@@ -234,7 +230,6 @@
             </div>
         </section>
 
-        <!-- Statisztika -->
               <section class="section">
         <div class="section-header">
           <h3><i class="fas fa-chart-line"></i> Osztály statisztika</h3>
@@ -256,7 +251,6 @@
         </div>
       </section>
 
-        <!-- Legjobb és legrosszabb teljesítők -->
         <section class="section">
             <div class="section-header">
                 <h3><i class="fas fa-trophy"></i> Teljesítmény rangsor</h3>
@@ -315,7 +309,6 @@
         </section>
     </main>
 
-    <!-- Új feladat modal -->
     <div class="modal" :class="{ active: showModal }">
       <div class="modal-content">
         <div class="modal-header">
@@ -563,7 +556,6 @@ export default {
             min-height: 100vh;
         }
 
-        /* Header */
         header {
             grid-area: header;
             background: white;
@@ -630,7 +622,6 @@ export default {
             font-weight: bold;
         }
 
-        /* Sidebar */
         .sidebar {
             grid-area: sidebar;
             background: var(--sidebar);
@@ -682,7 +673,6 @@ export default {
             text-align: center;
         }
 
-        /* Main Content */
         main {
             grid-area: main;
             padding: 2rem;
@@ -761,7 +751,6 @@ export default {
             background: var(--danger);
         }
 
-        /* Sections */
         .section {
             background: white;
             border-radius: 10px;
@@ -812,7 +801,6 @@ export default {
             color: white;
         }
 
-        /* Table Styles */
         .table-container {
             overflow-x: auto;
             color: var(--dark);
@@ -867,7 +855,6 @@ export default {
             color: var(--dark);
         }
 
-        /* Assignment Cards */
         .assignments-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -1013,7 +1000,6 @@ export default {
             height: 300px;
         }
 
-/* Tablet nézet */
 @media (max-width: 1024px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
@@ -1023,7 +1009,6 @@ export default {
       "main";
   }
 
-  /* Sidebar teljesen elrejtve */
   .sidebar {
     display: none !important;
   }
@@ -1054,7 +1039,6 @@ export default {
   }
 }
 
-/* Tablet nézet (768px) */
 @media (max-width: 768px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
@@ -1109,7 +1093,6 @@ export default {
   }
 }
 
-/* Mobil nézet (600px) */
 @media (max-width: 600px) {
   header {
     padding: 0 1rem;
@@ -1268,7 +1251,6 @@ export default {
   }
 }
 
-/* Nagyon kis mobilok (400px) */
 @media (max-width: 400px) {
   header h1 {
     font-size: 1rem;

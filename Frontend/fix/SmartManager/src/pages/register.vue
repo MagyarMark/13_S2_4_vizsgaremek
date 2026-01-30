@@ -1,4 +1,4 @@
-<!-- Register.vue -->
+
 <template>
   <header>
     <div class="logo">Smart<span>Manager</span></div>
@@ -174,7 +174,6 @@ export default {
       this.loading = true;
       
       try {
-        // Valós regisztráció a backend felé
         const response = await fetch('http://localhost:3000/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -189,10 +188,8 @@ export default {
 
         const data = await response.json();
         if (response.ok && data.success) {
-          // Átirányítás bejelentkezéshez
           this.$router.push('/login?registered=true');
         } else {
-          // Sikertelen regisztráció, hiba üzenet
           const msg = data && data.message ? data.message : 'Regisztráció sikertelen';
           alert(msg);
         }

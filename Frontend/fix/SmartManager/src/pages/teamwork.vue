@@ -2,7 +2,6 @@
   <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
@@ -11,21 +10,17 @@
       <ul class="nav-links">
         <router-link to="/diak"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
         <router-link to="/task"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
-        <router-link to="/teamwork" class="active"><li><i class="fas fa-users"></i> Csapatmunka</li></router-link>
+        <router-link to="/teamwork" class="active"><li><i class="fas fa-users"></i> Projektmunka</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
     </aside>
 
-    <!-- Header -->
     <header>
       <div class="header-left">
-        <h1>Csapatmunka</h1>
+        <h1>Projektmunka</h1>
       </div>
       <div class="header-right">
-        <div class="notifications">
-          <button class="notifications-button"><i class="fas fa-bell"></i></button>
-        </div>
         <div class="user-profile">
           <div class="avatar">{{ userProfile.initials }}</div>
           <div>
@@ -39,14 +34,12 @@
       </div>
     </header>
 
-    <!-- Main Content -->
     <main class="teamwork-dashboard">
-      <!-- Teams Overview Section -->
       <section class="teamwork-section">
         <div class="section-header">
-          <h2 class="section-title">Csapataim</h2>
+          <h2 class="section-title">Projektek</h2>
           <button class="btn btn-primary" @click="openCreateTeamModal">
-            <i class="fas fa-plus"></i> Új csapat
+            <i class="fas fa-plus"></i> Új Projekt
           </button>
         </div>
 
@@ -71,7 +64,6 @@
         </div>
       </section>
 
-      <!-- Team Details Section -->
       <section v-if="selectedTeam" class="teamwork-section team-details">
         <div class="section-header">
           <h2 class="section-title">{{ selectedTeam.name }} - Részletek</h2>
@@ -81,7 +73,6 @@
         </div>
 
         <div class="team-content">
-          <!-- Members Tab -->
           <div class="tabs">
             <button 
               v-for="tab in ['members', 'tasks', 'activity']"
@@ -94,7 +85,6 @@
             </button>
           </div>
 
-          <!-- Members Content -->
           <div v-if="activeTab === 'members'" class="tab-content">
             <div class="members-section">
               <div class="section-actions">
@@ -121,7 +111,6 @@
             </div>
           </div>
 
-          <!-- Tasks Content -->
           <div v-if="activeTab === 'tasks'" class="tab-content">
             <div class="tasks-section">
               <div class="section-actions">
@@ -159,7 +148,6 @@
             </div>
           </div>
 
-          <!-- Activity Content -->
           <div v-if="activeTab === 'activity'" class="tab-content">
             <div class="activity-section">
               <div class="activity-timeline">
@@ -180,7 +168,6 @@
         </div>
       </section>
 
-      <!-- Statistics Sidebar -->
       <aside class="teamwork-stats">
         <section class="teamwork-section">
           <div class="section-header">
@@ -190,7 +177,7 @@
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-value">{{ teams.length }}</div>
-              <div class="stat-label">Csapatok</div>
+              <div class="stat-label">Projektok</div>
             </div>
             <div class="stat-card">
               <div class="stat-value">{{ totalMembers }}</div>
@@ -226,17 +213,16 @@
       </aside>
     </main>
 
-    <!-- Create/Edit Team Modal -->
     <div :class="['modal', { active: showTeamModal }]">
       <div class="modal-content">
         <div class="modal-header">
-          <h3 class="modal-title">{{ editingTeam ? 'Csapat szerkesztése' : 'Új csapat hozzáadása' }}</h3>
+          <h3 class="modal-title">{{ editingTeam ? 'Projekt szerkesztése' : 'Új Projekt hozzáadása' }}</h3>
           <button class="close-modal" @click="showTeamModal = false">&times;</button>
         </div>
 
         <form @submit.prevent="saveTeam">
           <div class="form-group">
-            <label for="teamName">Csapat neve</label>
+            <label for="teamName">Projekt neve</label>
             <input type="text" id="teamName" v-model="formData.teamName" class="form-control" required>
           </div>
 
@@ -264,7 +250,6 @@
       </div>
     </div>
 
-    <!-- Add Member Modal -->
     <div :class="['modal', { active: showMemberModal }]">
       <div class="modal-content">
         <div class="modal-header">
@@ -300,7 +285,6 @@
       </div>
     </div>
 
-    <!-- Create Task Modal -->
     <div :class="['modal', { active: showTaskModal }]">
       <div class="modal-content">
         <div class="modal-header">
@@ -390,7 +374,7 @@ export default {
       teams: [
         {
           id: 1,
-          name: 'Webfejlesztés csapat',
+          name: 'Webfejlesztés Projekt',
           description: 'Frontend és backend fejlesztés',
           icon: 'fas fa-code',
           members: [
@@ -430,13 +414,13 @@ export default {
           activity: [
             { id: 1, user: 'Bence Kovács', action: 'befejezett egy feladatot', type: 'complete', timestamp: '2 órája' },
             { id: 2, user: 'Kata Varga', action: 'hozzáadott egy megjegyzést', type: 'comment', timestamp: '5 órája' },
-            { id: 3, user: 'Te', action: 'törölte a csapathoz', type: 'join', timestamp: '1 napja' },
-            { id: 4, user: 'Bence Kovács', action: 'létrehozta a csapatot', type: 'create', timestamp: '3 napja' }
+            { id: 3, user: 'Te', action: 'törölte a Projekthoz', type: 'join', timestamp: '1 napja' },
+            { id: 4, user: 'Bence Kovács', action: 'létrehozta a Projektot', type: 'create', timestamp: '3 napja' }
           ]
         },
         {
           id: 2,
-          name: 'Adatbázis csapat',
+          name: 'Adatbázis Projekt',
           description: 'Adatmodellezés és SQL',
           icon: 'fas fa-database',
           members: [
@@ -470,7 +454,7 @@ export default {
         },
         {
           id: 3,
-          name: 'Dizájn csapat',
+          name: 'Dizájn Projekt',
           description: 'UI/UX és grafikai dizájn',
           icon: 'fas fa-palette',
           members: [
@@ -529,6 +513,9 @@ export default {
     selectTeam(teamId) {
       this.selectedTeam = this.teams.find(t => t.id === teamId);
       this.activeTab = 'members';
+      if (this.selectedTeam) {
+        this.loadTeamActivity();
+      }
     },
     openCreateTeamModal() {
       this.editingTeam = null;
@@ -547,27 +534,68 @@ export default {
       };
       this.showTeamModal = true;
     },
-    saveTeam() {
-      if (this.editingTeam) {
-        this.editingTeam.name = this.formData.teamName;
-        this.editingTeam.description = this.formData.teamDesc;
-        this.editingTeam.icon = this.formData.teamIcon;
-      } else {
-        const newTeam = {
-          id: Math.max(...this.teams.map(t => t.id)) + 1,
-          name: this.formData.teamName,
-          description: this.formData.teamDesc,
-          icon: this.formData.teamIcon,
-          members: [],
-          tasks: [],
-          activity: []
+    async saveTeam() {
+      try {
+        if (!this.formData.teamName) {
+          alert('Projekt neve kötelező!');
+          return;
+        }
+
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          alert('Authentikációs token nem található');
+          return;
+        }
+
+        const projectData = {
+          projekt_nev: this.formData.teamName,
+          leiras: this.formData.teamDesc || ''
         };
-        this.teams.push(newTeam);
+
+        console.log('Küldendő adatok:', projectData);
+
+        const response = await fetch('http://localhost:3000/api/project/ujProjekt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(projectData)
+        });
+
+        const data = await response.json();
+        console.log('Szerver válasz:', data);
+
+        if (!response.ok) {
+          const errorMsg = data.message || data.errors?.[0]?.msg || 'Ismeretlen hiba';
+          throw new Error(errorMsg);
+        }
+
+        if (data.success && data.data.project) {
+          const newTeam = {
+            id: data.data.project.id,
+            name: data.data.project.projekt_nev,
+            description: data.data.project.leiras,
+            icon: this.formData.teamIcon,
+            members: [],
+            tasks: [],
+            activity: []
+          };
+          this.teams.push(newTeam);
+          this.saveTeamIconsToLocalStorage();
+          this.showTeamModal = false;
+          this.formData = { teamName: '', teamDesc: '', teamIcon: 'fas fa-code' };
+          alert('Projekt sikeresen létrehozva!');
+        } else {
+          throw new Error(data.message || 'Ismeretlen hiba a szerveren');
+        }
+      } catch (error) {
+        console.error('Hiba a Projekt mentésekor:', error);
+        alert('Hiba a Projekt mentésekor: ' + error.message);
       }
-      this.showTeamModal = false;
     },
     deleteTeam(teamId) {
-      if (confirm('Biztosan törlöd a csapatot?')) {
+      if (confirm('Biztosan törlöd a Projektot?')) {
         this.teams = this.teams.filter(t => t.id !== teamId);
         this.selectedTeam = null;
       }
@@ -577,17 +605,74 @@ export default {
       this.formData.memberRole = 'Tag';
       this.showMemberModal = true;
     },
-    addMember() {
-      if (this.selectedTeam && this.formData.selectedMember) {
-        const newMember = {
-          id: Math.max(...this.selectedTeam.members.map(m => m.id), 0) + 1,
-          name: this.formData.selectedMember,
-          initials: this.generateInitials(this.formData.selectedMember),
-          role: this.formData.memberRole,
-          status: 'Aktív'
+    async addMember() {
+      try {
+        if (!this.selectedTeam || !this.formData.selectedMember) {
+          alert('Projekt és tag kiválasztása kötelező');
+          return;
+        }
+
+        const selectedUser = this.availableUsers.find(
+          user => user.teljes_nev === this.formData.selectedMember
+        );
+
+        if (!selectedUser || !selectedUser.id) {
+          alert('Kiválasztott felhasználó nem található');
+          return;
+        }
+
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          alert('Authentikációs token nem található');
+          return;
+        }
+
+        const memberData = {
+          projekt_id: this.selectedTeam.id,
+          felhasznalo_id: selectedUser.id
         };
-        this.selectedTeam.members.push(newMember);
-        this.showMemberModal = false;
+
+        console.log('Küldendő tag adatok:', memberData);
+
+        const response = await fetch('http://localhost:3000/api/project/ujProjektTag', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(memberData)
+        });
+
+        const data = await response.json();
+        console.log('Szerver válasz tagra:', data);
+
+        if (!response.ok) {
+          const errorMsg = data.message || data.errors?.[0]?.msg || 'Ismeretlen hiba';
+          throw new Error(errorMsg);
+        }
+
+        if (data.success) {
+          const newMember = {
+            id: selectedUser.id,
+            name: selectedUser.teljes_nev,
+            initials: this.generateInitials(selectedUser.teljes_nev),
+            role: this.getRoleLabel(selectedUser.szerep_tipus),
+            status: 'Aktív'
+          };
+          this.selectedTeam.members.push(newMember);
+          this.showMemberModal = false;
+          this.formData.selectedMember = '';
+          this.formData.memberRole = 'Tag';
+          
+          await this.fetchTeamsAndTasks();
+          
+          alert('Tag sikeresen hozzáadva!');
+        } else {
+          throw new Error(data.message || 'Ismeretlen hiba a szerveren');
+        }
+      } catch (error) {
+        console.error('Hiba a tag hozzáadásakor:', error);
+        alert('Hiba a tag hozzáadásakor: ' + error.message);
       }
     },
     removeMember(memberId) {
@@ -605,19 +690,89 @@ export default {
       };
       this.showTaskModal = true;
     },
-    saveTask() {
-      if (this.selectedTeam && this.formData.taskTitle && this.formData.taskAssignee) {
-        const newTask = {
-          id: Math.max(...this.selectedTeam.tasks.map(t => t.id), 0) + 1,
-          title: this.formData.taskTitle,
-          description: this.formData.taskDesc,
-          assignee: this.formData.taskAssignee,
-          priority: this.formData.taskPriority,
-          deadline: this.formData.taskDeadline,
-          completed: false
+    async saveTask() {
+      try {
+        if (!this.selectedTeam || !this.formData.taskTitle || !this.formData.taskAssignee) {
+          alert('Feladat neve, hozzárendelés és határidő kötelezőek');
+          return;
+        }
+
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          alert('Authentikációs token nem található');
+          return;
+        }
+
+        const selectedUser = this.availableDiakUsers.find(
+          user => (user.teljes_nev || user.felhasznalonev) === this.formData.taskAssignee
+        );
+
+        if (!selectedUser || !selectedUser.id) {
+          alert('Nem sikerült megtalálni a felhasználót');
+          return;
+        }
+
+        const priorityMap = {
+          'low': 'alacsony',
+          'medium': 'közepes',
+          'high': 'magas'
         };
-        this.selectedTeam.tasks.push(newTask);
-        this.showTaskModal = false;
+
+        const taskData = {
+          feladat_nev: this.formData.taskTitle,
+          feladat_leiras: this.formData.taskDesc || '',
+          felelos_id: selectedUser.id,
+          prioritas: priorityMap[this.formData.taskPriority] || 'közepes',
+          statusz: 'folyamatban',
+          hatarido: this.formData.taskDeadline,
+          projekt_id: this.selectedTeam.id
+        };
+
+        console.log('Küldendő feladat adatok:', taskData);
+
+        const response = await fetch('http://localhost:3000/api/project/ujFeladat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(taskData)
+        });
+
+        const data = await response.json();
+        console.log('Szerver válasz feladatra:', data);
+
+        if (!response.ok) {
+          const errorMsg = data.message || data.errors?.[0]?.msg || 'Ismeretlen hiba';
+          throw new Error(errorMsg);
+        }
+
+        if (data.success && data.data.task) {
+          const newTask = {
+            id: data.data.task.id,
+            title: data.data.task.feladat_nev,
+            description: data.data.task.feladat_leiras,
+            assignee: this.formData.taskAssignee,
+            priority: this.formData.taskPriority,
+            deadline: data.data.task.hatarido,
+            completed: false
+          };
+          this.selectedTeam.tasks.push(newTask);
+          this.showTaskModal = false;
+          this.formData = {
+            taskTitle: '',
+            taskDesc: '',
+            taskAssignee: '',
+            taskPriority: 'medium',
+            taskDeadline: ''
+          };
+          alert('Feladat sikeresen létrehozva!');
+        } else {
+          throw new Error(data.message || 'Ismeretlen hiba a szerveren');
+        }
+      } catch (error) {
+        console.error('Hiba a feladat mentésekor:', error);
+        alert('Hiba a feladat mentésekor: ' + error.message);
       }
     },
     editTask(task) {
@@ -778,7 +933,186 @@ export default {
           console.warn('Váratlan API válasz formátum:', data);
         }
       } catch (error) {
-        console.error('Csapat felhasználóinak lekérése sikertelen:', error);
+        console.error('Projekt felhasználóinak lekérése sikertelen:', error);
+      }
+    },
+    async loadTeamActivity() {
+      try {
+        if (!this.selectedTeam) return;
+
+        const token = localStorage.getItem('accessToken');
+        if (!token) return;
+
+        const response = await fetch(`http://localhost:3000/api/project/naplo?projekt_id=${this.selectedTeam.id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        
+        if (data.success && Array.isArray(data.data.logs)) {
+          this.selectedTeam.activity = data.data.logs.map((log, index) => ({
+            id: log.id || index,
+            user: 'Felhasználó',
+            action: log.leiras || log.muvelet,
+            type: log.muvelet.includes('befejezve') ? 'complete' : 'update',
+            timestamp: new Date(log.idopont).toLocaleTimeString('hu-HU')
+          }));
+        }
+      } catch (error) {
+        console.error('Aktivitás betöltésének hiba:', error);
+      }
+    },
+    saveTeamIconsToLocalStorage() {
+      const teamIcons = {};
+      this.teams.forEach(team => {
+        teamIcons[team.id] = team.icon;
+      });
+      localStorage.setItem('teamIcons', JSON.stringify(teamIcons));
+    },
+    loadTeamIconsFromLocalStorage() {
+      const stored = localStorage.getItem('teamIcons');
+      if (stored) {
+        const teamIcons = JSON.parse(stored);
+        this.teams.forEach(team => {
+          if (teamIcons[team.id]) {
+            team.icon = teamIcons[team.id];
+          }
+        });
+      }
+    },
+    async fetchTeamsAndTasks() {
+      try {
+        const token = localStorage.getItem('accessToken');
+        
+        if (!token) {
+          console.warn('Nincs authentikációs token');
+          return;
+        }
+
+        const projectsResponse = await fetch('http://localhost:3000/api/project/projektek', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!projectsResponse.ok) {
+          console.warn(`Projektok lekérésének hiba: ${projectsResponse.status}`);
+          return;
+        }
+
+        const projectsData = await projectsResponse.json();
+        console.log('Projektok adatai:', projectsData);
+
+        let projects = [];
+        if (projectsData.success && projectsData.data && Array.isArray(projectsData.data.projects)) {
+          projects = projectsData.data.projects;
+        } else if (projectsData.data && Array.isArray(projectsData.data.projects)) {
+          projects = projectsData.data.projects;
+        } else if (Array.isArray(projectsData.data)) {
+          projects = projectsData.data;
+        } else if (Array.isArray(projectsData)) {
+          projects = projectsData;
+        }
+
+        const newTeams = projects.map(project => ({
+          id: project.id,
+          name: project.projekt_nev,
+          description: project.leiras || '',
+          icon: 'fas fa-code',
+          members: [],
+          tasks: [],
+          activity: []
+        }));
+
+        this.teams = [...this.teams, ...newTeams];
+
+        this.loadTeamIconsFromLocalStorage();
+
+        for (let team of this.teams) {
+          try {
+            const tasksResponse = await fetch(`http://localhost:3000/api/project/feladat?projekt_id=${team.id}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              }
+            });
+
+            if (tasksResponse.ok) {
+              const tasksData = await tasksResponse.json();
+              console.log(`Feladatok Projekt ${team.id}:`, tasksData);
+
+              let tasks = [];
+              if (tasksData.success && Array.isArray(tasksData.data)) {
+                tasks = tasksData.data;
+              } else if (Array.isArray(tasksData.data)) {
+                tasks = tasksData.data;
+              } else if (Array.isArray(tasksData)) {
+                tasks = tasksData;
+              }
+
+              const newTasks = tasks.map(task => ({
+                id: task.id,
+                title: task.feladat_nev,
+                description: task.feladat_leiras || '',
+                assignee: task.felelos_nev || 'Ismeretlen',
+                priority: task.prioritas === 'magas' ? 'high' : task.prioritas === 'közepes' ? 'medium' : 'low',
+                deadline: task.hatarido,
+                completed: task.statusz === 'befejezve'
+              }));
+
+              team.tasks = [...team.tasks, ...newTasks];
+            }
+
+            const membersResponse = await fetch(`http://localhost:3000/api/project/projektTagok?projekt_id=${team.id}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              }
+            });
+
+            if (membersResponse.ok) {
+              const membersData = await membersResponse.json();
+              console.log(`Tagok Projekt ${team.id}:`, membersData);
+
+              let members = [];
+              if (membersData.success && Array.isArray(membersData.data)) {
+                members = membersData.data;
+              } else if (Array.isArray(membersData.data)) {
+                members = membersData.data;
+              } else if (Array.isArray(membersData)) {
+                members = membersData;
+              }
+
+              const newMembers = members.map(member => ({
+                id: member.id,
+                name: member.teljes_nev,
+                initials: this.generateInitials(member.teljes_nev),
+                role: this.getRoleLabel(member.szerep_tipus),
+                status: 'Aktív'
+              }));
+
+              const existingIds = new Set(team.members.map(m => m.id));
+              const uniqueNewMembers = newMembers.filter(m => !existingIds.has(m.id));
+              team.members = [...team.members, ...uniqueNewMembers];
+            }
+          } catch (error) {
+            console.error(`Hiba a feladatok/tagok lekérésénél Projekt ${team.id}:`, error);
+          }
+        }
+
+        console.log('Teljes Projektok és feladatok:', this.teams);
+      } catch (error) {
+        console.error('Projektok és feladatok lekérésének hiba:', error);
       }
     },
   },
@@ -794,8 +1128,10 @@ export default {
     return { router, logout };
   },
   mounted() {
+    this.loadTeamIconsFromLocalStorage();
     this.fetchUserProfile();
     this.fetchTeamUsers();
+    this.fetchTeamsAndTasks();
   }
 }
 </script>
@@ -820,7 +1156,6 @@ export default {
   color: #333;
 }
 
-/* ==================== MAIN CONTENT ==================== */
 .teamwork-dashboard {
   grid-area: main;
   display: grid;
@@ -854,7 +1189,6 @@ export default {
   color: #1e293b;
 }
 
-/* ==================== GOMBOK ==================== */
 .btn {
   padding: 0.6rem 1.2rem;
   border: none;
@@ -922,7 +1256,6 @@ export default {
   color: #dc2626;
 }
 
-/* ==================== CSAPAT KÁRTYÁK ==================== */
 .teams-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1003,7 +1336,6 @@ export default {
   gap: 0.3rem;
 }
 
-/* ==================== CSAPAT RÉSZLETEK ==================== */
 .team-details {
   margin-top: 2rem;
 }
@@ -1040,7 +1372,6 @@ export default {
   color: white;
 }
 
-/* ==================== TAG KÁRTYÁK ==================== */
 .members-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -1101,7 +1432,6 @@ export default {
   color: #64748b;
 }
 
-/* ==================== FELADATOK ==================== */
 .tasks-list {
   display: flex;
   flex-direction: column;
@@ -1192,7 +1522,6 @@ export default {
   gap: 0.5rem;
 }
 
-/* ==================== AKTIVITÁS TIMELINE ==================== */
 .activity-timeline {
   display: flex;
   flex-direction: column;
@@ -1239,7 +1568,6 @@ export default {
   display: block;
 }
 
-/* ==================== STATISZTIKA SIDEBAR ==================== */
 .teamwork-stats {
   grid-column: 2;
   grid-row: 1 / span 2;
@@ -1307,7 +1635,6 @@ export default {
   gap: 0.3rem;
 }
 
-/* ==================== MODALOK ==================== */
 .modal {
   position: fixed;
   top: 0;
@@ -1386,7 +1713,6 @@ export default {
   color: #dc2626;
 }
 
-/* ==================== FORMOK ==================== */
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -1433,7 +1759,7 @@ textarea.form-control {
   gap: 1rem;
   margin-top: 2rem;
 }
-/* ==================== ANIMÁCIÓK ==================== */
+
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.3s ease;
 }
@@ -1456,7 +1782,6 @@ textarea.form-control {
   opacity: 0;
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;

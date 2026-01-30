@@ -125,8 +125,9 @@
             </div>
         </div>
         <div class="copyright">
-            &copy; 2025 SmartManager. Minden jog fenntartva.
+            &copy; 2025 SmartManager. Minden jog fenntartva.<router-link to="/admin"><button style="visibility:hidden;"></button></router-link>
         </div>
+
     </footer>
 </template>
 
@@ -283,7 +284,6 @@ footer{
     border-top: 1px solid var(--border);
 }
 
-/* Tablet nézet (768px és alatti) */
 @media (max-width: 768px) {
   main {
     grid-template-columns: 1fr;
@@ -329,7 +329,6 @@ footer{
   }
 }
 
-/* Mobil nézet (600px és alatti) */
 @media (max-width: 600px) {
   main {
     grid-template-columns: 1fr;
@@ -396,7 +395,6 @@ footer{
   }
 }
 
-/* Nagyon kis képernyő (400px és alatti) */
 @media (max-width: 400px) {
   main {
     padding: 0.75rem;

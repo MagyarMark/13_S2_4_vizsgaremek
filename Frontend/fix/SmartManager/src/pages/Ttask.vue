@@ -1,7 +1,7 @@
 <template>
 <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <!-- Sidebar -->
+
     <aside class="sidebar">
         <div class="logo">
             <h2>Smart<span>Manager</span></h2>
@@ -15,15 +15,12 @@
             <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
         </ul>
     </aside>
-    <!-- Header -->
+
     <header>
       <div class="header-left">
         <h1>Feladatok</h1>
       </div>
       <div class="header-right">
-        <div class="notifications">
-          <button class="notifications-button"><i class="fas fa-bell"></i></button>
-        </div>
         <div class="user-profile">
           <div class="avatar">{{ userProfile.initials }}</div>
           <div>
@@ -37,17 +34,14 @@
       </div>
     </header>
 
-    <!-- Main Content -->
     <main class="main-content">
       <div class="content-wrapper">
-        <!-- Tasks Management Section -->
         <section class="tasks-section">
           <div class="section-header">
             <h2>Diákok Feladatai</h2>
             <button class="btn-primary" @click="showCreateTaskModal"><i class="fas fa-plus"></i> Új Feladat</button>
           </div>
 
-          <!-- Filter/Search -->
           <div class="filters">
             <div class="search-box">
               <input 
@@ -66,7 +60,6 @@
             </select>
           </div>
 
-          <!-- Tasks Table -->
           <div class="tasks-table-container">
             <table class="tasks-table">
               <thead>
@@ -114,14 +107,12 @@
             </table>
           </div>
 
-          <!-- Empty State -->
           <div v-if="filteredTasks.length === 0" class="empty-state">
             <i class="fas fa-inbox"></i>
             <p>Nincsenek feladatok a keresési feltételeknek megfelelően</p>
           </div>
         </section>
 
-        <!-- Statistics Section -->
         <section class="statistics-section" id="statPeriod">
           <h2>Statisztika</h2>
           <div class="stats-grid">
@@ -160,6 +151,59 @@
 
     
 </div>
+
+<div class="modal" :class="{ active: showModal }">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Új feladat hozzáadása</h3>
+      <button class="close-modal" @click="closeModal">&times;</button>
+    </div>
+
+    <form @submit.prevent="handleTaskSubmit">
+      <div class="form-group">
+        <label for="taskTitle">Feladat címe</label>
+        <input type="text" id="taskTitle" v-model="newTask.title" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label for="taskDescription">Leírás</label>
+        <textarea id="taskDescription" v-model="newTask.description" class="form-control" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="taskStudent">Felelős diák</label>
+        <select id="taskStudent" v-model="newTask.studentId" class="form-control" required>
+          <option value="">Válassz diákot</option>
+          <option v-for="student in students" :key="student.id" :value="student.id">
+            {{ student.teljes_nev }} ({{ student.felhasznalonev }})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="taskPriority">Prioritás</label>
+          <select id="taskPriority" v-model="newTask.priority" class="form-control" required>
+            <option value="">Válassz prioritást</option>
+            <option value="low">Alacsony</option>
+            <option value="medium">Közepes</option>
+            <option value="high">Magas</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="taskDeadline">Határidő</label>
+        <input type="date" id="taskDeadline" v-model="newTask.deadline" class="form-control" required>
+      </div>
+
+      <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button type="button" class="btn btn-outline" @click="closeModal">Mégse</button>
+        <button type="submit" class="btn btn-primary">Mentés</button>
+      </div>
+    </form>
+  </div>
+</div>
 </template>
 
 <script>
@@ -178,80 +222,17 @@ export default {
       },
       searchQuery: '',
       statusFilter: '',
-      tasks: [
-        {
-          id: 1,
-          studentName: 'Nagy Péter',
-          studentInitials: 'NP',
-          taskName: 'api call',
-          deadline: '2026-02-05',
-          status: 'in-progress',
-          progress: 65
-        },
-        {
-          id: 2,
-          studentName: 'Szabó Anna',
-          studentInitials: 'SZA',
-          taskName: 'api Magyara forditasa',
-          deadline: '2026-02-03',
-          status: 'completed',
-          progress: 100
-        },
-        {
-          id: 3,
-          studentName: 'Kiss János',
-          studentInitials: 'KJ',
-          taskName: 'rest api',
-          deadline: '2026-02-01',
-          status: 'late',
-          progress: 30
-        },
-        {
-          id: 4,
-          studentName: 'Kovács Márta',
-          studentInitials: 'KM',
-          taskName: 'frontend',
-          deadline: '2026-02-10',
-          status: 'new',
-          progress: 0
-        },
-        {
-          id: 5,
-          studentName: 'Tóth Zsolt',
-          studentInitials: 'TZ',
-          taskName: 'backend',
-          deadline: '2026-02-07',
-          status: 'in-progress',
-          progress: 45
-        },
-        {
-          id: 6,
-          studentName: 'Nagy Péter',
-          studentInitials: 'NP',
-          taskName: 'db design ',
-          deadline: '2026-02-15',
-          status: 'new',
-          progress: 0
-        },
-        {
-          id: 7,
-          studentName: 'Szabó Anna',
-          studentInitials: 'SZA',
-          taskName: 'js integration',
-          deadline: '2026-02-08',
-          status: 'in-progress',
-          progress: 80
-        },
-        {
-          id: 8,
-          studentName: 'Kiss János',
-          studentInitials: 'KJ',
-          taskName: 'testing',
-          deadline: '2026-02-04',
-          status: 'late',
-          progress: 50
-        }
-      ]
+      showModal: false,
+      students: [],
+      projects: [],
+      newTask: {
+        title: '',
+        description: '',
+        priority: '',
+        studentId: '',
+        deadline: ''
+      },
+      tasks: []
     }
   },
   computed: {
@@ -310,7 +291,65 @@ export default {
       return new Date(dateString).toLocaleDateString('hu-HU', options);
     },
     showCreateTaskModal() {
-      alert('Új feladat létrehozása - később implementálandó');
+      this.showModal = true;
+      this.newTask = {
+        title: '',
+        description: '',
+        priority: '',
+        studentId: '',
+        deadline: ''
+      };
+    },
+    closeModal() {
+      this.showModal = false;
+    },
+    async handleTaskSubmit() {
+      if (!this.newTask.title || !this.newTask.studentId || !this.newTask.deadline || !this.newTask.priority) {
+        alert('Kérlek töltsd ki az összes kötelező mezőt!');
+        return;
+      }
+
+      const projektId = this.projects.length > 0 ? parseInt(this.projects[0].id) : 1;
+
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch('http://localhost:3000/api/project/ujFeladat', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            projekt_id: projektId,
+            feladat_nev: this.newTask.title,
+            feladat_leiras: this.newTask.description,
+            felelos_id: parseInt(this.newTask.studentId),
+            prioritas: this.mapPriorityToHungarian(this.newTask.priority),
+            statusz: 'folyamatban',
+            hatarido: this.newTask.deadline
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert('Feladat sikeresen létrehozva!');
+          this.closeModal();
+          await this.fetchTasks();
+        } else {
+          alert('Hiba a feladat létrehozásakor: ' + (data.message || 'Ismeretlen hiba'));
+        }
+      } catch (e) {
+        console.error('Feladat létrehozási hiba:', e);
+        alert('Hiba a feladat létrehozásakor!');
+      }
+    },
+    mapPriorityToHungarian(priority) {
+      const map = {
+        'low': 'alacsony',
+        'medium': 'közepes',
+        'high': 'magas'
+      };
+      return map[priority] || priority;
     },
     viewTaskDetails(task) {
       alert(`${task.studentName} - ${task.taskName} részletei - később implementálandó`);
@@ -374,10 +413,80 @@ export default {
       } catch (error) {
         console.error('Felhasználó adatainak lekérése sikertelen:', error);
       }
+    },
+    async fetchStudents() {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch('http://localhost:3000/api/project/projektTag', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          this.students = data.data.filter(u => u.szerep_tipus === 'diak');
+        }
+        
+        const projectRes = await fetch('http://localhost:3000/api/project/projektek', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const projectData = await projectRes.json();
+        if (projectData.success && projectData.data && Array.isArray(projectData.data.projects)) {
+          this.projects = projectData.data.projects;
+        }
+        
+        await this.fetchTasks();
+      } catch (e) {
+        console.error('Hiba az adatok lekérdezésekor:', e);
+      }
+    },
+    async fetchTasks() {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch('http://localhost:3000/api/project/feladatok', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (data.success && data.data && Array.isArray(data.data.tasks)) {
+          this.tasks = data.data.tasks.map(task => {
+            const student = this.students.find(s => s.id === task.felelos_id);
+            const studentName = student ? student.teljes_nev : 'Ismeretlen';
+            const studentInitials = student ? this.generateInitials(student.teljes_nev) : '?';
+            
+            return {
+              id: task.id,
+              studentName: studentName,
+              studentInitials: studentInitials,
+              taskName: task.feladat_nev,
+              deadline: task.hatarido,
+              status: this.mapTaskStatus(task.statusz),
+              progress: this.calculateProgress(task.statusz)
+            };
+          });
+        }
+      } catch (e) {
+        console.error('Hiba a feladatok lekérdezésekor:', e);
+      }
+    },
+    mapTaskStatus(statusz) {
+      const statusMap = {
+        'folyamatban': 'in-progress',
+        'befejezett': 'completed',
+        'késett': 'late'
+      };
+      return statusMap[statusz] || 'in-progress';
+    },
+    calculateProgress(statusz) {
+      const progressMap = {
+        'folyamatban': 50,
+        'befejezett': 100,
+        'késett': 30
+      };
+      return progressMap[statusz] || 0;
     }
   },
   mounted() {
     this.fetchUserProfile();
+    this.fetchStudents();
   },
   setup() {
     const router = useRouter();
@@ -416,7 +525,7 @@ export default {
   color: var(--primary);
   font-weight: 500;
 }
-/* Tasks Section */
+
 .tasks-section {
   flex: 1;
   background: white;
@@ -445,7 +554,6 @@ export default {
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
-/* Filters */
 .filters {
   display: flex;
   gap: 15px;
@@ -495,7 +603,6 @@ export default {
   border-color: #667eea;
 }
 
-/* Tasks Table */
 .tasks-table-container {
   overflow-x: auto;
 }
@@ -687,7 +794,6 @@ export default {
   transform: scale(1.1);
 }
 
-/* Empty State */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -704,7 +810,6 @@ export default {
   font-size: 16px;
 }
 
-/* Statistics Section */
 .statistics-section {
   width: 350px;
   background: white;
@@ -774,7 +879,6 @@ export default {
     color: white;
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
@@ -1009,5 +1113,103 @@ export default {
   .stat-value {
     font-size: 1rem;
   }
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-size: 1.3rem;
+  color: var(--primary);
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6c757d;
+}
+
+.close-modal:hover {
+  color: #000;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: var(--primary);
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+.btn-outline {
+  background: white;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-outline:hover {
+  background: var(--primary);
+  color: white;
 }
 </style>

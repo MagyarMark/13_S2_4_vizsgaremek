@@ -2,7 +2,6 @@
   <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
@@ -17,15 +16,11 @@
       </ul>
     </aside>
 
-    <!-- Header -->
     <header>
       <div class="header-left">
         <h1>Diák Dashboard</h1>
       </div>
       <div class="header-right">
-        <div class="notifications">
-          <button class="notifications-button"><i class="fas fa-bell"></i></button>
-        </div>
         <div class="user-profile">
           <div class="avatar">{{ userProfile.initials }}</div>
           <div>
@@ -39,13 +34,11 @@
       </div>
     </header>
 
-    <!-- Main Content -->
     <main>
       <div class="page-title">
         <h2>Áttekintés</h2>
       </div>
 
-      <!-- Stats Cards -->
       <div class="stats-cards">
         <div class="stat-card">
           <div class="stat-icon bg-primary">
@@ -85,7 +78,6 @@
         </div>
       </div>
 
-      <!-- Közelgő határidők -->
       <section class="section">
         <div class="section-header">
           <h3><i class="fas fa-clock"></i> Közelgő határidők</h3>
@@ -123,6 +115,36 @@
             <div class="task-footer">
               <div class="task-status status-late">Késésben</div>
               <button class="btn btn-primary">Beadás</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h3><i class="fas fa-columns"></i> Projekt: Webfejlesztés</h3>
+          <a href="#">További projektek</a>
+        </div>
+        <div class="kanban-container">
+          <div class="kanban-column" 
+               v-for="column in kanbanColumns" 
+               :key="column.id"
+               @dragover="dragOver"
+               @drop="drop(column.id)"
+               @dragleave="dragLeave">
+            <h4>{{ column.title }}</h4>
+            <div class="kanban-card"
+                 v-for="card in column.cards" 
+                 :key="card.id"
+                 draggable="true"
+                 @dragstart="dragStart(card, column.id)"
+                 @dragend="dragEnd">
+              <h5>{{ card.title }}</h5>
+              <p>{{ card.description }}</p>
+              <div class="card-meta">
+                <span>{{ card.deadline }}</span>
+                <span>{{ card.assignee }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -175,7 +197,6 @@ margin: 0;
   position: relative;
 }
 
-/* Header - FIXÁLVA*/
 .dashboard-wrapper header {
   grid-area: header;
   background: white;
@@ -251,7 +272,6 @@ margin: 0;
   color: var(--dark);
 }
 
-/* Sidebar - FIXÁLVA */
 .dashboard-wrapper .sidebar {
   grid-area: sidebar;
   background: var(--sidebar);
@@ -318,7 +338,6 @@ margin: 0;
   text-align: center;
 }
 
-/* Main Content - FIXÁLVA A PADDING */
 .dashboard-wrapper main {
   grid-area: main;
   background: var(--bg-light);
@@ -382,7 +401,6 @@ margin: 0;
 .dashboard-wrapper .bg-warning { background: var(--warning); }
 .dashboard-wrapper .bg-danger { background: var(--danger); }
 
-/* Sections */
 .dashboard-wrapper .section {
   background: white;
   border-radius: 10px;
@@ -428,7 +446,6 @@ margin: 0;
   background: var(--secondary);
 }
 
-/* Tasks */
 .dashboard-wrapper .tasks-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -492,8 +509,171 @@ margin: 0;
 .dashboard-wrapper .status-graded { background: #d4edda; color: #155724; }
 .dashboard-wrapper .status-late { background: #f8d7da; color: #721c24; }
 
+.dashboard-wrapper .kanban-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
 
-/* Közepes képernyők */
+.dashboard-wrapper .kanban-column {
+  background: #f8f9fa;
+  border-radius: 5px;
+  padding: 1rem;
+  min-height: 400px;
+  background-color: #e0e0e0;
+}
+
+.dashboard-wrapper .kanban-column h4 {
+  margin-bottom: 1rem;
+  text-align: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--dark);
+}
+
+.dashboard-wrapper .kanban-card {
+  background: white;
+  border-radius: 5px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  cursor: move;
+  transition: all 0.2s;
+}
+
+.dashboard-wrapper .kanban-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.dashboard-wrapper .kanban-card:active {
+  opacity: 0.7;
+  cursor: grabbing;
+}
+
+.dashboard-wrapper .kanban-card h5 {
+  margin-bottom: 0.5rem;
+  color: var(--dark);
+}
+
+.dashboard-wrapper .kanban-card p {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-wrapper .card-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.dashboard-wrapper .chat-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.5rem;
+  height: 400px;
+}
+
+.dashboard-wrapper .chat-sidebar {
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+.dashboard-wrapper .chat-sidebar h4 {
+  margin-bottom: 1rem;
+  color: var(--dark);
+}
+
+.dashboard-wrapper .chat-list {
+  list-style: none;
+}
+
+.dashboard-wrapper .chat-item {
+  padding: 0.75rem;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background 0.3s;
+  color: var(--dark);
+}
+
+.dashboard-wrapper .chat-item:hover, 
+.dashboard-wrapper .chat-item.active {
+  background: #f0f2f5;
+}
+
+.dashboard-wrapper .chat-main {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+.dashboard-wrapper .chat-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--dark);
+}
+
+.dashboard-wrapper .chat-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dashboard-wrapper .message {
+  max-width: 70%;
+  padding: 0.75rem;
+  border-radius: 10px;
+}
+
+.dashboard-wrapper .message.sent {
+  align-self: flex-end;
+  background: var(--primary);
+  color: white;
+}
+
+.dashboard-wrapper .message.received {
+  align-self: flex-start;
+  background: #f0f2f5;
+  color: var(--dark);
+}
+
+.dashboard-wrapper .chat-input {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dashboard-wrapper .chat-input input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.dashboard-wrapper .chat-input button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+
 @media (max-width: 992px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
@@ -520,6 +700,10 @@ margin: 0;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
 
+  .dashboard-wrapper .kanban-container {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
   .dashboard-wrapper .chat-container {
     grid-template-columns: 1fr;
   }
@@ -540,7 +724,6 @@ margin: 0;
   }
 }
 
-/* Mobil képernyők */
 @media (max-width: 768px) {
   .dashboard-wrapper header {
     flex-direction: column;
@@ -582,6 +765,10 @@ margin: 0;
     grid-template-columns: 1fr;
   }
 
+  .dashboard-wrapper .kanban-container {
+    grid-template-columns: 1fr;
+  }
+
   .dashboard-wrapper .chat-container {
     display: flex;
     flex-direction: column;
@@ -613,258 +800,6 @@ margin: 0;
   }
 }
 
-/* Tablet nézet (768px) */
-@media (max-width: 768px) {
-  .dashboard-wrapper {
-    grid-template-columns: 1fr;
-    grid-template-rows: 60px 1fr;
-    grid-template-areas:
-      "header"
-      "main";
-  }
-
-  .dashboard-wrapper .sidebar {
-    display: none;
-  }
-
-  .dashboard-wrapper header {
-    left: 0;
-    width: 100%;
-  }
-
-  .dashboard-wrapper main {
-    margin-top: 60px;
-    padding: 1rem;
-  }
-
-  .dashboard-wrapper .header-right {
-    gap: 0.75rem;
-  }
-
-  .dashboard-wrapper .user-name,
-  .dashboard-wrapper .user-role {
-    display: none;
-  }
-
-  .dashboard-wrapper .avatar {
-    width: 36px;
-    height: 36px;
-  }
-
-  .dashboard-wrapper .stats-cards {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-
-  .dashboard-wrapper .tasks-container {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-wrapper .task-card {
-    padding: 1rem;
-  }
-}
-
-/* Mobil nézet (600px) */
-@media (max-width: 600px) {
-  .dashboard-wrapper {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-wrapper header {
-    padding: 0 1rem;
-    height: 56px;
-  }
-
-  .dashboard-wrapper main {
-    padding: 0.75rem;
-    margin-top: 56px;
-  }
-
-  .dashboard-wrapper .header-left {
-    gap: 0.5rem;
-  }
-
-  .dashboard-wrapper .header-left h1 {
-    font-size: 1.1rem;
-  }
-
-  .dashboard-wrapper .header-right {
-    gap: 0.5rem;
-  }
-
-  .dashboard-wrapper .notifications-button {
-    margin-left: 0;
-  }
-
-  .dashboard-wrapper .user-profile {
-    margin-left: 0;
-  }
-
-  .dashboard-wrapper .logout-button {
-    display: none;
-  }
-
-  .dashboard-wrapper .page-title {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .dashboard-wrapper .page-title h2 {
-    font-size: 1.3rem;
-  }
-
-  .dashboard-wrapper .stat-card {
-    padding: 1rem;
-    gap: 0.75rem;
-  }
-
-  .dashboard-wrapper .stat-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
-  }
-
-  .dashboard-wrapper .stat-info h3 {
-    font-size: 1.5rem;
-  }
-
-  .dashboard-wrapper .stat-info p {
-    font-size: 0.8rem;
-  }
-
-  .dashboard-wrapper .stats-cards {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-  }
-
-  .dashboard-wrapper .task-card {
-    padding: 0.875rem;
-  }
-
-  .dashboard-wrapper .task-header {
-    gap: 0.5rem;
-  }
-
-  .dashboard-wrapper .task-title {
-    font-size: 1rem;
-  }
-
-  .dashboard-wrapper .task-date {
-    font-size: 0.8rem;
-  }
-
-  .dashboard-wrapper .task-desc {
-    font-size: 0.85rem;
-    line-height: 1.3;
-  }
-
-  .dashboard-wrapper .btn {
-    padding: 0.6rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .dashboard-wrapper .section {
-    padding: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .dashboard-wrapper .section-header {
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .dashboard-wrapper .section-header h3 {
-    font-size: 1.1rem;
-  }
-
-  .dashboard-wrapper .chat-container {
-    height: 400px;
-    flex-direction: column;
-  }
-
-  .dashboard-wrapper .chat-sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    max-height: 100px;
-    overflow-y: auto;
-  }
-
-  .dashboard-wrapper .chat-main {
-    height: 300px;
-  }
-}
-
-/* Nagyon kis mobilok (400px) */
-@media (max-width: 400px) {
-  .dashboard-wrapper header {
-    padding: 0 0.75rem;
-  }
-
-  .dashboard-wrapper main {
-    padding: 0.5rem;
-  }
-
-  .dashboard-wrapper .header-left h1 {
-    font-size: 1rem;
-  }
-
-  .dashboard-wrapper .avatar {
-    width: 32px;
-    height: 32px;
-    font-size: 0.75rem;
-  }
-
-  .dashboard-wrapper .page-title h2 {
-    font-size: 1.2rem;
-  }
-
-  .dashboard-wrapper .stats-cards {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
-  .dashboard-wrapper .stat-card {
-    padding: 0.75rem;
-  }
-
-  .dashboard-wrapper .stat-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
-  }
-
-  .dashboard-wrapper .stat-info h3 {
-    font-size: 1.3rem;
-  }
-
-  .dashboard-wrapper .section {
-    padding: 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .dashboard-wrapper .btn {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.85rem;
-  }
-
-  .dashboard-wrapper .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .dashboard-wrapper table {
-    font-size: 0.8rem;
-  }
-
-  .dashboard-wrapper th,
-  .dashboard-wrapper td {
-    padding: 0.4rem;
-  }
-}
-
-/* Nagyon kis mobilok */
 @media (max-width: 480px) {
   .dashboard-wrapper header {
     padding: 0.5rem;
@@ -913,7 +848,76 @@ export default {
         felhasznalonev: '',
         szerep_tipus: 'diak',
         initials: ''
-      }
+      },
+      draggedCard: null,
+      draggedFromColumn: null,
+      kanbanColumns: [
+        {
+          id: 'todo',
+          title: 'Teendő',
+          cards: [
+            {
+              id: 1,
+              title: 'Design tervek',
+              description: 'UI/UX tervek elkészítése',
+              deadline: 'Határidő: 11.20.',
+              assignee: 'monogram'
+            }
+          ]
+        },
+        {
+          id: 'inprogress',
+          title: 'Folyamatban',
+          cards: [
+            {
+              id: 2,
+              title: 'Frontend fejlesztés',
+              description: 'Főoldal komponensek',
+              deadline: 'Határidő: 11.25.',
+              assignee: 'monogram'
+            }
+          ]
+        },
+        {
+          id: 'review',
+          title: 'Ellenőrzés',
+          cards: [
+            {
+              id: 3,
+              title: 'Adatbázis design',
+              description: 'ER diagram és séma',
+              deadline: 'Határidő: 11.18.',
+              assignee: 'monogram'
+            }
+          ]
+        },
+        {
+          id: 'submitted',
+          title: 'Beadva',
+          cards: [
+            {
+              id: 4,
+              title: 'Projekt terv',
+              description: 'Részletes projektterv',
+              deadline: 'Beadva: 11.05.',
+              assignee: 'monogram'
+            }
+          ]
+        },
+        {
+          id: 'done',
+          title: 'Kész',
+          cards: [
+            {
+              id: 5,
+              title: 'Követelmények',
+              description: 'Funkcionális specifikáció',
+              deadline: 'Kész: 10.30.',
+              assignee: 'Csapat'
+            }
+          ]
+        }
+      ]
     }
   },
   methods: {
@@ -932,6 +936,36 @@ export default {
       if (!name) return '';
       const parts = name.split(' ');
       return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2);
+    },
+        dragStart(card, columnId) {
+      this.draggedCard = card;
+      this.draggedFromColumn = columnId;
+    },
+    dragEnd() {
+      this.draggedCard = null;
+      this.draggedFromColumn = null;
+    },
+    dragOver(event) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    },
+    dragLeave(event) {
+      if (event.currentTarget === event.target) {
+        event.currentTarget.style.backgroundColor = '';
+      }
+    },
+    drop(columnId) {
+      if (this.draggedCard) {
+        const fromColumn = this.kanbanColumns.find(col => col.id === this.draggedFromColumn);
+        const cardIndex = fromColumn.cards.findIndex(card => card.id === this.draggedCard.id);
+        
+        if (cardIndex > -1) {
+          fromColumn.cards.splice(cardIndex, 1);
+        }
+        
+        const toColumn = this.kanbanColumns.find(col => col.id === columnId);
+        toColumn.cards.push(this.draggedCard);
+      }
     },
     async fetchUserProfile() {
       try {

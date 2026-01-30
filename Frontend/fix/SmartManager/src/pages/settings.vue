@@ -2,7 +2,6 @@
   <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
@@ -10,7 +9,6 @@
         <p v-else>Diák Portál</p>
       </div>
 
-      <!-- Tanár navigáció -->
       <ul v-if="userProfile.szerep_tipus === 'tanar'" class="nav-links">
         <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
         <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
@@ -19,7 +17,6 @@
         <router-link to="/settings" class="active"><li ><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
 
-      <!-- Diák navigáció -->
       <ul v-else class="nav-links">
         <router-link to="/diak"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
         <router-link to="/task"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
@@ -29,9 +26,7 @@
       </ul>
     </aside>
 
-    <!-- Main content -->
     <main class="main-content">
-      <!-- Header -->
       <header class="page-header">
         <div class="header-left">
           <h1>Beállítások</h1>
@@ -53,7 +48,6 @@
         </div>
       </header>
 
-      <!-- Settings panel -->
       <section class="settings-panel">
         <nav class="settings-nav">
           <button :class="{active: activeTab==='profile'}" @click="activeTab='profile'"><i class="fas fa-user"></i> Profil</button>
@@ -63,7 +57,6 @@
         </nav>
 
         <div class="settings-content">
-          <!-- Profile -->
           <div v-if="activeTab === 'profile'" class="card">
             <h2>Profil szerkesztése</h2>
             <form @submit.prevent="saveProfile">
@@ -87,7 +80,6 @@
             </form>
           </div>
 
-          <!-- Account -->
           <div v-if="activeTab === 'account'" class="card">
             <h2>Fiók beállítások</h2>
             <form @submit.prevent="saveAccount">
@@ -118,17 +110,12 @@
             </form>
           </div>
 
-          <!-- Notifications -->
           <div v-if="activeTab === 'notifications'" class="card">
             <h2>Értesítések</h2>
             <form @submit.prevent="saveNotifications">
               <div class="form-row inline">
                 <label>Email értesítések</label>
                 <input type="checkbox" v-model="notifications.email" />
-              </div>
-              <div class="form-row inline">
-                <label>Mobil / SMS</label>
-                <input type="checkbox" v-model="notifications.sms" />
               </div>
               <div class="form-row inline">
                 <label>Push értesítések</label>
@@ -143,7 +130,6 @@
             </form>
           </div>
 
-          <!-- Appearance -->
           <div v-if="activeTab === 'appearance'" class="card">
             <h2>Megjelenés</h2>
             <form @submit.prevent="saveAppearance">
@@ -211,7 +197,6 @@ export default {
 
     const notifications = reactive({
       email: true,
-      sms: false,
       push: true
     })
 
@@ -319,7 +304,6 @@ export default {
             initials: generateInitials(user.teljes_nev || user.felhasznalonev)
           };
           
-          // Form adatok feltöltése
           profile.teljes_nev = user.teljes_nev || user.felhasznalonev;
           profile.felhasznalonev = user.felhasznalonev;
           profile.email = user.email;
@@ -549,7 +533,6 @@ export default {
   font-family: Inter, Arial, sans-serif;
 }
 
-/* Main content */
 .main-content {
   flex: 1;
   background: #f3f4f6;
@@ -557,7 +540,6 @@ export default {
   box-sizing: border-box;
 }
 
-/* Settings panel */
 .settings-panel { display:flex; gap:20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);}
 .settings-nav {
   width: 200px;
@@ -585,7 +567,6 @@ export default {
   box-shadow: 0 1px 6px rgba(2,6,23,0.06);
 }
 
-/* Card */
 .card {
   background:#fff;
   padding:18px;
@@ -602,7 +583,6 @@ export default {
   color: var(--dark);
 }
 
-/* Form */
 .form-row { display:flex; flex-direction:column; margin-bottom:12px; }
 .form-row.inline { flex-direction:row; gap:12px; align-items:center; }
 .form-row label { font-size:13px; color:#374151; margin-bottom:6px; }
@@ -619,7 +599,6 @@ export default {
 
 .message { margin-top:10px; color:#065f46; background:#ecfdf5; padding:8px 10px; border-radius:6px; font-size:13px; }
 
-/* Dark theme quick */
 :root.dark-theme .main-content { background:#0b1220; color:#e6eef8; }
 :root.dark-theme .card { background:#081125; box-shadow:none; color:#dbeafe; }
 :root.dark-theme .settings-nav button { color:#9aa8c2; }
@@ -628,7 +607,6 @@ export default {
 :root.dark-theme .card h3{ color:#e6eef8;  }
 :root.dark-theme .card label{ color:#e6eef8;  }
 
-/* Tablet nézet (768px) */
 @media (max-width: 768px) {
   .dashboard-wrapper {
     flex-direction: column;
@@ -677,7 +655,6 @@ export default {
   }
 }
 
-/* Mobil nézet (600px) */
 @media (max-width: 600px) {
   .main-content {
     padding: 80px 0.75rem 0.75rem;
@@ -744,7 +721,6 @@ export default {
   }
 }
 
-/* Nagyon kis mobilok (400px) */
 @media (max-width: 400px) {
   .main-content {
     padding: 70px 0.5rem 0.5rem;

@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req,res) => {
-    res.sendFile(path.join(__dirname, "teamwork.vue"));
+    res.sendFile(path.join(__dirname, "teamwork.html"));
 })
 
 app.post('/api/upload', 
@@ -132,6 +132,9 @@ app.use('/api/auth', authRoutes);
 
 const projectRoutes = require('./routes/project');
 app.use('/api/project', projectRoutes);
+
+const messagesRoutes = require('./routes/messages');
+app.use('/api/messages', messagesRoutes);
 
 module.exports = app;
 

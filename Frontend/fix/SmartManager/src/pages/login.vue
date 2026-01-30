@@ -130,7 +130,6 @@ export default {
 
         if (data.success && data.data && data.data.user && data.data.accessToken) {
 
-          // TOKENEK MENTÉSE ELEGEM VAN :)
           localStorage.setItem('user', JSON.stringify(data.data.user));
           localStorage.setItem('accessToken', data.data.accessToken);
           localStorage.setItem('refreshToken', data.data.refreshToken);
