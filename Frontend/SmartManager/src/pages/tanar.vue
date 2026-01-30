@@ -1,7 +1,7 @@
 <template>
     <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <!-- Sidebar -->
+
     <aside class="sidebar" :class="{ open: showSidebar }">
         <div class="logo">
             <h2>Smart<span>Manager</span></h2>
@@ -9,15 +9,14 @@
         </div>
         <ul class="nav-links">
             <li><a href="#" class="active"><i class="fas fa-home"></i> Áttekintés</a></li>
-            <li><a href="#"><i class="fas fa-tasks"></i> Feladatok</a></li>
-            <li><a href="#"><i class="fas fa-check-circle"></i> Értékelés</a></li>
-            <li><a href="#statPeriod"><i class="fas fa-chart-bar"></i> Statisztika</a></li>
-            <li><a href="#"><i class="fas fa-comments"></i> Üzenetek</a></li>
-            <li><a href="#"><i class="fas fa-cog"></i> Beállítások</a></li>
+            <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+            <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
+            <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
+            <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
         </ul>
     </aside>
 
-    <!-- Header -->
+
     <header>
         <div class="header-left">
             <button class="hamburger" @click="showSidebar = !showSidebar" aria-label="Toggle menu">
@@ -26,27 +25,28 @@
             <h1>Tanári Dashboard</h1>
         </div>
         <div class="header-right">
-            <div class="notifications">
-                <i class="fas fa-bell"></i>
-            </div>
+          <div class="notifications">
+            <button class="notifications-button" title="Értesítések"><i class="fas fa-bell"></i></button>
+          </div>
             <div class="user-profile">
-                <div class="avatar">KN</div>
+                <div class="avatar">{{ userProfile.initials }}</div>
                 <div>
-                    <div class="user-name">Kovács Nóra</div>
-                    <div class="user-role">Tanár</div>
+                    <div class="user-name">{{ userProfile.teljes_nev || userProfile.felhasznalonev }}</div>
+                    <div class="user-role">{{ getRoleLabel(userProfile.szerep_tipus) }}</div>
+                </div>
+                <div class="logout-button">
+                  <button @click="logout" title="Kijelentkezés"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main>
         <div class="page-title">
             <h2>Áttekintés</h2>
             <button class="btn btn-primary new-task-button" id="new-task-button" @click="showModal = true"><i class="fas fa-plus"></i> Új feladat</button>
         </div>
 
-        <!-- Stats Cards -->
         <div class="stats-cards">
             <div class="stat-card">
                 <div class="stat-icon bg-primary">
@@ -86,7 +86,6 @@
             </div>
         </div>
 
-        <!-- Legutóbb beadott feladatok -->
         <section class="section">
             <div class="section-header">
                 <h3><i class="fas fa-history"></i> Legutóbb beadott feladatok</h3>
@@ -150,7 +149,6 @@
             </div>
         </section>
 
-        <!-- Aktív feladatok -->
         <section class="section">
             <div class="section-header">
                 <h3><i class="fas fa-clipboard-list"></i> Aktív feladatok</h3>
@@ -208,7 +206,7 @@
                 <div class="assignment-card">
                     <div class="assignment-header">
                         <div class="assignment-title">Flowchart készítése</div>
-                        <div class="assignment-date">Határidő: 2025.12.10</div>
+                        <div class="assignment-date">Határidő: 2025.12.19</div>
                     </div>
                     <div class="assignment-stats">
                         <div class="stat">
@@ -232,7 +230,6 @@
             </div>
         </section>
 
-        <!-- Statisztika -->
               <section class="section">
         <div class="section-header">
           <h3><i class="fas fa-chart-line"></i> Osztály statisztika</h3>
@@ -254,7 +251,6 @@
         </div>
       </section>
 
-        <!-- Legjobb és legrosszabb teljesítők -->
         <section class="section">
             <div class="section-header">
                 <h3><i class="fas fa-trophy"></i> Teljesítmény rangsor</h3>
@@ -313,7 +309,6 @@
         </section>
     </main>
 
-    <!-- Új feladat modal -->
     <div class="modal" :class="{ active: showModal }">
       <div class="modal-content">
         <div class="modal-header">
@@ -355,6 +350,7 @@
 
 <script>
 import { onMounted, ref } from "vue";
+import { useRouter } from 'vue-router';
 import { Chart, registerables } from "chart.js";
 
 Chart.register(...registerables);
@@ -366,6 +362,12 @@ export default {
     const showSidebar = ref(false);
     const performanceChart = ref(null);
     const submissionChart = ref(null);
+    const userProfile = ref({
+      teljes_nev: '',
+      felhasznalonev: '',
+      szerep_tipus: 'tanar',
+      initials: ''
+    });
 
     const assignment = ref({
       title: "",
@@ -387,8 +389,81 @@ export default {
       };
     };
 
+    const getRoleLabel = (role) => {
+      const roleMap = {
+        'diak': 'Diák',
+        'tanar': 'Tanár',
+        'admin': 'Adminisztrátor'
+      };
+      return roleMap[role] || role;
+    };
+
+    const generateInitials = (name) => {
+      if (!name) return '';
+      const parts = name.split(' ');
+      return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2);
+    };
+
+    const fetchUserProfile = async () => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        const token = localStorage.getItem('accessToken');
+        
+        if (!storedUser || !token) {
+          console.warn('Nincs bejelentkezett felhasználó');
+          router.push('/login');
+          return;
+        }
+
+        const userData = JSON.parse(storedUser);
+        
+        const response = await fetch(`http://localhost:3000/api/auth/profileData`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Felhasználó adatainak lekérése sikertelen');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.user ) {
+          const user = data.data.user;
+          userProfile.value = {
+            teljes_nev: user.teljes_nev || user.felhasznalonev,
+            felhasznalonev: user.felhasznalonev,
+            szerep_tipus: user.szerep_tipus,
+            email: user.email,
+            id: user.id,
+            initials: generateInitials(user.teljes_nev || user.felhasznalonev)
+          };
+        }
+      } catch (error) {
+        console.error('Felhasználó adatainak lekérése sikertelen:', error);
+      }
+    };
+
+    const router = useRouter();
+
+    const logout = () => {
+      try {
+        localStorage.removeItem('user');
+        localStorage.removeItem('sm_settings');
+        localStorage.removeItem('sm_appearance');
+      } catch (e) {
+        console.warn('Hiba a localStorage törlésekor:', e);
+      }
+      router.push('/home');
+    };
+
     onMounted(() => {
-      // Chart.js inicializálás és rögzítése
+      fetchUserProfile();
+
+      // Chart.js cucc
       if (performanceChart.value) {
         new Chart(performanceChart.value.getContext("2d"), {
           type: "bar",
@@ -440,7 +515,7 @@ export default {
       }
     });
 
-    return { showModal, showSidebar, performanceChart, submissionChart, assignment, submitAssignment };
+    return { showModal, showSidebar, performanceChart, submissionChart, assignment,userProfile , submitAssignment , getRoleLabel, fetchUserProfile, generateInitials, logout };
   },
 };
 </script>
@@ -481,7 +556,6 @@ export default {
             min-height: 100vh;
         }
 
-        /* Header */
         header {
             grid-area: header;
             background: white;
@@ -548,7 +622,6 @@ export default {
             font-weight: bold;
         }
 
-        /* Sidebar */
         .sidebar {
             grid-area: sidebar;
             background: var(--sidebar);
@@ -600,7 +673,6 @@ export default {
             text-align: center;
         }
 
-        /* Main Content */
         main {
             grid-area: main;
             padding: 2rem;
@@ -679,7 +751,6 @@ export default {
             background: var(--danger);
         }
 
-        /* Sections */
         .section {
             background: white;
             border-radius: 10px;
@@ -730,7 +801,6 @@ export default {
             color: white;
         }
 
-        /* Table Styles */
         .table-container {
             overflow-x: auto;
             color: var(--dark);
@@ -785,7 +855,6 @@ export default {
             color: var(--dark);
         }
 
-        /* Assignment Cards */
         .assignments-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -931,7 +1000,6 @@ export default {
             height: 300px;
         }
 
-/* Tablet nézet */
 @media (max-width: 1024px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
@@ -941,7 +1009,6 @@ export default {
       "main";
   }
 
-  /* Sidebar teljesen elrejtve */
   .sidebar {
     display: none !important;
   }
@@ -972,10 +1039,73 @@ export default {
   }
 }
 
-/* Mobil nézet */
+@media (max-width: 768px) {
+  .dashboard-wrapper {
+    grid-template-columns: 1fr;
+    grid-template-rows: 60px 1fr;
+    grid-template-areas:
+      "header"
+      "main";
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  header {
+    left: 0;
+    width: 100%;
+  }
+
+  main {
+    margin-top: 60px;
+    padding: 1rem;
+  }
+
+  .header-right {
+    gap: 1rem;
+  }
+
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .assignments-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-container {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card {
+    height: 280px;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 @media (max-width: 600px) {
   header {
     padding: 0 1rem;
+    height: 56px;
+  }
+
+  main {
+    margin-top: 56px;
+    padding: 0.75rem;
+  }
+
+  .header-left h1 {
+    font-size: 1.1rem;
   }
 
   .header-right {
@@ -1004,29 +1134,67 @@ export default {
   }
 
   .btn {
-    width: 100%;
-    text-align: center;
-    font-size: 0.95rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
   }
 
-  /* automatikusan törés a stat kártyákra */
   .stats-cards {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 1rem;
-    overflow-x: hidden;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
   }
 
   .stat-card {
-    flex: 1 1 100%;
-    min-width: 150px;
-    max-width: 48%;
-    box-sizing: border-box;
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .stat-info h3 {
+    font-size: 1.5rem;
+  }
+
+  .stat-info p {
+    font-size: 0.8rem;
+  }
+
+  .section {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-header {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .section-header h3 {
+    font-size: 1.1rem;
   }
 
   .assignments-grid {
     grid-template-columns: 1fr;
+  }
+
+  .assignment-card {
+    padding: 1rem;
+  }
+
+  .assignment-stats {
+    flex-direction: row;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    flex: 1 1 48%;
+    text-align: center;
   }
 
   table {
@@ -1051,6 +1219,22 @@ export default {
     padding: 1rem;
   }
 
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 0.75rem;
+    font-size: 1rem;
+  }
+
+  .charts-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
   .chart-card {
     height: 200px;
   }
@@ -1067,23 +1251,63 @@ export default {
   }
 }
 
-/* kis képernyő */
 @media (max-width: 400px) {
   header h1 {
     font-size: 1rem;
   }
 
+  main {
+    padding: 0.5rem;
+  }
+
   .btn {
     font-size: 0.85rem;
-    padding: 0.4rem 0.6rem;
+    padding: 0.5rem 0.8rem;
+    width: 100%;
+  }
+
+  .page-title {
+    gap: 0.5rem;
+  }
+
+  .page-title h2 {
+    font-size: 1.2rem;
+  }
+
+  .stats-cards {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
 
   .stat-card {
     flex: 1 1 100%;
+    padding: 0.75rem;
     align-items: flex-start;
   }
 
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .stat-info h3 {
+    font-size: 1.3rem;
+  }
+
+  .section {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
   .section-header h3 {
+    font-size: 1rem;
+  }
+
+  .assignment-card {
+    padding: 0.75rem;
+  }
+
+  .assignment-title {
     font-size: 1rem;
   }
 
@@ -1092,7 +1316,18 @@ export default {
   }
 
   th, td {
+    padding: 0.4rem;
     white-space: nowrap;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 0.65rem;
+  }
+
+  .chart-card {
+    height: 150px;
   }
 }
 

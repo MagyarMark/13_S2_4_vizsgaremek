@@ -36,6 +36,45 @@ router.get('/feltoltesek', verifyToken, async (req, res) => {
     }
 });
 
+router.get('/beadas', verifyToken, async (req, res) => {
+    try {
+        const beadasResult = await pool.query(
+            `SELECT 
+                b.id, 
+                b.feladat_id, 
+                b.felhasznalo_id, 
+                b.tanar_id, 
+                b.pontszam, 
+                b.jegy, 
+                b.statusz, 
+                b.visszajelzes, 
+                b.bekuldes_idopont, 
+                b.ertekeles_idopont,
+                f.teljes_nev as student_name,
+                ft.feladat_nev as task_name
+             FROM "Beadas" b
+             LEFT JOIN "Felhasznalo" f ON b.felhasznalo_id = f.id
+             LEFT JOIN "Feladat" ft ON b.feladat_id = ft.id
+             ORDER BY b.ertekeles_idopont DESC NULLS LAST`
+        );
+
+        res.json({
+            success: true,
+            data: {
+                beadasList: beadasResult.rows,
+                count: beadasResult.rows.length
+            }
+        });
+    } catch (error) {
+        console.error('Hiba a beadas lekérdezésekor:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Hiba a beadas lekérdezésekor',
+            error: error.message
+        });
+    }
+});
+
 router.get('/beadas/:beadas_id', verifyToken, async (req, res) => {
     try {
         const { beadas_id } = req.params;
@@ -70,11 +109,13 @@ router.get('/beadas/:beadas_id', verifyToken, async (req, res) => {
 
 router.post('/beadas', verifyToken, [
     body('feladat_id'),
+    body('felhasznalo_id'),
     body('tanar_id'),
     body('pontszam'),
     body('jegy'),
     body('statusz'),
-    body('visszajelzes')
+    body('visszajelzes'),
+    body('ertekeles_idopont').optional()
 ], async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -85,14 +126,13 @@ router.post('/beadas', verifyToken, [
           errors: errors.array()
         });
         }
-        const { feladat_id, tanar_id, pontszam, jegy, statusz, visszajelzes} = req.body;
-        const felhasznalo_id = req.user.id;
+        const { feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, ertekeles_idopont} = req.body;
 
         const beadas = await pool.query(
-            `INSERT INTO "Beadas" (feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+            `INSERT INTO "Beadas" (feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, ertekeles_idopont)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING id, feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, bekuldes_idopont, ertekeles_idopont`,
-             [feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes]
+             [feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, ertekeles_idopont]
         );
         res.status(201).json({
             success: true,

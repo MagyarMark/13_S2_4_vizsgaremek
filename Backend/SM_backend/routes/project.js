@@ -6,6 +6,33 @@ const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+router.get('/projektek', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const projectsResult = await pool.query(
+      `SELECT DISTINCT p.id, p.projekt_nev, p.leiras, p.letrehozo_id, p.statusz, p.hatarido, p.letrehozas_idopont
+       FROM "Projekt" p
+       LEFT JOIN "ProjektTag" pt ON p.id = pt.projekt_id
+       WHERE p.letrehozo_id = $1 OR pt.felhasznalo_id = $1
+       ORDER BY p.letrehozas_idopont DESC`,
+      [userId]
+    );
+    res.json({
+      success: true,
+      data: {
+        projects: projectsResult.rows,
+        count: projectsResult.rows.length
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a projektek lekérése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a projektek lekérése során'
+    });
+  }
+});
+
 router.post('/ujProjekt', verifyToken, [
   body('projekt_nev')
     .notEmpty()
@@ -31,7 +58,7 @@ router.post('/ujProjekt', verifyToken, [
     const letrehozo_id = req.user.id;
 
     const newProject = await pool.query(
-      `INSERT INTO "project" (projekt_nev, leiras, letrehozo_id, statusz, hatarido)
+      `INSERT INTO "Projekt" (projekt_nev, leiras, letrehozo_id, statusz, hatarido)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, projekt_nev, leiras, letrehozo_id, statusz, hatarido, letrehozas_idopont`,
       [projekt_nev, leiras || null, letrehozo_id, statusz || 'aktiv', hatarido || null]
@@ -69,9 +96,43 @@ router.get('/projektTag', verifyToken, async (req, res) => {
   }
 });
 
+router.get('/projektTagok', verifyToken, async (req, res) => {
+  try {
+    const { projekt_id } = req.query;
+    
+    if (!projekt_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Projekt ID kötelező'
+      });
+    }
+
+    const tagsResult = await pool.query(
+      `SELECT DISTINCT u.id, u.teljes_nev, u.email, u.szerep_tipus
+       FROM "Felhasznalo" u
+       LEFT JOIN "ProjektTag" pt ON u.id = pt.felhasznalo_id AND pt.projekt_id = $1
+       LEFT JOIN "Projekt" p ON u.id = p.letrehozo_id AND p.id = $1
+       WHERE pt.projekt_id = $1 OR p.id = $1
+       ORDER BY u.teljes_nev`,
+      [projekt_id]
+    );
+
+    return res.json({
+      success: true,
+      data: tagsResult.rows
+    });
+  } catch (error) {
+    console.error('Szerver hiba a projekt tagok lekérése során:', error);
+    return res.status(500).json({ success: false, message: 'Szerver hiba a projekt tagok lekérése során' });
+  }
+});
+
+
 router.post('/ujProjektTag', verifyToken, [
   body('projekt_id')
     .notEmpty(),
+  body('felhasznalo_id')
+    .optional()
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -82,14 +143,48 @@ router.post('/ujProjektTag', verifyToken, [
           errors: errors.array()
         });
       }
-      const { projekt_id } = req.body;
-      const felhasznalo_id = req.user.id;
+      const { projekt_id, felhasznalo_id: requestedUserId } = req.body;
+      
+      const felhasznalo_id = requestedUserId || req.user.id;
+
+      console.log('ProjektTag hozzáadás - projekt_id:', projekt_id, 'felhasznalo_id:', felhasznalo_id);
+
+      const userCheck = await pool.query('SELECT id FROM "Felhasznalo" WHERE id = $1', [felhasznalo_id]);
+      if (userCheck.rows.length === 0) {
+        console.error('Felhasználó nem található:', felhasznalo_id);
+        return res.status(400).json({
+          success: false,
+          message: 'Felhasználó nem található'
+        });
+      }
+
+      const projectCheck = await pool.query('SELECT id FROM "Projekt" WHERE id = $1', [projekt_id]);
+      if (projectCheck.rows.length === 0) {
+        console.error('Projekt nem található:', projekt_id);
+        return res.status(400).json({
+          success: false,
+          message: 'Projekt nem található'
+        });
+      }
+
+      const tagCheck = await pool.query(
+        'SELECT * FROM "ProjektTag" WHERE projekt_id = $1 AND felhasznalo_id = $2',
+        [projekt_id, felhasznalo_id]
+      );
+      if (tagCheck.rows.length > 0) {
+        console.log('Tag már hozzá van adva a projekthez');
+        return res.status(400).json({
+          success: false,
+          message: 'A felhasználó már tag a projektben'
+        });
+      }
 
       const newProjektTag = await pool.query (`INSERT INTO "ProjektTag" (projekt_id, felhasznalo_id)
       VALUES ($1, $2)
       RETURNING projekt_id, felhasznalo_id, csatlakozas_idopont`,
       [projekt_id, felhasznalo_id]
     );
+    console.log('Sikeres projekttag hozzáadás:', newProjektTag.rows[0]);
     res.status(201).json({
         success: true,
         message: 'Projekttag sikeres hozzáadása',
@@ -106,20 +201,29 @@ router.post('/ujProjektTag', verifyToken, [
     }
 });
 
-    
-
 router.post('/ujFeladat', verifyToken, [
+   body('projekt_id')
+    .notEmpty()
+    .withMessage('Projekt ID kötelező')
+    .isInt()
+    .withMessage('A projekt ID egész szám kell legyen')
+    .toInt(),
   body('feladat_nev')
     .notEmpty()
     .withMessage('Feladat név kötelező'),
   body('feladat_leiras')
     .optional(),
   body('felelos_id')
-    .optional(),
+    .optional()
+    .toInt(),
   body('prioritas')
+    .notEmpty()
+    .withMessage('Prioritás kötelező')
     .isIn(['alacsony', 'közepes', 'magas']),
   body('statusz')
-    .isIn(['folyamatban', 'elvégezve']),
+    .notEmpty()
+    .withMessage('Státusz kötelező')
+    .isIn(['folyamatban', 'befejezett', 'késett']),
   body('hatarido')
     .optional()
   ], async (req, res) => {
@@ -132,13 +236,13 @@ router.post('/ujFeladat', verifyToken, [
           errors: errors.array()
         });
       }
-      const { feladat_nev, feladat_leiras, felelos_id, prioritas, statusz, hatarido } = req.body;
+      const { projekt_id, feladat_nev, feladat_leiras, felelos_id, prioritas, statusz, hatarido } = req.body;
       const letrehozo_id = req.user.id;
 
-      const newTask = await pool.query(`INSERT INTO "Feladat" ( feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7) 
-        RETURNING id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido, letrehozas_idopont`,
-        [feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido]
+      const newTask = await pool.query(`INSERT INTO "Feladat" (projekt_id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+        RETURNING id, projekt_id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido, letrehozas_idopont`,
+        [projekt_id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido]
       );
       res.status(201).json({
         success: true,
@@ -154,6 +258,38 @@ router.post('/ujFeladat', verifyToken, [
         message: 'Szerver hiba a feladat létrehozása során'
       });
     }
+});
+
+router.get('/feladat', verifyToken, async (req, res) => {
+  try {
+    const { projekt_id } = req.query;
+    const userId = req.user.id;
+    
+    if (!projekt_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Projekt ID kötelező'
+      });
+    }
+
+    const tasksResult = await pool.query(
+      `SELECT f.id, f.feladat_nev, f.feladat_leiras, f.letrehozo_id, f.felelos_id, f.prioritas, f.statusz, f.hatarido, f.letrehozas_idopont,
+              u.teljes_nev as felelos_nev
+       FROM "Feladat" f
+       LEFT JOIN "Felhasznalo" u ON f.felelos_id = u.id
+       WHERE f.projekt_id = $1 AND (f.felelos_id = $2 OR f.letrehozo_id = $2)
+       ORDER BY f.letrehozas_idopont DESC`,
+      [projekt_id, userId]
+    );
+
+    return res.json({
+      success: true,
+      data: tasksResult.rows
+    });
+  } catch (error) {
+    console.error('Szerver hiba a feladatok lekérése során:', error);
+    return res.status(500).json({ success: false, message: 'Szerver hiba a feladatok lekérése során' });
+  }
 });
 
   router.get('/feladatok', verifyToken, async (req, res) => {
@@ -173,11 +309,57 @@ router.post('/ujFeladat', verifyToken, [
       });
     } catch (error) {
       console.error('Szerver hiba a feladatok lekérése során:', error);
-      res.status(500).json({
+      res.status(500).json({ 
         success: false,
         message: 'Szerver hiba a feladatok lekérése során'
       });
     }
+});
+
+router.delete('/feladat/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const taskCheck = await pool.query(
+      'SELECT id, letrehozo_id, felelos_id FROM "Feladat" WHERE id = $1',
+      [id]
+    );
+
+    if (taskCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Feladat nem található'
+      });
+    }
+
+    const task = taskCheck.rows[0];
+    if (task.letrehozo_id !== userId && task.felelos_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nincs jogosultsága a feladat törlésére'
+      });
+    }
+
+    const deleteResult = await pool.query(
+      'DELETE FROM "Feladat" WHERE id = $1 RETURNING id',
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Feladat sikeresen törölve',
+      data: {
+        deleted_id: deleteResult.rows[0].id
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a feladat törlése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a feladat törlése során'
+    });
+  }
 });
 
  router.post('/ujStat', verifyToken, [
@@ -366,6 +548,78 @@ router.post('/ujNaplo', verifyToken, [
     res.status(500).json({
       success: false,
       message: 'Szerver hiba a naplóbejegyzés létrehozása során'
+    });
+  }
+});
+
+router.post('/ujFeladatKomment', verifyToken, [
+  body('feladat_id')
+    .notEmpty()
+    .withMessage('Feladat ID kötelező'),
+  body('komment_szoveg')
+    .notEmpty()
+    .withMessage('Komment szövege kötelező')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Hibás adatok',
+        errors: errors.array()
+      });
+    }
+
+    const { feladat_id, komment_szoveg } = req.body;
+    const felhasznalo_id = req.user.id;
+
+    const newComment = await pool.query(
+      `INSERT INTO "FeladatKomment" (feladat_id, felhasznalo_id, komment_szoveg)
+       VALUES ($1, $2, $3)
+       RETURNING id, feladat_id, felhasznalo_id, komment_szoveg, letrehozas_idopont`,
+      [feladat_id, felhasznalo_id, komment_szoveg]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Komment sikeresen létrehozva',
+      data: {
+        comment: newComment.rows[0]
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a komment létrehozása során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a komment létrehozása során'
+    });
+  }
+});
+
+router.get('/feladatKommentek/:feladat_id', verifyToken, async (req, res) => {
+  try {
+    const { feladat_id } = req.params;
+
+    const commentsResult = await pool.query(
+      `SELECT fk.id, fk.feladat_id, fk.felhasznalo_id, fk.komment_szoveg, fk.letrehozas_idopont, f.felhasznalonev
+       FROM "FeladatKomment" fk
+       LEFT JOIN "Felhasznalo" f ON fk.felhasznalo_id = f.id
+       WHERE fk.feladat_id = $1
+       ORDER BY fk.letrehozas_idopont DESC`,
+      [feladat_id]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        comments: commentsResult.rows
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a kommentek lekérése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a kommentek lekérése során'
     });
   }
 });

@@ -1,36 +1,59 @@
-const pool = require('../config/database');
+const jwt = require('jsonwebtoken');
+const { accessTokenSecret } = require('../config/jwt');
 
-const auth = async (req, res, next) => {
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1]; 
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: 'Token szükséges a hozzáféréshez'
+    });
+  }
+
   try {
-    
- const userResult = await pool.query(
-      'SELECT id, felhasznalonev, email, teljes_nev, szerep_tipus, aktiv FROM "Felhasznalo" WHERE id = $1',
-      [decoded.id]
-    );
-
-    if (userResult.rows.length === 0) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Felhasználó nem található.' 
-      });
-    }
-
-    if (!userResult.rows[0].aktiv) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'A felhasználói fiók inaktív.' 
-      });
-    }
-
-    req.user = userResult.rows[0];
+    const decoded = jwt.verify(token, accessTokenSecret);
+    req.user = decoded;
     next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
-    res.status(401).json({ 
-      success: false, 
-      message: 'Érvénytelen token.' 
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: 'A token lejárt',
+        isTokenExpired: true
+      });
+    }
+    
+    return res.status(403).json({
+      success: false,
+      message: 'Érvénytelen token'
     });
   }
 };
 
-module.exports = auth;
+const verifyRefreshToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1]; 
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: 'Refresh token szükséges'
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'your-refresh-token-secret-key');
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({
+      success: false,
+      message: 'Érvénytelen vagy lejárt refresh token'
+    });
+  }
+};
+
+module.exports = {
+  verifyToken,
+  verifyRefreshToken
+};

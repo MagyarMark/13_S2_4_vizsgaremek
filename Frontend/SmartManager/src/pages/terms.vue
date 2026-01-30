@@ -103,4 +103,126 @@ export default {
     margin-bottom: 1rem;
     text-decoration: underline;
 }
+
+@media (max-width: 768px) {
+  .terms-container {
+    padding: 1rem;
+    min-height: 60vh;
+  }
+
+  .terms-card,
+  .text-card,
+  .text-accept {
+    padding: 1.5rem;
+    max-width: 100%;
+    margin-top: 1rem;
+  }
+
+  .terms-card h2,
+  .text-card h1 {
+    font-size: 1.3rem;
+  }
+
+  .text-card h3 {
+    font-size: 1.1rem;
+  }
+
+  .text-card p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .accept_button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 600px) {
+  header {
+    padding: 0 1rem;
+  }
+
+  .terms-container {
+    padding: 0.75rem;
+  }
+
+  .terms-card,
+  .text-card,
+  .text-accept {
+    padding: 1rem;
+    margin-top: 0.75rem;
+  }
+
+  .terms-card h2,
+  .text-card h1 {
+    font-size: 1.15rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .text-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .text-card p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+  }
+
+  .text-accept {
+    font-size: 1rem;
+  }
+
+  .accept_button {
+    padding: 0.65rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  footer {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 400px) {
+  header {
+    padding: 0 0.75rem;
+  }
+
+  .terms-container {
+    padding: 0.5rem;
+  }
+
+  .terms-card,
+  .text-card,
+  .text-accept {
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .terms-card h2,
+  .text-card h1 {
+    font-size: 1rem;
+  }
+
+  .text-card h3 {
+    font-size: 0.95rem;
+  }
+
+  .text-card p {
+    font-size: 0.85rem;
+  }
+
+  .accept_button {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  footer {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+}
 </style>

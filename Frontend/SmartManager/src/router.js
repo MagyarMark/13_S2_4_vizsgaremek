@@ -9,6 +9,10 @@ import Diak from './pages/diak.vue'
 import Tanar from './pages/tanar.vue'
 import Chat from './pages/chat.vue'
 import Terms from './pages/terms.vue'
+import TeamWork from './pages/teamwork.vue'
+import Ttask from './pages/Ttask.vue'
+import Ertekeles from './pages/ertekeles.vue'
+import Admin from './pages/admin.vue'
 
 const routes = [
   {
@@ -60,6 +64,26 @@ const routes = [
     path: '/terms',
     name: 'Terms',
     component: Terms
+  },
+  {
+    path: '/teamwork',
+    name: 'TeamWork',
+    component: TeamWork
+  },
+  {
+    path: '/Ttask',
+    name: 'Ttask',
+    component: Ttask
+  },
+  {
+    path: '/ertekeles',
+    name: 'Ertekeles',
+    component: Ertekeles
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: Admin
   }
 ]
 
