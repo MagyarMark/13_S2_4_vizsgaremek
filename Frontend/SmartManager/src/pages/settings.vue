@@ -140,13 +140,6 @@
                   <option value="dark">Sötét</option>
                 </select>
               </div>
-              <div class="form-row">
-                <label>Nyelv</label>
-                <select v-model="appearance.language">
-                  <option value="hu">Magyar</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
 
               <div class="form-actions">
                 <button type="button" class="btn secondary" @click="resetAppearance">Visszaállít</button>
@@ -475,13 +468,34 @@ export default {
     }
 
     const router = useRouter();
-    const logout = () => {
+    const logout = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        
+        if (token) {
+          await fetch('http://localhost:3000/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              elerheto: false
+            })
+          });
+        }
+      } catch (error) {
+        console.error('Kijelentkezés hiba:', error);
+      }
+      
       localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('sm_settings');
       localStorage.removeItem('sm_appearance');
       
       router.push('/home');
-    }
+    };
 
     watch(() => appearance.theme, () => {
       applyTheme()
