@@ -346,4 +346,53 @@ router.post('/refresh-token', verifyRefreshToken, async (req, res) => {
   }
 });
 
+router.put('/profile-torles', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const userResult = await pool.query(
+      'SELECT id, aktiv FROM "Felhasznalo" WHERE id = $1',
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Felhasználó nem található'
+      });
+    }
+
+    const user = userResult.rows[0];
+
+    if (!user.aktiv) {
+      return res.status(400).json({
+        success: false,
+        message: 'A felhasználói fiók már inaktív'
+      });
+    }
+
+    await pool.query(
+      `UPDATE "Felhasznalo" 
+       SET aktiv = false,
+           email = NULL,
+           jelszo = NULL,
+           teljes_nev = NULL
+       WHERE id = $1`,
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      message: 'Felhasználói fiók sikeresen törölve (deaktiválva)'
+    });
+
+  } catch (error) {
+    console.error('Szerver hiba a felhasználó törlése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a felhasználó törlése során'
+    });
+  }
+});
+
 module.exports = router;

@@ -80,10 +80,172 @@ router.post('/ujProjekt', verifyToken, [
   }
 });
 
+router.put('/projekt/:id', verifyToken, [
+  body('projekt_nev')
+    .optional()
+    .notEmpty()
+    .withMessage('Projekt név nem lehet üres'),
+  body('leiras')
+    .optional(),
+  body('statusz')
+    .optional()
+    .isIn(['aktiv', 'inaktiv', 'befejezett'])
+    .withMessage('Érvényes státusz: aktiv, inaktiv, befejezett'),
+  body('hatarido')
+    .optional()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Hibás adatok',
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { projekt_nev, leiras, statusz, hatarido } = req.body;
+
+    const projektCheck = await pool.query(
+      'SELECT id, letrehozo_id FROM "Projekt" WHERE id = $1',
+      [id]
+    );
+
+    if (projektCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Projekt nem található'
+      });
+    }
+
+    const projekt = projektCheck.rows[0];
+    if (projekt.letrehozo_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nincs jogosultsága a projekt módosításához'
+      });
+    }
+
+    const updateFields = [];
+    const updateValues = [];
+    let paramCount = 1;
+
+    if (projekt_nev !== undefined) {
+      updateFields.push(`projekt_nev = $${paramCount}`);
+      updateValues.push(projekt_nev);
+      paramCount++;
+    }
+
+    if (leiras !== undefined) {
+      updateFields.push(`leiras = $${paramCount}`);
+      updateValues.push(leiras);
+      paramCount++;
+    }
+
+    if (statusz !== undefined) {
+      updateFields.push(`statusz = $${paramCount}`);
+      updateValues.push(statusz);
+      paramCount++;
+    }
+
+    if (hatarido !== undefined) {
+      updateFields.push(`hatarido = $${paramCount}`);
+      updateValues.push(hatarido);
+      paramCount++;
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nincs megadva frissítendő adat'
+      });
+    }
+
+    updateValues.push(id);
+
+    const updateQuery = `
+      UPDATE "Projekt" 
+      SET ${updateFields.join(', ')} 
+      WHERE id = $${paramCount}
+      RETURNING id, projekt_nev, leiras, letrehozo_id, statusz, hatarido, letrehozas_idopont
+    `;
+
+    const updatedProject = await pool.query(updateQuery, updateValues);
+
+    res.json({
+      success: true,
+      message: 'Projekt sikeresen frissítve',
+      data: {
+        project: updatedProject.rows[0]
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a projekt frissítése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a projekt frissítése során'
+    });
+  }
+});
+
+router.delete('/projekt/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const projektCheck = await pool.query(
+      'SELECT id, letrehozo_id FROM "Projekt" WHERE id = $1',
+      [id]
+    );
+
+    if (projektCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Projekt nem található'
+      });
+    }
+
+    const projekt = projektCheck.rows[0];
+    if (projekt.letrehozo_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nincs jogosultsága a projekt törléséhez'
+      });
+    }
+
+    await pool.query('DELETE FROM "ProjektTag" WHERE projekt_id = $1', [id]);
+    await pool.query('DELETE FROM "Feladat" WHERE projekt_id = $1', [id]);
+    await pool.query('DELETE FROM "Statisztika" WHERE projekt_id = $1', [id]);
+    await pool.query('DELETE FROM "Naplo" WHERE projekt_id = $1', [id]);
+
+    const deleteResult = await pool.query(
+      'DELETE FROM "Projekt" WHERE id = $1 RETURNING id',
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Projekt sikeresen törölve',
+      data: {
+        deleted_id: deleteResult.rows[0].id
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a projekt törlése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a projekt törlése során'
+    });
+  }
+});
+
 router.get('/projektTag', verifyToken, async (req, res) => {
   try {
     const usersResult = await pool.query(
       'SELECT id, felhasznalonev, teljes_nev, email, szerep_tipus FROM "Felhasznalo" WHERE aktiv = true ORDER BY teljes_nev, felhasznalonev'
+
     );
 
     return res.json({
@@ -201,6 +363,66 @@ router.post('/ujProjektTag', verifyToken, [
     }
 });
 
+router.delete('/ProjektTag', verifyToken, async (req, res) => {
+  try {
+    const { projekt_id, felhasznalo_id } = req.body;
+    const userId = req.user.id;
+
+    if (!projekt_id || !felhasznalo_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Projekt ID és felhasználó ID kötelező'
+      });
+    }
+
+    const projektCheck = await pool.query(
+      'SELECT letrehozo_id FROM "Projekt" WHERE id = $1',
+      [projekt_id]
+    );
+
+    if (projektCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Projekt nem található'
+      });
+    }
+
+    if (projektCheck.rows[0].letrehozo_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nincs jogosultsága a projekt tag eltávolítására'
+      });
+    }
+
+    const deleteResult = await pool.query(
+      'DELETE FROM "ProjektTag" WHERE projekt_id = $1 AND felhasznalo_id = $2 RETURNING projekt_id, felhasznalo_id',
+      [projekt_id, felhasznalo_id]
+    );
+
+    if (deleteResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Projekt tag nem található'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Projekt tag sikeresen eltávolítva',
+      data: {
+        projekt_id: deleteResult.rows[0].projekt_id,
+        felhasznalo_id: deleteResult.rows[0].felhasznalo_id
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a projekt tag eltávolítása során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a projekt tag eltávolítása során'
+    });
+  }
+})
+
 router.post('/ujFeladat', verifyToken, [
    body('projekt_id')
     .notEmpty()
@@ -296,7 +518,7 @@ router.get('/feladat', verifyToken, async (req, res) => {
     try {
       const userId = req.user.id;
       const tasksResult = await pool.query(
-        `SELECT id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido, letrehozas_idopont
+        `SELECT id, projekt_id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido, letrehozas_idopont
          FROM "Feladat"
           WHERE letrehozo_id = $1 OR felelos_id = $1`,
         [userId]
@@ -314,6 +536,136 @@ router.get('/feladat', verifyToken, async (req, res) => {
         message: 'Szerver hiba a feladatok lekérése során'
       });
     }
+});
+
+router.put('/feladat/:id', verifyToken, [
+  body('feladat_nev')
+    .optional()
+    .notEmpty()
+    .withMessage('Feladat név nem lehet üres'),
+  body('feladat_leiras')
+    .optional(),
+  body('felelos_id')
+    .optional()
+    .isInt()
+    .withMessage('A felelős ID számnak kell lennie'),
+  body('prioritas')
+    .optional()
+    .isIn(['alacsony', 'közepes', 'magas'])
+    .withMessage('Érvényes prioritás: alacsony, közepes, magas'),
+  body('statusz')
+    .optional()
+    .isIn(['folyamatban', 'befejezett', 'késett'])
+    .withMessage('Érvényes státusz: folyamatban, befejezett, késett'),
+  body('hatarido')
+    .optional()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Hibás adatok',
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { feladat_nev, feladat_leiras, felelos_id, prioritas, statusz, hatarido } = req.body;
+
+    const taskCheck = await pool.query(
+      'SELECT id, letrehozo_id, felelos_id FROM "Feladat" WHERE id = $1',
+      [id]
+    );
+
+    if (taskCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Feladat nem található'
+      });
+    }
+
+    const task = taskCheck.rows[0];
+    if (task.letrehozo_id !== userId && task.felelos_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nincs jogosultsága a feladat módosításához'
+      });
+    }
+
+    const updateFields = [];
+    const updateValues = [];
+    let paramCount = 1;
+
+    if (feladat_nev !== undefined) {
+      updateFields.push(`feladat_nev = $${paramCount}`);
+      updateValues.push(feladat_nev);
+      paramCount++;
+    }
+
+    if (feladat_leiras !== undefined) {
+      updateFields.push(`feladat_leiras = $${paramCount}`);
+      updateValues.push(feladat_leiras);
+      paramCount++;
+    }
+
+    if (felelos_id !== undefined) {
+      updateFields.push(`felelos_id = $${paramCount}`);
+      updateValues.push(felelos_id);
+      paramCount++;
+    }
+
+    if (prioritas !== undefined) {
+      updateFields.push(`prioritas = $${paramCount}`);
+      updateValues.push(prioritas);
+      paramCount++;
+    }
+
+    if (statusz !== undefined) {
+      updateFields.push(`statusz = $${paramCount}`);
+      updateValues.push(statusz);
+      paramCount++;
+    }
+
+    if (hatarido !== undefined) {
+      updateFields.push(`hatarido = $${paramCount}`);
+      updateValues.push(hatarido);
+      paramCount++;
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nincs megadva frissítendő adat'
+      });
+    }
+
+    updateValues.push(id);
+
+    const updateQuery = `
+      UPDATE "Feladat" 
+      SET ${updateFields.join(', ')} 
+      WHERE id = $${paramCount}
+      RETURNING id, projekt_id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido, letrehozas_idopont
+    `;
+
+    const updatedTask = await pool.query(updateQuery, updateValues);
+
+    res.json({
+      success: true,
+      message: 'Feladat sikeresen frissítve',
+      data: {
+        task: updatedTask.rows[0]
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a feladat frissítése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a feladat frissítése során'
+    });
+  }
 });
 
 router.delete('/feladat/:id', verifyToken, async (req, res) => {
@@ -464,6 +816,152 @@ router.get('/statisztika/:projektId', verifyToken, async (req, res) => {
   }
 });
 
+router.put('/statisztika/:id', verifyToken, [
+  body('statisztika_nev')
+    .optional()
+    .notEmpty()
+    .withMessage('Statisztika név nem lehet üres'),
+  body('ertek')
+    .optional(),
+  body('pontszam')
+    .optional()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Hibás adatok',
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { statisztika_nev, ertek, pontszam } = req.body;
+
+    const statCheck = await pool.query(
+      'SELECT id, felhasznalo_id FROM "Statisztika" WHERE id = $1',
+      [id]
+    );
+
+    if (statCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Statisztika nem található'
+      });
+    }
+
+    const stat = statCheck.rows[0];
+    if (stat.felhasznalo_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nincs jogosultsága a statisztika módosításához'
+      });
+    }
+
+    const updateFields = [];
+    const updateValues = [];
+    let paramCount = 1;
+
+    if (statisztika_nev !== undefined) {
+      updateFields.push(`statisztika_nev = $${paramCount}`);
+      updateValues.push(statisztika_nev);
+      paramCount++;
+    }
+
+    if (ertek !== undefined) {
+      updateFields.push(`ertek = $${paramCount}`);
+      updateValues.push(ertek);
+      paramCount++;
+    }
+
+    if (pontszam !== undefined) {
+      updateFields.push(`pontszam = $${paramCount}`);
+      updateValues.push(pontszam);
+      paramCount++;
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nincs megadva frissítendő adat'
+      });
+    }
+
+    updateValues.push(id);
+
+    const updateQuery = `
+      UPDATE "Statisztika" 
+      SET ${updateFields.join(', ')} 
+      WHERE id = $${paramCount}
+      RETURNING id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam
+    `;
+
+    const updatedStat = await pool.query(updateQuery, updateValues);
+
+    res.json({
+      success: true,
+      message: 'Statisztika sikeresen frissítve',
+      data: {
+        statistics: updatedStat.rows[0]
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a statisztika frissítése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a statisztika frissítése során'
+    });
+  }
+});
+
+router.delete('/statisztika/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const statCheck = await pool.query(
+      'SELECT id, felhasznalo_id FROM "Statisztika" WHERE id = $1',
+      [id]
+    );
+
+    if (statCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Statisztika nem található'
+      });
+    }
+
+    const stat = statCheck.rows[0];
+    if (stat.felhasznalo_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nincs jogosultsága a statisztika törléséhez'
+      });
+    }
+
+    const deleteResult = await pool.query(
+      'DELETE FROM "Statisztika" WHERE id = $1 RETURNING id',
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Statisztika sikeresen törölve',
+      data: {
+        deleted_id: deleteResult.rows[0].id
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a statisztika törlése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a statisztika törlése során'
+    });
+  }
+});
+
 router.get('/naplo', verifyToken, async (req, res) => {
   try {
     const { projekt_id, feladat_id } = req.query;
@@ -552,6 +1050,144 @@ router.post('/ujNaplo', verifyToken, [
   }
 });
 
+router.put('/naplo/:id', verifyToken, [
+  body('muvelet')
+    .optional()
+    .notEmpty()
+    .withMessage('Művelet nem lehet üres'),
+  body('leiras')
+    .optional()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Hibás adatok',
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { muvelet, leiras } = req.body;
+
+    const logCheck = await pool.query(
+      'SELECT id, felhasznalo_id FROM "Naplo" WHERE id = $1',
+      [id]
+    );
+
+    if (logCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Napló bejegyzés nem található'
+      });
+    }
+
+    const logEntry = logCheck.rows[0];
+    if (logEntry.felhasznalo_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nincs jogosultsága a napló bejegyzés módosításához'
+      });
+    }
+
+    const updateFields = [];
+    const updateValues = [];
+    let paramCount = 1;
+
+    if (muvelet !== undefined) {
+      updateFields.push(`muvelet = $${paramCount}`);
+      updateValues.push(muvelet);
+      paramCount++;
+    }
+
+    if (leiras !== undefined) {
+      updateFields.push(`leiras = $${paramCount}`);
+      updateValues.push(leiras);
+      paramCount++;
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nincs megadva frissítendő adat'
+      });
+    }
+
+    updateValues.push(id);
+
+    const updateQuery = `
+      UPDATE "Naplo" 
+      SET ${updateFields.join(', ')} 
+      WHERE id = $${paramCount}
+      RETURNING id, felhasznalo_id, projekt_id, feladat_id, muvelet, leiras, idopont
+    `;
+
+    const updatedLog = await pool.query(updateQuery, updateValues);
+
+    res.json({
+      success: true,
+      message: 'Napló bejegyzés sikeresen frissítve',
+      data: {
+        log: updatedLog.rows[0]
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a napló bejegyzés frissítése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a napló bejegyzés frissítése során'
+    });
+  }
+});
+
+router.delete('/naplo/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const logCheck = await pool.query(
+      'SELECT id, felhasznalo_id FROM "Naplo" WHERE id = $1',
+      [id]
+    );
+
+    if (logCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Napló bejegyzés nem található'
+      });
+    }
+
+    const logEntry = logCheck.rows[0];
+    if (logEntry.felhasznalo_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nincs jogosultsága a napló bejegyzés törlésére'
+      });
+    }
+
+    const deleteResult = await pool.query(
+      'DELETE FROM "Naplo" WHERE id = $1 RETURNING id',
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Napló bejegyzés sikeresen törölve',
+      data: {
+        deleted_id: deleteResult.rows[0].id
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a napló bejegyzés törlése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a napló bejegyzés törlése során'
+    });
+  }
+});
+
 router.post('/ujFeladatKomment', verifyToken, [
   body('feladat_id')
     .notEmpty()
@@ -620,6 +1256,115 @@ router.get('/feladatKommentek/:feladat_id', verifyToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Szerver hiba a kommentek lekérése során'
+    });
+  }
+});
+
+router.put('/feladatKomment/:id', verifyToken, [
+  body('komment_szoveg')
+    .notEmpty()
+    .withMessage('Komment szövege kötelező')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Hibás adatok',
+        errors: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { komment_szoveg } = req.body;
+
+    const commentCheck = await pool.query(
+      'SELECT id, felhasznalo_id FROM "FeladatKomment" WHERE id = $1',
+      [id]
+    );
+
+    if (commentCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Komment nem található'
+      });
+    }
+
+    const comment = commentCheck.rows[0];
+    if (comment.felhasznalo_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nincs jogosultsága a komment módosításához'
+      });
+    }
+
+    const updatedComment = await pool.query(
+      `UPDATE "FeladatKomment" 
+       SET komment_szoveg = $1 
+       WHERE id = $2
+       RETURNING id, feladat_id, felhasznalo_id, komment_szoveg, letrehozas_idopont`,
+      [komment_szoveg, id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Komment sikeresen frissítve',
+      data: {
+        comment: updatedComment.rows[0]
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a komment frissítése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a komment frissítése során'
+    });
+  }
+});
+
+router.delete('/feladatKomment/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const commentCheck = await pool.query(
+      'SELECT id, felhasznalo_id FROM "FeladatKomment" WHERE id = $1',
+      [id]
+    );
+
+    if (commentCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Komment nem található'
+      });
+    }
+
+    const comment = commentCheck.rows[0];
+    if (comment.felhasznalo_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Nincs jogosultsága a komment törlésére'
+      });
+    }
+
+    const deleteResult = await pool.query(
+      'DELETE FROM "FeladatKomment" WHERE id = $1 RETURNING id',
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Komment sikeresen törölve',
+      data: {
+        deleted_id: deleteResult.rows[0].id
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a komment törlése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a komment törlése során'
     });
   }
 });

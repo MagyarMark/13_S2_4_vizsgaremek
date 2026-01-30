@@ -5,14 +5,53 @@ const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+const isProjectMember = async (userId, projektId) => {
+  const membership = await pool.query(
+    `SELECT 1
+     FROM "Projekt" p
+     LEFT JOIN "ProjektTag" pt ON p.id = pt.projekt_id
+     WHERE p.id = $1 AND (p.letrehozo_id = $2 OR pt.felhasznalo_id = $2)
+     LIMIT 1`,
+    [projektId, userId]
+  );
+
+  return membership.rows.length > 0;
+};
+
 router.get('/osszes', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const { recipientId, projektId } = req.query;
 
+    if (projektId) {
+      const hasAccess = await isProjectMember(userId, projektId);
+      if (!hasAccess) {
+        return res.status(403).json({
+          success: false,
+          message: 'Nincs jogosultság a projekt üzeneteihez'
+        });
+      }
+
+      const result = await pool.query(
+        `SELECT id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje
+         FROM "Uzenet"
+         WHERE projekt_id = $1
+         ORDER BY kuldes_ideje ASC`,
+        [projektId]
+      );
+
+      return res.json({
+        success: true,
+        data: {
+          messages: result.rows,
+          count: result.rows.length
+        }
+      });
+    }
+
     let query = `
       SELECT id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje
-      FROM "Uzenetek"
+      FROM "Uzenet"
       WHERE kuldo_id = $1 OR fogado_id = $1
     `;
     const params = [userId];
@@ -68,7 +107,7 @@ router.get('/beszelgetes', verifyToken, [
 
     let query = `
       SELECT id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje
-      FROM "Uzenetek"
+      FROM "Uzenet"
       WHERE (kuldo_id = $1 AND fogado_id = $2) OR (kuldo_id = $2 AND fogado_id = $1)
     `;
     const params = [userId, withUserId];
@@ -100,8 +139,7 @@ router.get('/beszelgetes', verifyToken, [
 
 router.post('/kuldes', verifyToken, [
   body('fogado_id')
-    .notEmpty()
-    .withMessage('A fogadó ID-ja kötelező')
+    .optional()
     .isInt()
     .withMessage('A fogadó ID-nak számnak kell lennie'),
   body('uzenet_tartalom')
@@ -115,7 +153,13 @@ router.post('/kuldes', verifyToken, [
   body('allapot')
     .optional()
     .isIn(['nem_olvasott', 'olvasott', 'torlolt'])
-    .withMessage('Az állapot értéke hibás')
+    .withMessage('Az állapot értéke hibás'),
+  body().custom((value, { req }) => {
+    if (!req.body.fogado_id && !req.body.projekt_id) {
+      throw new Error('A fogadó ID-ja vagy a projekt ID-ja kötelező');
+    }
+    return true;
+  })
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -129,24 +173,27 @@ router.post('/kuldes', verifyToken, [
 
     const userId = req.user.id;
     const { fogado_id, uzenet_tartalom, projekt_id, allapot } = req.body;
+    const recipientId = fogado_id ? parseInt(fogado_id, 10) : null;
 
-    if (userId === parseInt(fogado_id)) {
+    if (recipientId && userId === recipientId) {
       return res.status(400).json({
         success: false,
         message: 'Nem küldhetsz üzenetet magadnak'
       });
     }
 
-    const recipientCheck = await pool.query(
-      'SELECT id FROM "Felhasznalo" WHERE id = $1',
-      [fogado_id]
-    );
+    if (recipientId) {
+      const recipientCheck = await pool.query(
+        'SELECT id FROM "Felhasznalo" WHERE id = $1',
+        [recipientId]
+      );
 
-    if (recipientCheck.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'A megadott felhasználó nem létezik'
-      });
+      if (recipientCheck.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'A megadott felhasználó nem létezik'
+        });
+      }
     }
 
     if (projekt_id) {
@@ -161,15 +208,23 @@ router.post('/kuldes', verifyToken, [
           message: 'A megadott projekt nem létezik'
         });
       }
+
+      const hasAccess = await isProjectMember(userId, projekt_id);
+      if (!hasAccess) {
+        return res.status(403).json({
+          success: false,
+          message: 'Nincs jogosultság az adott projekthez'
+        });
+      }
     }
 
     const messageStatus = allapot || 'nem_olvasott';
 
     const result = await pool.query(
-      `INSERT INTO "Uzenetek" (kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje)
+      `INSERT INTO "Uzenet" (kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje)
        VALUES ($1, $2, $3, $4, $5, NOW())
        RETURNING id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje`,
-      [userId, fogado_id, projekt_id || null, uzenet_tartalom, messageStatus]
+      [userId, recipientId, projekt_id || null, uzenet_tartalom, messageStatus]
     );
 
     res.status(201).json({
@@ -210,7 +265,7 @@ router.put('/frissites/:id', verifyToken, [
     const { allapot, uzenet_tartalom } = req.body;
 
     const messageCheck = await pool.query(
-      'SELECT kuldo_id FROM "Uzenetek" WHERE id = $1',
+      'SELECT kuldo_id FROM "Uzenet" WHERE id = $1',
       [messageId]
     );
 
@@ -228,7 +283,7 @@ router.put('/frissites/:id', verifyToken, [
       });
     }
 
-    let query = 'UPDATE "Uzenetek" SET ';
+    let query = 'UPDATE "Uzenet" SET ';
     const params = [];
     const setClauses = [];
 
@@ -276,7 +331,7 @@ router.delete('/torles/:id', verifyToken, async (req, res) => {
     const messageId = req.params.id;
 
     const messageCheck = await pool.query(
-      'SELECT kuldo_id FROM "Uzenetek" WHERE id = $1',
+      'SELECT kuldo_id FROM "Uzenet" WHERE id = $1',
       [messageId]
     );
 
@@ -295,7 +350,7 @@ router.delete('/torles/:id', verifyToken, async (req, res) => {
     }
 
     await pool.query(
-      'DELETE FROM "Uzenetek" WHERE id = $1',
+      'DELETE FROM "Uzenet" WHERE id = $1',
       [messageId]
     );
 
