@@ -11,7 +11,7 @@
 
       <ul v-if="userProfile.szerep_tipus === 'tanar'" class="nav-links">
         <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
         <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
         <router-link to="/chat" class="active"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" ><li ><i class="fas fa-cog"></i> Beállítások</li></router-link>
@@ -48,7 +48,7 @@
       <section class="section">
         <div class="section-header">
           <h3><i class="fas fa-comments"></i> SMchat 💬</h3>
-          <span class="clients-total">Aktív felhasználók: {{ clientsTotal }}</span>
+          <!--<span class="clients-total">Aktív felhasználók: {{ clientsTotal }}</span>-->
         </div>
         <div class="chat-container">
           <div class="chat-sidebar">
@@ -634,10 +634,32 @@ export default {
       }
     };
 
-    const logout = () => {
+    const logout = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        
+        if (token) {
+          await fetch('http://localhost:3000/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              elerheto: false
+            })
+          });
+        }
+      } catch (error) {
+        console.error('Kijelentkezés hiba:', error);
+      }
+      
       localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('sm_settings');
       localStorage.removeItem('sm_appearance');
+      
       router.push('/home');
     };
 
