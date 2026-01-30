@@ -30,26 +30,16 @@ app.post('/api/upload',
         try {
             const files = req.files;
             const felhasznalo_id = req.user.id;
-            const beadas_id = req.query.beadas_id || req.body.beadas_id;
+            const feladat_id = (req.query && req.query.feladat_id) || (req.body && req.body.feladat_id);
             
-            if (!beadas_id) {
+            if (!feladat_id) {
                 return res.status(400).json({
                     status: 'error',
-                    message: 'A beadas_id (feladat ID) megadása kötelező'
+                    message: 'A feladat_id megadása kötelező'
                 });
             }
-            
-            const beadasCheck = await pool.query(
-                'SELECT id FROM "Beadas" WHERE id = $1',
-                [beadas_id]
-            );
-            
-            if (beadasCheck.rows.length === 0) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: 'Az adott beadas (feladat) nem létezik'
-                });
-            }
+
+            const beadas_id = feladat_id;
             
             const uploadedFiles = [];
             const errors = [];
@@ -102,7 +92,8 @@ app.post('/api/upload',
                     uploadInfo: {
                         felhasznalo_id: felhasznalo_id,
                         felhasznalonev: req.user.felhasznalonev,
-                        beadas_id: beadas_id
+                        feladat_id: feladat_id,
+                        feladat_id: feladat_id
                     }
                 });
             } else {
