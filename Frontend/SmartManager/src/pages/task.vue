@@ -2,7 +2,6 @@
 <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
@@ -11,34 +10,31 @@
       <ul class="nav-links">
         <router-link to="/diak"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
         <router-link to="/task" class="active"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
-        <li><a href="#"><i class="fas fa-users"></i> Csapatmunka</a></li>
+        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Csapatmunka</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
     </aside>
 
-    <!-- Header -->
-    <header>
+<header>
       <div class="header-left">
         <h1>Feladatok</h1>
       </div>
       <div class="header-right">
-        <div class="notifications">
-          <button class="notifications-button"><i class="fas fa-bell"></i></button>
-        </div>
         <div class="user-profile">
           <div class="avatar">{{ userProfile.initials }}</div>
           <div>
-            <div class="user-name">{{ userProfile.name }}</div>
-            <div class="user-role">{{ userProfile.role }}</div>
+            <div class="user-name">{{ userProfile.teljes_nev || userProfile.felhasznalonev }}</div>
+            <div class="user-role">{{ getRoleLabel(userProfile.szerep_tipus) }}</div>
+          </div>
+          <div class="logout-button">
+            <button @click="logout" title="Kijelentkezés"><i class="fas fa-sign-out-alt"></i></button>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- Main Content -->
         <main class="task-dashboard">
-            <!-- Task List Section -->
             <section class="task-section">
                 <div class="section-header">
                     <h2 class="section-title">Aktív feladatok</h2>
@@ -48,13 +44,10 @@
                 </div>
 
                 <ul class="task-list" id="taskList">
-                    <!-- Tasks will be dynamically added here -->
                 </ul>
             </section>
 
-            <!-- Sidebar Stats -->
             <aside>
-                <!-- Stats Section -->
                 <section class="task-section">
                     <div class="section-header">
                         <h2 class="section-title">Áttekintés</h2>
@@ -79,60 +72,10 @@
                         </div>
                     </div>
                 </section>
-
-                <!-- Progress Section -->
-                <section class="task-section">
-                    <div class="section-header">
-                        <h2 class="section-title">Tantárgy szerint</h2>
-                    </div>
-
-                    <div class="progress-list">
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span>Adatbázis</span>
-                                <span>75%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 75%"></div>
-                            </div>
-                        </div>
-
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span>Python</span>
-                                <span>60%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 60%"></div>
-                            </div>
-                        </div>
-
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span>Scratch</span>
-                                <span>40%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 40%"></div>
-                            </div>
-                        </div>
-
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span>Informatika</span>
-                                <span>90%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 90%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
             </aside>
         </main>
     </div>
 
-    <!-- Add Task Modal -->
     <div class="modal" id="taskModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -154,19 +97,6 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="taskSubject">Tantárgy</label>
-                        <select id="taskSubject" class="form-control" required>
-                            <option value="">Válassz tantárgyat</option>
-                            <option value="Adatbázis">Adatbázis</option>
-                            <option value="Python">Python</option>
-                            <option value="Scratch">Scratch</option>
-                            <option value="Informatika">Informatika</option>
-                            <option value="Fizika">Fizika</option>
-                            <option value="Kémia">Kémia</option>
-                            <option value="Biológia">Biológia</option>
-                        </select>
-                    </div>
 
                     <div class="form-group">
                         <label for="taskPriority">Prioritás</label>
@@ -195,64 +125,24 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default {
   name: "Task",
+  
   setup() {
-    // Existing UI state
+    const router = useRouter()
+    
     const navActive = ref(false)
     const userProfile = ref({
-      initials: 'DK',
-      name: 'Diós Katalin',
-      role: 'Diák'
+      teljes_nev: '',
+      felhasznalonev: '',
+      szerep_tipus: 'diak',
+      initials: ''
     })
+    const tasks = ref([])
 
-    const toggleMenu = () => {
-      navActive.value = !navActive.value
-    }
-
-    // Reactive tasks list
-    const tasks = ref([
-      {
-        id: 1,
-        title: "Adatbázis feladat",
-        description: "Készíts egy SQL lekérdezést, amely visszaadja az összes diák nevét és életkorát a diakok táblából.",
-        subject: "Adatbázis",
-        priority: "high",
-        deadline: "2023-11-15",
-        completed: false
-      },
-      {
-        id: 2,
-        title: "Python dolgozat",
-        description: "Írj egy programot, amely megoldja a következő feladatot: Kérj be egy számot a felhasználótól, és írd ki, hogy az páros vagy páratlan.",
-        subject: "Python",
-        priority: "medium",
-        deadline: "2023-11-20",
-        completed: false
-      },
-      {
-        id: 3,
-        title: "Scratch prezentáció",
-        description: "Készíts egy Scratch prezentációt. A téma szabadon választható, de legyen benne legalább 3 különböző jelenet és interakció.",
-        subject: "Scratch",
-        priority: "low",
-        deadline: "2023-11-25",
-        completed: false
-      },
-      {
-        id: 4,
-        title: "Programozási feladat",
-        description: "Készíts egy egyszerű webalkalmazást HTML, CSS és JavaScript használatával.",
-        subject: "Informatika",
-        priority: "high",
-        deadline: "2023-11-18",
-        completed: false
-      }
-    ])
-
-    //DOM elemek itt:
     let taskListEl = null
     let taskModalEl = null
     let taskFormEl = null
@@ -260,14 +150,18 @@ export default {
     let taskIdEl = null
     let taskTitleEl = null
     let taskDescriptionEl = null
-    let taskSubjectEl = null
     let taskPriorityEl = null
     let taskDeadlineEl = null
     let addTaskBtnEl = null
     let closeModalEl = null
     let cancelBtnEl = null
 
-    // Helper functions
+    function generateInitials(name) {
+      if (!name) return ''
+      const parts = name.split(' ')
+      return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2)
+    }
+
     function getPriorityText(priority) {
       switch (priority) {
         case 'high': return 'Magas'
@@ -285,12 +179,28 @@ export default {
     function calculateDaysUntilDeadline(deadline) {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-
       const deadlineDate = new Date(deadline)
       deadlineDate.setHours(0, 0, 0, 0)
-
       const diffTime = deadlineDate.getTime() - today.getTime()
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    }
+
+    function mapPriorityToFrontend(backendPriority) {
+      const priorityMap = {
+        'alacsony': 'low',
+        'közepes': 'medium',
+        'magas': 'high'
+      }
+      return priorityMap[backendPriority] || 'medium'
+    }
+
+    function mapPriorityToBackend(frontendPriority) {
+      const priorityMap = {
+        'low': 'alacsony',
+        'medium': 'közepes',
+        'high': 'magas'
+      }
+      return priorityMap[frontendPriority] || 'közepes'
     }
 
     function renderTasks() {
@@ -324,8 +234,8 @@ export default {
               <i class="far fa-calendar-alt"></i>
               ${formatDate(task.deadline)}
               ${daysUntilDeadline < 0 ? '(Lejárt)' :
-            daysUntilDeadline === 0 ? '(Ma)' :
-              daysUntilDeadline === 1 ? '(1 nap)' :
+                daysUntilDeadline === 0 ? '(Ma)' :
+                daysUntilDeadline === 1 ? '(1 nap)' :
                 `(${daysUntilDeadline} nap)`}
             </div>
           </div>
@@ -372,10 +282,8 @@ export default {
         taskIdEl.value = task.id
         taskTitleEl.value = task.title
         taskDescriptionEl.value = task.description
-        taskSubjectEl.value = task.subject
         taskPriorityEl.value = task.priority
         taskDeadlineEl.value = task.deadline
-
         taskModalEl.classList.add('active')
       }
     }
@@ -385,41 +293,154 @@ export default {
       taskModalEl.classList.remove('active')
     }
 
-    function saveTask(e) {
+    async function fetchUserProfile() {
+      try {
+        const storedUser = localStorage.getItem('user')
+        const token = localStorage.getItem('accessToken')
+        
+        if (!storedUser || !token) {
+          router.push('/login')
+          return
+        }
+
+        const response = await fetch(`http://localhost:3000/api/auth/profileData`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Felhasználó adatainak lekérése sikertelen')
+        }
+
+        const data = await response.json()
+        
+        if (data.success && data.data && data.data.user) {
+          const user = data.data.user
+          userProfile.value = {
+            teljes_nev: user.teljes_nev || user.felhasznalonev,
+            felhasznalonev: user.felhasznalonev,
+            szerep_tipus: user.szerep_tipus,
+            email: user.email,
+            id: user.id,
+            initials: generateInitials(user.teljes_nev || user.felhasznalonev)
+          }
+        }
+      } catch (error) {
+        console.error('Felhasználó adatainak lekérése sikertelen:', error)
+      }
+    }
+
+    async function refreshTasksList() {
+      try {
+        const token = localStorage.getItem('accessToken')
+        if (!token) {
+          return
+        }
+
+        const response = await fetch('http://localhost:3000/api/project/feladatok', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Hiba a feladatok lekérése során')
+        }
+
+        const data = await response.json()
+        if (data.success && data.data && data.data.tasks) {
+          tasks.value = data.data.tasks.map(task => ({
+            id: task.id,
+            felelos_id: task.felelos_id,
+            title: task.feladat_nev,
+            description: task.feladat_leiras || '',
+            subject: 'Általános',
+            priority: mapPriorityToFrontend(task.prioritas),
+            deadline: task.hatarido,
+            completed: task.statusz === 'elvégezve'
+          }))
+          tasks.value.sort((a, b) => {
+            const deadlineA = new Date(a.deadline)
+            const deadlineB = new Date(b.deadline)
+            return deadlineA - deadlineB
+          })
+          renderTasks()
+        }
+      } catch (error) {
+        console.error('Hiba a feladatok lekérése során:', error)
+      }
+    }
+
+    async function saveTask(e) {
       e.preventDefault()
-      const id = taskIdEl.value ? parseInt(taskIdEl.value) : Date.now()
-      const title = taskTitleEl.value
-      const description = taskDescriptionEl.value
-      const subject = taskSubjectEl.value
+      
+      const title = taskTitleEl.value.trim()
+      const description = taskDescriptionEl.value.trim()
       const priority = taskPriorityEl.value
       const deadline = taskDeadlineEl.value
 
-      if (taskIdEl.value) {
-        const index = tasks.value.findIndex(t => t.id == taskIdEl.value)
-        if (index !== -1) {
-          tasks.value[index] = {
-            ...tasks.value[index],
-            title,
-            description,
-            subject,
-            priority,
-            deadline
-          }
-        }
-      } else {
-        tasks.value.push({
-          id,
-          title,
-          description,
-          subject,
-          priority,
-          deadline,
-          completed: false
-        })
+      if (!title) {
+        alert('Kérjük add meg a feladat címét!')
+        return
+      }
+      if (!priority) {
+        alert('Kérjük válassz prioritást!')
+        return
+      }
+      if (!deadline) {
+        alert('Kérjük add meg a határidőt!')
+        return
       }
 
-      renderTasks()
-      closeTaskModal()
+      try {
+        const token = localStorage.getItem('accessToken')
+        if (!token) {
+          alert('Nincs bejelentkezett felhasználó')
+          return
+        }
+
+        const taskData = {
+          feladat_nev: title,
+          feladat_leiras: description || '',
+          prioritas: mapPriorityToBackend(priority),
+          statusz: 'folyamatban',
+          felelos_id: userProfile.value.id,
+          hatarido: deadline
+        }
+
+        console.log('Sending task data:', taskData)
+
+        const response = await fetch('http://localhost:3000/api/project/ujFeladat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(taskData)
+        })
+
+        const result = await response.json()
+
+        if (!response.ok) {
+          throw new Error(result.message || `Hiba: ${response.status}`)
+        }
+
+        if (result.success) {
+          taskFormEl.reset()
+          closeTaskModal()
+          await refreshTasksList()
+        } else {
+          throw new Error(result.message || 'Ismeretlen hiba')
+        }
+      } catch (error) {
+        console.error('Hiba a feladat mentése során:', error)
+        alert('Hiba: ' + error.message)
+      }
     }
 
     function toggleTaskCompletion(e) {
@@ -436,11 +457,63 @@ export default {
       if (confirm('Biztosan törölni szeretnéd ezt a feladatot?')) {
         tasks.value = tasks.value.filter(t => t.id != id)
         renderTasks()
-      }
+        }
+        /*
+        const id = e.currentTarget.getAttribute('data-id')
+      if (confirm('Biztosan törölni szeretnéd ezt a feladatot?')) {
+        try {
+          const token = localStorage.getItem('accessToken')
+          if (!token) {
+            alert('Nincs bejelentkezett felhasználó')
+            return
+          }
+
+          const response = await fetch(`http://localhost:3000/api/auth/torlesFeladat/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            }
+          })
+
+          const result = await response.json()
+
+          if (!response.ok) {
+            throw new Error(result.message || `Hiba: ${response.status}`)
+          }
+
+          if (result.success) {
+            tasks.value = tasks.value.filter(t => t.id != id)
+            renderTasks()
+          } else {
+            throw new Error(result.message || 'Ismeretlen hiba')
+          }
+        } catch (error) {
+          console.error('Hiba a feladat törlése során:', error)
+          alert('Hiba: ' + error.message)
+        }
+      }*/
     }
 
-    function init() {
-      renderTasks()
+    function toggleMenu() {
+      navActive.value = !navActive.value
+    }
+
+    const logout = () => {
+      localStorage.removeItem('user')
+      localStorage.removeItem('sm_settings')
+      localStorage.removeItem('sm_appearance')
+      localStorage.removeItem('accessToken')
+      router.push('/home')
+    }
+
+    const getRoleLabel = (role) => {
+      const roleMap = {
+        'diak': 'Diák',
+        'tanar': 'Tanár',
+        'admin': 'Adminisztrátor'
+      }
+      return roleMap[role] || role
     }
 
     onMounted(() => {
@@ -451,7 +524,6 @@ export default {
       taskIdEl = document.getElementById('taskId')
       taskTitleEl = document.getElementById('taskTitle')
       taskDescriptionEl = document.getElementById('taskDescription')
-      taskSubjectEl = document.getElementById('taskSubject')
       taskPriorityEl = document.getElementById('taskPriority')
       taskDeadlineEl = document.getElementById('taskDeadline')
       addTaskBtnEl = document.getElementById('addTaskBtn')
@@ -463,7 +535,8 @@ export default {
       if (cancelBtnEl) cancelBtnEl.addEventListener('click', closeTaskModal)
       if (taskFormEl) taskFormEl.addEventListener('submit', saveTask)
 
-      init()
+      fetchUserProfile()
+      refreshTasksList()
     })
 
     onBeforeUnmount(() => {
@@ -476,25 +549,18 @@ export default {
     return {
       navActive,
       userProfile,
-      toggleMenu
+      tasks,
+      toggleMenu,
+      logout,
+      getRoleLabel
     }
   }
 }
 </script>
-
 <style>
-
- /* .dashboard-wrapper {
-  color: var(--text);
-  padding: 80px;
-  box-sizing: border-box;
-  display: flex;
-  }*/
-
-        /* Task Dashboard Styles */
         .task-dashboard {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 2fr 2fr;
             gap: 20px;
         }
 
@@ -507,6 +573,8 @@ export default {
 
         .task-section span{
             color: var(--primary);
+            padding: 5px 10px;
+
         }
 
         .section-header {
@@ -557,9 +625,13 @@ export default {
             color: white;
         }
 
-        /* Task List Styles */
         .task-list {
-            list-style: none;
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
         }
 
         .task-item {
@@ -577,11 +649,13 @@ export default {
         }
 
         .task-item.priority-high {
-            border-left-color: var(--warning);
+          border-left-color: var(--warning);
+          background-color: #fff0f5;
         }
 
         .task-item.priority-medium {
-            border-left-color: orange;
+          border-left-color: orange;
+          background-color: #fff9e6;
         }
 
         .task-header {
@@ -664,7 +738,6 @@ export default {
             color: var(--primary);
         }
 
-        /* Stats Section */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -691,7 +764,6 @@ export default {
             color: #6c757d;
         }
 
-        /* eredmeny mutato */
         .progress-item {
             margin-bottom: 15px;
         }
@@ -715,7 +787,6 @@ export default {
             border-radius: 4px;
         }
 
-        /* task style */
         .modal {
             display: none;
             position: fixed;
@@ -728,7 +799,18 @@ export default {
             justify-content: center;
             align-items: center;
         }
+        #taskTitle{
+          color: var(--primary);
+        }
 
+        #taskDescription{
+          color: var(--primary);
+        }
+
+        #taskDeadline{
+          color: var(--primary);
+        }
+        
         .modal.active {
             display: flex;
         }
@@ -793,7 +875,6 @@ export default {
             gap: 15px;
         }
 
-        /* Responsive Design */
         @media (max-width: 992px) {
             .task-dashboard {
                 grid-template-columns: 1fr;
@@ -825,55 +906,202 @@ export default {
             }
         }
 
-        @media (max-width: 576px) {
+        @media (max-width: 768px) {
             .dashboard-wrapper {
-                margin-left: 0;
-                padding: 10px;
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 1fr;
+                grid-template-areas:
+                    "header"
+                    "main";
             }
 
             .sidebar {
-                transform: translateX(-100%);
+                display: none;
             }
 
-            .sidebar.active {
-                transform: translateX(0);
-                width: 250px;
-                z-index: 100;
+            header {
+                left: 0;
+                width: 100%;
             }
 
-            .sidebar.active .logo h2,
-            .sidebar.active .logo p,
-            .sidebar.active .nav-links span {
-                display: block;
+            main {
+                margin-left: 0;
+                padding: 1rem;
+                margin-top: 60px;
             }
 
-            .sidebar.active .nav-links a {
-                text-align: left;
-                padding: 15px 20px;
+            .task-dashboard {
+                grid-template-columns: 1fr;
+                gap: 1rem;
             }
 
-            .sidebar.active .nav-links i {
-                margin-right: 10px;
+            .task-dashboard > aside {
+                width: 100%;
+            }
+
+            .task-section {
+                padding: 1rem;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+
+            .stat-card {
+                padding: 0.75rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            header {
+                padding: 0 1rem;
+                height: 56px;
+            }
+
+            main {
+                padding: 0.75rem;
+                margin-top: 56px;
             }
 
             .header-left h1 {
-                font-size: 1.4rem;
+                font-size: 1.1rem;
+            }
+
+            .header-right {
+                gap: 0.5rem;
+            }
+
+            .header-right .user-name,
+            .header-right .user-role {
+                display: none;
+            }
+
+            .avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 0.8rem;
+            }
+
+            .page-title {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .page-title h2 {
+                font-size: 1.3rem;
+            }
+
+            .btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .task-list {
+                gap: 0.75rem;
+            }
+
+            .task-item {
+                padding: 0.75rem;
             }
 
             .task-header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 10px;
+                gap: 0.5rem;
             }
 
             .task-meta {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 5px;
+                gap: 0.25rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+
+            .stat-card {
+                padding: 0.5rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .stat-label {
+                font-size: 0.75rem;
+            }
+
+            .progress-item {
+                margin-bottom: 0.75rem;
             }
 
             .form-row {
                 grid-template-columns: 1fr;
+            }
+
+            .form-control {
+                padding: 0.75rem;
+                font-size: 1rem;
+            }
+
+            .modal-content {
+                width: 100%;
+                max-width: none;
+                padding: 1rem;
+                border-radius: 0;
+            }
+        }
+
+        @media (max-width: 400px) {
+            header {
+                padding: 0 0.75rem;
+            }
+
+            main {
+                padding: 0.5rem;
+            }
+
+            .header-left h1 {
+                font-size: 1rem;
+            }
+
+            .page-title h2 {
+                font-size: 1.2rem;
+            }
+
+            .btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+                width: 100%;
+            }
+
+            .task-item {
+                padding: 0.5rem;
+            }
+
+            .section-title {
+                font-size: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .task-meta {
+                flex-direction: column;
+            }
+
+            .form-control {
+                padding: 0.65rem;
+                font-size: 16px;
             }
         }
 </style>

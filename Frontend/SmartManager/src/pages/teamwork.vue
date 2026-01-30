@@ -210,6 +210,29 @@
             </div>
           </div>
         </section>
+
+        <section class="teamwork-section">
+          <div class="section-header">
+            <h2 class="section-title">Feltöltött fájlok</h2>
+          </div>
+
+          <div class="uploaded-files-list" v-if="teamUploadedFiles.length > 0">
+            <div v-for="(file, index) in teamUploadedFiles" :key="index" class="uploaded-file-item">
+              <div class="file-icon">
+                <i class="fas fa-file"></i>
+              </div>
+              <div class="file-info">
+                <h4>{{ file.name }}</h4>
+                <span class="file-task">{{ file.taskName }}</span>
+              </div>
+              <span class="file-size" v-if="file.size">{{ file.size }} KB</span> 
+              <!--meg kell csinálni a törlést--><button style="background-color: red; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;">X</button>
+            </div>
+          </div>
+          <div v-else class="no-files">
+            <p><i class="fas fa-inbox"></i> Nincs feltöltött fájl</p>
+          </div>
+        </section>
       </aside>
     </main>
 
@@ -449,7 +472,8 @@ export default {
               assignee: 'Bence Kovács',
               priority: 'high',
               deadline: '2026-01-15',
-              completed: false
+              completed: false,
+              uploadedFiles: []
             },
             {
               id: 2,
@@ -458,7 +482,8 @@ export default {
               assignee: 'Kata Varga',
               priority: 'high',
               deadline: '2026-01-20',
-              completed: true
+              completed: true,
+              uploadedFiles: []
             },
             {
               id: 3,
@@ -467,7 +492,8 @@ export default {
               assignee: 'Te',
               priority: 'medium',
               deadline: '2026-01-25',
-              completed: false
+              completed: false,
+              uploadedFiles: []
             }
           ],
           activity: [
@@ -494,7 +520,8 @@ export default {
               assignee: 'Dani Soós',
               priority: 'high',
               deadline: '2026-01-18',
-              completed: false
+              completed: false,
+              uploadedFiles: []
             },
             {
               id: 5,
@@ -503,7 +530,8 @@ export default {
               assignee: 'Anna Molnár',
               priority: 'medium',
               deadline: '2026-01-22',
-              completed: false
+              completed: false,
+              uploadedFiles: []
             }
           ],
           activity: [
@@ -527,7 +555,8 @@ export default {
               assignee: 'Péter Nagy',
               priority: 'medium',
               deadline: '2026-01-16',
-              completed: true
+              completed: true,
+              uploadedFiles: []
             }
           ],
           activity: [
@@ -566,6 +595,21 @@ export default {
     },
     availableDiakUsers() {
       return this.availableUsers.filter(user => user.szerep_tipus === 'diak');
+    },
+    teamUploadedFiles() {
+      if (!this.selectedTeam) return [];
+      const allFiles = [];
+      this.selectedTeam.tasks.forEach(task => {
+        if (task.uploadedFiles && Array.isArray(task.uploadedFiles)) {
+          task.uploadedFiles.forEach(file => {
+            allFiles.push({
+              ...file,
+              taskName: task.title
+            });
+          });
+        }
+      });
+      return allFiles;
     }
   },
   methods: {
@@ -585,6 +629,14 @@ export default {
         this.currentTaskId = taskId;
         this.selectedFiles = [];
         this.uploadedFiles = [];
+        
+        if (this.selectedTeam) {
+          const currentTask = this.selectedTeam.tasks.find(t => t.id === taskId);
+          if (currentTask && currentTask.uploadedFiles) {
+            this.uploadedFiles = [...currentTask.uploadedFiles];
+          }
+        }
+        
         this.showUploadModal = true;
     },
     editTeam(team) {
@@ -817,7 +869,8 @@ export default {
             assignee: this.formData.taskAssignee,
             priority: this.formData.taskPriority,
             deadline: data.data.task.hatarido,
-            completed: false
+            completed: false,
+            uploadedFiles: []
           };
           this.selectedTeam.tasks.push(newTask);
           this.showTaskModal = false;
@@ -1127,11 +1180,23 @@ export default {
         }
 
         if (data.status === 'success' && data.uploadedFiles && data.uploadedFiles.length > 0) {
-          const filesWithSizes = this.selectedFiles.map(file => ({
-            name: file.name,
-            size: (file.size / 1024).toFixed(2)
+          // Az API-tól kapott file objektumok használata, amelyek tartalmazzák az id-kat
+          const filesWithData = data.uploadedFiles.map(apiFile => ({
+            id: apiFile.id,
+            name: apiFile.file_nev || apiFile.name,
+            size: apiFile.file_merete ? (apiFile.file_merete / 1024).toFixed(2) : '0'
           }));
-          this.uploadedFiles.push(...filesWithSizes);
+          this.uploadedFiles.push(...filesWithData);
+
+          if (this.selectedTeam) {
+            const currentTask = this.selectedTeam.tasks.find(t => t.id === this.currentTaskId);
+            if (currentTask) {
+              if (!currentTask.uploadedFiles) {
+                currentTask.uploadedFiles = [];
+              }
+              currentTask.uploadedFiles.push(...filesWithData);
+            }
+          }
 
           alert(`${data.uploadedFiles.length} fájl sikeresen feltöltve!`);
           
@@ -1260,7 +1325,8 @@ export default {
                 assignee: task.felelos_nev || 'Ismeretlen',
                 priority: task.prioritas === 'magas' ? 'high' : task.prioritas === 'közepes' ? 'medium' : 'low',
                 deadline: task.hatarido,
-                completed: task.statusz === 'befejezve'
+                completed: task.statusz === 'befejezve',
+                uploadedFiles: []
               }));
 
               team.tasks = [...team.tasks, ...newTasks];
@@ -1799,6 +1865,8 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 .upcoming-item {
@@ -1827,6 +1895,75 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.3rem;
+}
+
+.uploaded-files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.uploaded-file-item {
+  background-color: #f8fafc;
+  border-radius: 10px;
+  padding: 0.75rem;
+  border-left: 4px solid #10b981;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.file-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  font-size: 1.2rem;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-info h4 {
+  font-size: 0.9rem;
+  color: #1e293b;
+  margin: 0;
+  margin-bottom: 0.2rem;
+  word-break: break-word;
+}
+
+.file-task {
+  font-size: 0.8rem;
+  color: #64748b;
+  display: block;
+}
+
+.file-size {
+  font-size: 0.8rem;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.no-files {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #94a3b8;
+}
+
+.no-files i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  color: #cbd5e1;
 }
 
 .modal {

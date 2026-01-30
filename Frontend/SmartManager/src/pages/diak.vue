@@ -2,48 +2,43 @@
   <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
         <p>Diák Portál</p>
       </div>
       <ul class="nav-links">
-        <li><a href="#" class="active"><i class="fas fa-home"></i> Áttekintés</a></li>
+        <router-link to="/diak" class="active"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
         <router-link to="/task"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
-        <li><a href="#"><i class="fas fa-users"></i> Csapatmunka</a></li>
+        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Csapatmunka</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
     </aside>
 
-    <!-- Header -->
     <header>
       <div class="header-left">
         <h1>Diák Dashboard</h1>
       </div>
       <div class="header-right">
-        <div class="notifications">
-          <button class="notifications-button"><i class="fas fa-bell"></i></button>
-        </div>
         <div class="user-profile">
           <div class="avatar">{{ userProfile.initials }}</div>
           <div>
-            <div class="user-name">{{ userProfile.name }}</div>
-            <div class="user-role">{{ userProfile.role }}</div>
+            <div class="user-name">{{ userProfile.teljes_nev || userProfile.felhasznalonev }}</div>
+            <div class="user-role">{{ getRoleLabel(userProfile.szerep_tipus) }}</div>
+          </div>
+          <div class="logout-button">
+            <button @click="logout" title="Kijelentkezés"><i class="fas fa-sign-out-alt"></i></button>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- Main Content -->
     <main>
       <div class="page-title">
         <h2>Áttekintés</h2>
-        <button class="btn btn-primary" id="new-task-button"><i class="fas fa-plus"></i> Új feladat</button>
       </div>
 
-      <!-- Stats Cards -->
       <div class="stats-cards">
         <div class="stat-card">
           <div class="stat-icon bg-primary">
@@ -83,7 +78,6 @@
         </div>
       </div>
 
-      <!-- Közelgő határidők -->
       <section class="section">
         <div class="section-header">
           <h3><i class="fas fa-clock"></i> Közelgő határidők</h3>
@@ -126,65 +120,30 @@
         </div>
       </section>
 
-      <!-- Kanban tábla -->
       <section class="section">
         <div class="section-header">
           <h3><i class="fas fa-columns"></i> Projekt: Webfejlesztés</h3>
           <a href="#">További projektek</a>
         </div>
         <div class="kanban-container">
-          <div class="kanban-column">
-            <h4>Teendő</h4>
-            <div class="kanban-card">
-              <h5>Design tervek</h5>
-              <p>UI/UX tervek elkészítése</p>
+          <div class="kanban-column" 
+               v-for="column in kanbanColumns" 
+               :key="column.id"
+               @dragover="dragOver"
+               @drop="drop(column.id)"
+               @dragleave="dragLeave">
+            <h4>{{ column.title }}</h4>
+            <div class="kanban-card"
+                 v-for="card in column.cards" 
+                 :key="card.id"
+                 draggable="true"
+                 @dragstart="dragStart(card, column.id)"
+                 @dragend="dragEnd">
+              <h5>{{ card.title }}</h5>
+              <p>{{ card.description }}</p>
               <div class="card-meta">
-                <span>Határidő: 11.20.</span>
-                <span>monogram</span>
-              </div>
-            </div>
-          </div>
-          <div class="kanban-column">
-            <h4>Folyamatban</h4>
-            <div class="kanban-card">
-              <h5>Frontend fejlesztés</h5>
-              <p>Főoldal komponensek</p>
-              <div class="card-meta">
-                <span>Határidő: 11.25.</span>
-                <span>monogram</span>
-              </div>
-            </div>
-          </div>
-          <div class="kanban-column">
-            <h4>Ellenőrzés</h4>
-            <div class="kanban-card">
-              <h5>Adatbázis design</h5>
-              <p>ER diagram és séma</p>
-              <div class="card-meta">
-                <span>Határidő: 11.18.</span>
-                <span>monogram</span>
-              </div>
-            </div>
-          </div>
-          <div class="kanban-column">
-            <h4>Beadva</h4>
-            <div class="kanban-card">
-              <h5>Projekt terv</h5>
-              <p>Részletes projektterv</p>
-              <div class="card-meta">
-                <span>Beadva: 11.05.</span>
-                <span>monogram</span>
-              </div>
-            </div>
-          </div>
-          <div class="kanban-column">
-            <h4>Kész</h4>
-            <div class="kanban-card">
-              <h5>Követelmények</h5>
-              <p>Funkcionális specifikáció</p>
-              <div class="card-meta">
-                <span>Kész: 10.30.</span>
-                <span>Csapat</span>
+                <span>{{ card.deadline }}</span>
+                <span>{{ card.assignee }}</span>
               </div>
             </div>
           </div>
@@ -238,7 +197,6 @@ margin: 0;
   position: relative;
 }
 
-/* Header - FIXÁLVA*/
 .dashboard-wrapper header {
   grid-area: header;
   background: white;
@@ -314,7 +272,6 @@ margin: 0;
   color: var(--dark);
 }
 
-/* Sidebar - FIXÁLVA */
 .dashboard-wrapper .sidebar {
   grid-area: sidebar;
   background: var(--sidebar);
@@ -381,7 +338,6 @@ margin: 0;
   text-align: center;
 }
 
-/* Main Content - FIXÁLVA A PADDING */
 .dashboard-wrapper main {
   grid-area: main;
   background: var(--bg-light);
@@ -445,7 +401,6 @@ margin: 0;
 .dashboard-wrapper .bg-warning { background: var(--warning); }
 .dashboard-wrapper .bg-danger { background: var(--danger); }
 
-/* Sections */
 .dashboard-wrapper .section {
   background: white;
   border-radius: 10px;
@@ -491,7 +446,6 @@ margin: 0;
   background: var(--secondary);
 }
 
-/* Tasks */
 .dashboard-wrapper .tasks-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -555,7 +509,6 @@ margin: 0;
 .dashboard-wrapper .status-graded { background: #d4edda; color: #155724; }
 .dashboard-wrapper .status-late { background: #f8d7da; color: #721c24; }
 
-/* Kanban */
 .dashboard-wrapper .kanban-container {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -585,6 +538,17 @@ margin: 0;
   margin-bottom: 0.75rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   cursor: move;
+  transition: all 0.2s;
+}
+
+.dashboard-wrapper .kanban-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.dashboard-wrapper .kanban-card:active {
+  opacity: 0.7;
+  cursor: grabbing;
 }
 
 .dashboard-wrapper .kanban-card h5 {
@@ -605,7 +569,6 @@ margin: 0;
   color: var(--muted);
 }
 
-/* Chat */
 .dashboard-wrapper .chat-container {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -711,7 +674,6 @@ margin: 0;
   cursor: pointer;
 }
 
-/* Közepes képernyők */
 @media (max-width: 992px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
@@ -762,7 +724,6 @@ margin: 0;
   }
 }
 
-/* Mobil képernyők */
 @media (max-width: 768px) {
   .dashboard-wrapper header {
     flex-direction: column;
@@ -839,7 +800,6 @@ margin: 0;
   }
 }
 
-/* Nagyon kis mobilok */
 @media (max-width: 480px) {
   .dashboard-wrapper header {
     padding: 0.5rem;
@@ -876,42 +836,194 @@ margin: 0;
 </style>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router';
 
 export default {
   name: "Diak",
-  setup() {
-    // Reactive state
-    const navActive = ref(false)
-    const userProfile = ref({
-      initials: 'DK',
-      name: 'Diós Katalin',
-      role: 'Diák'
-    })
-    
-    // Methods
-    const toggleMenu = () => {
-      navActive.value = !navActive.value
-    }
-
-    onMounted(() => {
-      // Loader eltüntetése
-      setTimeout(() => {
-        const loader = document.getElementById('loader')
-        if (loader) {
-          loader.classList.add('fade-out')
-          setTimeout(() => {
-            loader.remove()
-          }, 700)
-        }
-      }, 1000)
-    })
-    
+  data() {
     return {
-      navActive,
-      userProfile,
-      toggleMenu
+      navActive: false,
+      userProfile: {
+        teljes_nev: '',
+        felhasznalonev: '',
+        szerep_tipus: 'diak',
+        initials: ''
+      },
+      draggedCard: null,
+      draggedFromColumn: null,
+      kanbanColumns: [
+        {
+          id: 'todo',
+          title: 'Teendő',
+          cards: [
+            {
+              id: 1,
+              title: 'Design tervek',
+              description: 'UI/UX tervek elkészítése',
+              deadline: 'Határidő: 11.20.',
+              assignee: 'monogram'
+            }
+          ]
+        },
+        {
+          id: 'inprogress',
+          title: 'Folyamatban',
+          cards: [
+            {
+              id: 2,
+              title: 'Frontend fejlesztés',
+              description: 'Főoldal komponensek',
+              deadline: 'Határidő: 11.25.',
+              assignee: 'monogram'
+            }
+          ]
+        },
+        {
+          id: 'review',
+          title: 'Ellenőrzés',
+          cards: [
+            {
+              id: 3,
+              title: 'Adatbázis design',
+              description: 'ER diagram és séma',
+              deadline: 'Határidő: 11.18.',
+              assignee: 'monogram'
+            }
+          ]
+        },
+        {
+          id: 'submitted',
+          title: 'Beadva',
+          cards: [
+            {
+              id: 4,
+              title: 'Projekt terv',
+              description: 'Részletes projektterv',
+              deadline: 'Beadva: 11.05.',
+              assignee: 'monogram'
+            }
+          ]
+        },
+        {
+          id: 'done',
+          title: 'Kész',
+          cards: [
+            {
+              id: 5,
+              title: 'Követelmények',
+              description: 'Funkcionális specifikáció',
+              deadline: 'Kész: 10.30.',
+              assignee: 'Csapat'
+            }
+          ]
+        }
+      ]
     }
+  },
+  methods: {
+    toggleMenu() {
+      this.navActive = !this.navActive;
+    },
+    getRoleLabel(role) {
+      const roleMap = {
+        'diak': 'Diák',
+        'tanar': 'Tanár',
+        'admin': 'Adminisztrátor'
+      };
+      return roleMap[role] || role;
+    },
+    generateInitials(name) {
+      if (!name) return '';
+      const parts = name.split(' ');
+      return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2);
+    },
+        dragStart(card, columnId) {
+      this.draggedCard = card;
+      this.draggedFromColumn = columnId;
+    },
+    dragEnd() {
+      this.draggedCard = null;
+      this.draggedFromColumn = null;
+    },
+    dragOver(event) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    },
+    dragLeave(event) {
+      if (event.currentTarget === event.target) {
+        event.currentTarget.style.backgroundColor = '';
+      }
+    },
+    drop(columnId) {
+      if (this.draggedCard) {
+        const fromColumn = this.kanbanColumns.find(col => col.id === this.draggedFromColumn);
+        const cardIndex = fromColumn.cards.findIndex(card => card.id === this.draggedCard.id);
+        
+        if (cardIndex > -1) {
+          fromColumn.cards.splice(cardIndex, 1);
+        }
+        
+        const toColumn = this.kanbanColumns.find(col => col.id === columnId);
+        toColumn.cards.push(this.draggedCard);
+      }
+    },
+    async fetchUserProfile() {
+      try {
+        const storedUser = localStorage.getItem('user');
+        const token = localStorage.getItem('accessToken');
+        
+        if (!storedUser || !token) {
+          console.warn('Nincs bejelentkezett felhasználó');
+          this.$router.push('/login');
+          return;
+        }
+
+        const userData = JSON.parse(storedUser);
+        
+        const response = await fetch(`http://localhost:3000/api/auth/profileData`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Felhasználó adatainak lekérése sikertelen');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.user ) {
+          const user = data.data.user;
+          this.userProfile = {
+            teljes_nev: user.teljes_nev || user.felhasznalonev,
+            felhasznalonev: user.felhasznalonev,
+            szerep_tipus: user.szerep_tipus,
+            email: user.email,
+            id: user.id,
+            initials: this.generateInitials(user.teljes_nev || user.felhasznalonev)
+          };
+        }
+      } catch (error) {
+        console.error('Felhasználó adatainak lekérése sikertelen:', error);
+      }
+    }
+  },
+  mounted() {
+    this.fetchUserProfile();
+  },
+  setup() {
+    const router = useRouter();
+    const logout = () => {
+      localStorage.removeItem('user');
+      localStorage.removeItem('sm_settings');
+      localStorage.removeItem('sm_appearance');
+      
+      router.push('/home');
+    };
+    return { router, logout };
   }
 }
+    
 </script>
