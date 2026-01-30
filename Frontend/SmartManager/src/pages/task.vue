@@ -55,19 +55,19 @@
 
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-value">7</div>
+                            <div class="stat-value">{{ stats.aktiv }}</div>
                             <div class="stat-label">Aktív feladat</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">3</div>
+                            <div class="stat-value">{{ stats.befejezett }}</div>
                             <div class="stat-label">Befejezett</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">2</div>
+                            <div class="stat-value">{{ stats.kozelgo }}</div>
                             <div class="stat-label">Közelgő</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value">1</div>
+                            <div class="stat-value">{{ stats.kesesben }}</div>
                             <div class="stat-label">Késésben</div>
                         </div>
                     </div>
@@ -142,6 +142,12 @@ export default {
       initials: ''
     })
     const tasks = ref([])
+    const stats = ref({
+      aktiv: 0,
+      befejezett: 0,
+      kozelgo: 0,
+      kesesben: 0
+    })
 
     let taskListEl = null
     let taskModalEl = null
@@ -183,6 +189,34 @@ export default {
       deadlineDate.setHours(0, 0, 0, 0)
       const diffTime = deadlineDate.getTime() - today.getTime()
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    }
+
+    function calculateStats() {
+      let aktiv = 0
+      let befejezett = 0
+      let kozelgo = 0
+      let kesesben = 0
+
+      tasks.value.forEach(task => {
+        const daysUntil = calculateDaysUntilDeadline(task.deadline)
+
+        if (task.completed) {
+          befejezett++
+        } else if (daysUntil < 0) {
+          kesesben++
+        } else if (daysUntil <= 2 && daysUntil >= 0) {
+          kozelgo++
+        } else {
+          aktiv++
+        }
+      })
+
+      stats.value = {
+        aktiv,
+        befejezett,
+        kozelgo,
+        kesesben
+      }
     }
 
     function mapPriorityToFrontend(backendPriority) {
@@ -369,6 +403,7 @@ export default {
             return deadlineA - deadlineB
           })
           renderTasks()
+          calculateStats()
         }
       } catch (error) {
         console.error('Hiba a feladatok lekérése során:', error)
@@ -539,13 +574,34 @@ export default {
       navActive.value = !navActive.value
     }
 
-    const logout = () => {
-      localStorage.removeItem('user')
-      localStorage.removeItem('sm_settings')
-      localStorage.removeItem('sm_appearance')
-      localStorage.removeItem('accessToken')
-      router.push('/home')
-    }
+    const logout = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        
+        if (token) {
+          await fetch('http://localhost:3000/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              elerheto: false
+            })
+          });
+        }
+      } catch (error) {
+        console.error('Kijelentkezés hiba:', error);
+      }
+      
+      localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('sm_settings');
+      localStorage.removeItem('sm_appearance');
+      
+      router.push('/home');
+    };
 
     const getRoleLabel = (role) => {
       const roleMap = {
@@ -590,6 +646,7 @@ export default {
       navActive,
       userProfile,
       tasks,
+      stats,
       toggleMenu,
       logout,
       getRoleLabel

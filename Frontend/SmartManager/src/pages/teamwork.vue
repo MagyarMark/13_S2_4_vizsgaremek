@@ -217,7 +217,7 @@
           </div>
 
           <div class="uploaded-files-list" v-if="teamUploadedFiles.length > 0">
-            <div v-for="(file, index) in teamUploadedFiles" :key="index" class="uploaded-file-item">
+            <div v-for="file in teamUploadedFiles" :key="file.id" class="uploaded-file-item">
               <div class="file-icon">
                 <i class="fas fa-file"></i>
               </div>
@@ -409,7 +409,7 @@
           <div v-if="uploadedFiles.length > 0" class="form-group" style="margin-top: 1.5rem; border-top: 2px solid #e2e8f0; padding-top: 1rem;">
             <label style="color: #10b981; font-weight: 700;"><i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>Feltöltött fájlok:</label>
             <div class="file-list">
-              <div v-for="(file, index) in uploadedFiles" :key="index" class="file-item" style="border-left-color: #10b981;">
+              <div v-for="file in uploadedFiles" :key="file.id || `uploaded-${file.name}`" class="file-item" style="border-left-color: #10b981;">
                 <i class="fas fa-file-check" style="color: #10b981;"></i>
                 <span>{{ file.name }}</span>
                 <small style="color: #10b981;">({{ file.size }} KB)</small>
@@ -724,10 +724,66 @@ export default {
         alert('Hiba a Projekt mentésekor: ' + error.message);
       }
     },
-    deleteTeam(teamId) {
-      if (confirm('Biztosan törlöd a Projektot?')) {
-        this.teams = this.teams.filter(t => t.id !== teamId);
-        this.selectedTeam = null;
+    async deleteTeam(teamId) {
+      if (!confirm('Biztosan törlöd ezt a Projektot? Ez az összes adatát is törölni fogja (feladatok, fájlok, stb.)!')) {
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          alert('Authentikációs token nem található');
+          return;
+        }
+
+        console.log('Projekt törlésének kezdete:', teamId);
+
+        const response = await fetch(`http://localhost:3000/api/project/projekt/${teamId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('Törlés válasz status:', response.status);
+
+        if (!response.ok) {
+          const data = await response.json();
+          console.error('Törlés hiba válasz:', data);
+          alert('Hiba a projekt törléskor: ' + (data.message || 'Ismeretlen hiba'));
+          return;
+        }
+
+        const data = await response.json();
+        console.log('Törlés válasz adatok:', data);
+
+        if (data.success) {
+          const teamToDelete = this.teams.find(t => t.id === teamId);
+          const teamName = teamToDelete?.name || 'Ismeretlen projekt';
+          
+          // Törlés a teams listáról
+          this.teams = this.teams.filter(t => t.id !== teamId);
+
+          // Ha az aktuálisan kiválasztott team volt, nullázzuk
+          if (this.selectedTeam?.id === teamId) {
+            this.selectedTeam = null;
+          }
+
+          // Activity log
+          await this.createActivityLog(
+            'törölve',
+            `"${teamName}" projekt sikeresen törölve`,
+            null
+          );
+          
+          alert('Projekt sikeresen törölve!');
+        } else {
+          alert('Hiba: ' + (data.message || 'Ismeretlen hiba'));
+        }
+      } catch (error) {
+        console.error('Hiba a projekt törléskor:', error);
+        alert('Hiba a projekt törléskor: ' + error.message);
       }
     },
     openAddMemberModal() {
@@ -947,22 +1003,35 @@ export default {
 
         console.log('Törlés válasz status:', response.status);
 
-        const data = await response.json();
-        console.log('Törlés válasz adatok:', data);
-
         if (!response.ok) {
+          const data = await response.json();
+          console.error('Törlés hiba válasz:', data);
           alert('Hiba a feladat törléskor: ' + (data.message || 'Ismeretlen hiba'));
           return;
         }
+
+        const data = await response.json();
+        console.log('Törlés válasz adatok:', data);
 
         if (data.success) {
           const taskToDelete = this.selectedTeam?.tasks?.find(t => t.id === taskId);
           const taskTitle = taskToDelete?.title || 'Ismeretlen feladat';
           
-          if (this.selectedTeam) {
+          // Törlés az aktuálisan kiválasztott teamből
+          if (this.selectedTeam && this.selectedTeam.tasks) {
             this.selectedTeam.tasks = this.selectedTeam.tasks.filter(t => t.id !== taskId);
           }
+
+          // Törlés az összes teamből a listában (szinkronizálás)
+          if (this.teams && Array.isArray(this.teams)) {
+            this.teams.forEach(team => {
+              if (team.tasks && Array.isArray(team.tasks)) {
+                team.tasks = team.tasks.filter(t => t.id !== taskId);
+              }
+            });
+          }
           
+          // Activity log
           await this.createActivityLog(
             'törölve',
             `"${taskTitle}" feladat sikeresen törölve`,
@@ -1165,13 +1234,17 @@ export default {
         const data = await response.json();
         
         if (data.success && Array.isArray(data.data.logs)) {
-          this.selectedTeam.activity = data.data.logs.map((log, index) => ({
-            id: log.id || index,
-            user: log.teljes_nev || log.felhasznalonev || 'Ismeretlen felhasználó',
-            action: log.leiras || log.muvelet,
-            type: log.muvelet.includes('befejezve') ? 'complete' : 'update',
-            timestamp: new Date(log.idopont).toLocaleString('hu-HU')
-          }));
+          this.selectedTeam.activity = data.data.logs.map((log, index) => {
+            const userName = log.teljes_nev || log.felhasznalonev || 'Ismeretlen felhasználó';
+            
+            return {
+              id: log.id || `activity-${Date.now()}-${index}`,
+              user: userName,
+              action: log.leiras || log.muvelet,
+              type: log.muvelet.includes('befejezve') ? 'complete' : 'update',
+              timestamp: new Date(log.idopont).toLocaleString('hu-HU')
+            };
+          });
         }
       } catch (error) {
         console.error('Aktivitás betöltésének hiba:', error);
@@ -1386,7 +1459,7 @@ export default {
           return;
         }
 
-        console.log('Fájl törlésének kezdete:', fileId);
+        console.log('Fájl törlésének kezdete, ID:', fileId);
 
         const response = await fetch(`http://localhost:3000/api/files/${fileId}`, {
           method: 'DELETE',
@@ -1398,22 +1471,42 @@ export default {
 
         console.log('Törlés válasz status:', response.status);
 
-        const data = await response.json();
-        console.log('Törlés válasz adatok:', data);
-
+        // Ellenőrizzük az ok státusz
         if (!response.ok) {
+          const data = await response.json();
+          console.error('Törlés hiba válasz:', data);
           alert('Hiba a fájl törléskor: ' + (data.message || 'Ismeretlen hiba'));
           return;
         }
 
+        const data = await response.json();
+        console.log('Törlés válasz adatok:', data);
+
+        // Sikeres törlés
         if (data.success) {
+          // Törlés az uploadedFiles listáról
           this.uploadedFiles = this.uploadedFiles.filter(f => f.id !== fileId);
 
-          if (this.selectedTeam) {
-            const currentTask = this.selectedTeam.tasks.find(t => t.id === this.currentTaskId);
-            if (currentTask && currentTask.uploadedFiles) {
-              currentTask.uploadedFiles = currentTask.uploadedFiles.filter(f => f.id !== fileId);
-            }
+          // Törlés az összes feladat fájljairól az összes teamből
+          if (this.selectedTeam && this.selectedTeam.tasks) {
+            this.selectedTeam.tasks.forEach(task => {
+              if (task.uploadedFiles && Array.isArray(task.uploadedFiles)) {
+                task.uploadedFiles = task.uploadedFiles.filter(f => f.id !== fileId);
+              }
+            });
+          }
+
+          // Törlés az összes teamból (globális keresés)
+          if (this.teams && Array.isArray(this.teams)) {
+            this.teams.forEach(team => {
+              if (team.tasks && Array.isArray(team.tasks)) {
+                team.tasks.forEach(task => {
+                  if (task.uploadedFiles && Array.isArray(task.uploadedFiles)) {
+                    task.uploadedFiles = task.uploadedFiles.filter(f => f.id !== fileId);
+                  }
+                });
+              }
+            });
           }
 
           alert('Fájl sikeresen törölve!');
@@ -1582,8 +1675,29 @@ export default {
   },
   setup() {
     const router = useRouter();
-    const logout = () => {
+    const logout = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        
+        if (token) {
+          await fetch('http://localhost:3000/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              elerheto: false
+            })
+          });
+        }
+      } catch (error) {
+        console.error('Kijelentkezés hiba:', error);
+      }
+      
       localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('sm_settings');
       localStorage.removeItem('sm_appearance');
       

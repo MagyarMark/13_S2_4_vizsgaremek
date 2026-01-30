@@ -1,5 +1,5 @@
 <script>
-export default {
+/*export default {
   async mounted() {
     try {
       await this.$router.replace({ name: "Home" });
@@ -7,7 +7,7 @@ export default {
       console.log("Nincs elérhető Home oldal")
     }
   }
-};
+};*/
 </script>
 
 <template>
