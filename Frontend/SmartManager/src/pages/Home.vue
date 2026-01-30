@@ -1,18 +1,7 @@
 <template>
-  <div id="loader" aria-hidden="true">
-        <div class="spinner" role="status" aria-label="Betöltés"></div>
-    </div>
 
     <header>
         <div class="logo">Smart<span>Manager</span></div>
-        <nav>
-            <button class="mobile-menu-btn" @click="toggleMenu" :aria-expanded="navActive" aria-label="Menü">☰</button>
-            <ul :class="{ show: navActive }">
-                <li><a href="#landing" @click="navActive = false">Kezdőlap</a></li>
-                <li><a href="#features" @click="navActive = false">Funkciók</a></li>
-                <li><a href="#contact" @click="navActive = false">Kapcsolat</a></li>
-            </ul>
-        </nav>
     </header>
 
     <main>
@@ -73,32 +62,37 @@
                 <h2>Lépjen kapcsolatba velünk</h2>
                 <p>Kérdése van? Szívesen segítünk!</p>
             </div>
+            
             <div class="contact-container">
                 <div class="contact-info">
                     <h3>Kapcsolati információk</h3>
                     <ul class="contact-details">
-                        <li><i>📍</i> 6100 kiskunfélegyháza, Kossuth Lajos utca 24.</li>
-                        <li><i>✉️</i> info@smartmanager.hu</li>
+                        <li><i>📍</i> 6100 Kiskunfélegyháza, Kossuth Lajos utca 24.</li>
+                        <li><i>✉️</i> smartmanager.help@gmail.com</li>
                         <!--<li><i>📞</i> +36 1 234 5678</li>
                         <li><i>🕒</i> Hétfő - Péntek: 9:00 - 17:00</li>-->
                     </ul>
                 </div>
                 <div class="contact-form">
+                    <form action="https://formspree.io/f/xpqppgwl" method="POST">
                     <div class="form-group">
                         <label for="name">Név</label>
-                        <input type="text" id="name" placeholder="Adja meg a nevét">
+                        <input type="text" id="name" name="name" placeholder="Adja meg a nevét">
                     </div>
                     <div class="form-group">
                         <label for="email">Email cím</label>
-                        <input type="email" id="email" placeholder="Adja meg az email címét">
+                        <input type="email" id="email" name="email" placeholder="Adja meg az email címét">
                     </div>
                     <div class="form-group">
                         <label for="message">Üzenet</label>
-                        <textarea id="message" rows="5" placeholder="Írja le üzenetét..."></textarea>
+                        <textarea id="message" name="message" rows="5" placeholder="Írja le üzenetét..."></textarea>
                     </div>
-                    <button class="btn primary">Üzenet küldése</button>
+                    <button class="btn primary" type="submit">Üzenet küldése</button>
+                    </form>
                 </div>
             </div>
+            
+            
         </section>
     </main>
 
@@ -131,23 +125,13 @@
             </div>
         </div>
         <div class="copyright">
-            &copy; 2025 SmartManager. Minden jog fenntartva.
+            &copy; 2025 SmartManager. Minden jog fenntartva.<router-link to="/admin"><button style="visibility:hidden;"></button></router-link>
         </div>
+
     </footer>
 </template>
 
 <script>
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const loader = document.getElementById('loader');
-    if (!loader) return;
-    loader.classList.add('fade-out');
-    setTimeout(() => {
-      loader.remove();
-    }, 700);
-  }, 1500);
-});
-
 const menuBtn = document.getElementById('menuToggle');
 const mainNav = document.getElementById('mainNav');
 const headerEl = document.querySelector('header');
@@ -168,7 +152,6 @@ function onScroll() {
 
 window.addEventListener('scroll', onScroll);
 
-// Cleanup listeners when the page is unloaded/reloaded
 window.addEventListener('beforeunload', () => {
   if (menuBtn) menuBtn.removeEventListener('click', toggleMobileNav);
   window.removeEventListener('scroll', onScroll);
@@ -176,15 +159,281 @@ window.addEventListener('beforeunload', () => {
 
 export default {
   name: "Home",
-  data() {
-    return {
-      navActive: false,
-    }
-  },
-  methods: {
-    toggleMenu() {
-      this.navActive = !this.navActive;
-    }
-  }
 }
 </script>
+
+<style scoped>
+main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+  padding: 2rem;
+}
+
+main > section:nth-child(3) {
+  grid-column: 1 / -1;
+  margin-top: 2rem;
+}
+
+#landing {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#landing h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+#landing p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  color: #666;
+}
+
+#landing > div {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn.primary {
+    color: white;
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-size: 1.1rem;
+}
+
+.btn {
+    background-color: var(--primary);
+    color: white;
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-size: 1.1rem;
+}
+
+#features {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 50vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center; 
+    padding: 2rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    box-shadow: 0 4px 60px rgb(245, 241, 241);
+    border-style: solid ;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.contact-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.contact-info {
+    background: var(--card);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.contact-form {
+    background: var(--card);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+#contact{
+    padding: 2rem;
+    text-align: center;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    box-shadow: 0 4px 60px rgb(245, 241, 241);
+    border-style: solid ;
+}
+
+footer{
+    padding: 2rem;
+    text-align: center;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    box-shadow: 0 4px 60px rgba(245, 241, 241);
+    border-top: 1px solid var(--border);
+}
+
+.copyright{
+    box-shadow: 0 0px 0px rgba(245, 241, 241);
+    border-top: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+  main {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  main > section:nth-child(3) {
+    grid-column: 1;
+  }
+
+  #landing h1 {
+    font-size: 2rem;
+  }
+
+  #landing p {
+    font-size: 1rem;
+  }
+
+  #landing > div {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .contact-container {
+    grid-template-columns: 1fr;
+  }
+
+  footer {
+    padding: 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  main {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  #landing h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  #landing p {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+
+  #landing > div {
+    flex-direction: column;
+  }
+
+  .btn {
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    width: 100%;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .feature-card {
+    padding: 1rem;
+  }
+
+  .contact-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .contact-info,
+  .contact-form {
+    padding: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    padding: 0.75rem;
+  }
+
+  footer {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  main {
+    padding: 0.75rem;
+  }
+
+  #landing h1 {
+    font-size: 1.25rem;
+  }
+
+  #landing p {
+    font-size: 0.9rem;
+  }
+
+  .btn {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .features-grid {
+    gap: 0.5rem;
+  }
+
+  .contact-info h3,
+  .contact-form {
+    font-size: 1rem;
+  }
+
+  footer {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+@media (max-width: 1024px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+
+  main > section:nth-child(3) {
+    grid-column: 1;
+  }
+}
+</style>

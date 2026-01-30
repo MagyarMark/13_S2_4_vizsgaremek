@@ -2,13 +2,9 @@
 export default {
   async mounted() {
     try {
-      await this.$router.replace({ name: "Home" });//Név alapján keresés
+      await this.$router.replace({ name: "Home" });
     } catch (e) {
-      try {
-        await this.$router.replace("/home");//Útvonal alapján keresés
-      } catch (e2) {
-        console.log("Nincs elérhető Home oldal")
-      }
+      console.log("Nincs elérhető Home oldal")
     }
   }
 };

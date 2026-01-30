@@ -1,4 +1,4 @@
-<!-- Register.vue -->
+
 <template>
   <header>
     <div class="logo">Smart<span>Manager</span></div>
@@ -174,7 +174,6 @@ export default {
       this.loading = true;
       
       try {
-        // Valós regisztráció a backend felé
         const response = await fetch('http://localhost:3000/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -189,10 +188,8 @@ export default {
 
         const data = await response.json();
         if (response.ok && data.success) {
-          // Átirányítás bejelentkezéshez
           this.$router.push('/login?registered=true');
         } else {
-          // Sikertelen regisztráció, hiba üzenet
           const msg = data && data.message ? data.message : 'Regisztráció sikertelen';
           alert(msg);
         }
@@ -415,11 +412,16 @@ export default {
 
 @media (max-width: 768px) {
   .auth-container {
-    padding: 100px 1rem 1rem;
+    padding: 60px 1rem 1rem;
   }
   
   .auth-card {
     padding: 2rem;
+    max-width: 100%;
+  }
+
+  .auth-header h1 {
+    font-size: 1.8rem;
   }
   
   .form-row {
@@ -428,6 +430,106 @@ export default {
   
   .social-auth {
     flex-direction: column;
+  }
+
+  .role-options {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .auth-container {
+    padding: 50px 0.75rem 0.75rem;
+  }
+
+  .auth-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .auth-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .auth-header p {
+    font-size: 0.95rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .form-group input {
+    padding: 0.75rem;
+    font-size: 1rem;
+  }
+
+  .password-strength {
+    font-size: 0.75rem;
+    margin-top: 0.375rem;
+  }
+
+  .role-options {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .checkbox {
+    font-size: 0.85rem;
+  }
+
+  .auth-btn {
+    padding: 1rem;
+    font-size: 1rem;
+    margin-top: 0.75rem;
+  }
+
+  .auth-divider {
+    margin: 1.5rem 0;
+  }
+
+  .auth-divider span {
+    padding: 0 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .auth-footer p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .auth-container {
+    padding: 40px 0.5rem 0.5rem;
+  }
+
+  .auth-card {
+    padding: 1rem;
+  }
+
+  .auth-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group input {
+    padding: 0.65rem;
+    font-size: 16px;
+  }
+
+  .auth-btn {
+    padding: 0.9rem;
+    font-size: 0.95rem;
   }
 }
 </style>

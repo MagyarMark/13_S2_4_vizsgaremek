@@ -1,16 +1,11 @@
-const express = require('express');
-const cors = require('cors');
 require('dotenv').config({ path: './.env' });
 
-const authRoutes = require('./routes/auth');
+const app = require('./app');
+const http = require('http');
+const server = http.createServer(app);
 
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use('/api/auth', authRoutes);
+const initializeChat = require('./chat/application');
+initializeChat(server, app);
 
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -18,6 +13,10 @@ app.get('/api/health', (req, res) => {
     message: 'A Smart Manager API fut',
     timestamp: new Date().toISOString()
   });
+});
+
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
 });
 
 app.use((req, res) => {
@@ -37,8 +36,7 @@ app.use((error, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log('ELINDULTAM');
+server.listen(PORT, () => {
   console.log(`A szerver a következő porton fut:${PORT}`);
   console.log(`Környezet: ${process.env.NODE_ENV || 'fejlesztői'}`);
 });

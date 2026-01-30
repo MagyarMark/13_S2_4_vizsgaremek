@@ -1,4 +1,3 @@
-<!-- Login.vue -->
 <template>
   <header>
     <div class="logo">Smart<span>Manager</span></div>
@@ -63,9 +62,11 @@
     </div>
   </main>
 
-<footer>
-  &copy; 2025 SmartManager. Minden jog fenntartva.
-</footer>
+
+  <footer>
+    &copy; 2025 SmartManager. Minden jog fenntartva.
+  </footer>
+  
 </template>
 
 <script>
@@ -82,15 +83,38 @@ export default {
       }
     }
   },
+
+  mounted() {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const storedUser = localStorage.getItem('user');
+
+      if (token && storedUser) {
+        const u = JSON.parse(storedUser);
+        const role = u && u.szerep_tipus;
+
+        if (role === 'diak') {
+          this.$router.push('/diak');
+        } else if (role === 'tanar') {
+          this.$router.push('/tanar');
+        } else {
+          this.$router.push('/home');
+        }
+      }
+    } catch (e) {
+      console.warn('Auto-redirect error:', e);
+    }
+  },
+
   methods: {
     toggleMenu() {
       this.navActive = !this.navActive;
     },
+
     async handleLogin() {
       this.loading = true;
-      
+
       try {
-        // Backend API hívás
         const response = await fetch('http://localhost:3000/api/auth/login', {
           method: 'POST',
           headers: {
@@ -101,30 +125,40 @@ export default {
             jelszo: this.form.password
           })
         });
+
         const data = await response.json();
-        
-        // Sikeres bejelentkezés után átirányítás szerepkör alapján
-        if (data.success) {
-          const role = data && data.data && data.data.user && data.data.user.szerep_tipus;
+
+        if (data.success && data.data && data.data.user && data.data.accessToken) {
+
+          localStorage.setItem('user', JSON.stringify(data.data.user));
+          localStorage.setItem('accessToken', data.data.accessToken);
+          localStorage.setItem('refreshToken', data.data.refreshToken);
+
+          const role = data.data.user.szerep_tipus;
+
           if (role === 'diak') {
             this.$router.push('/diak');
           } else if (role === 'tanar') {
             this.$router.push('/tanar');
           } else {
-            this.$router.push('/');
+            this.$router.push('/home');
           }
+
         } else {
           alert(data.message || 'Bejelentkezés sikertelen');
         }
+
       } catch (error) {
         console.error('Bejelentkezési hiba:', error);
+        alert('Hiba történt a bejelentkezés során');
       } finally {
         this.loading = false;
       }
     }
-  },
+  }
 }
 </script>
+
 
 <style scoped>
 .auth-container {
@@ -309,11 +343,16 @@ export default {
 
 @media (max-width: 768px) {
   .auth-container {
-    padding: 100px 1rem 1rem;
+    padding: 80px 1rem 1rem;
   }
   
   .auth-card {
     padding: 2rem;
+    max-width: 100%;
+  }
+  
+  .auth-header h1 {
+    font-size: 1.8rem;
   }
   
   .social-auth {
@@ -324,6 +363,90 @@ export default {
     flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
+  }
+
+  .form-group input {
+    padding: 0.875rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .auth-container {
+    padding: 60px 0.75rem 0.75rem;
+  }
+
+  .auth-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .auth-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .auth-header p {
+    font-size: 0.95rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .form-group input {
+    padding: 0.75rem;
+    font-size: 1rem;
+  }
+
+  .auth-btn {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .auth-divider {
+    margin: 1.5rem 0;
+  }
+
+  .auth-divider span {
+    padding: 0 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .auth-footer p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .auth-container {
+    padding: 50px 0.5rem 0.5rem;
+  }
+
+  .auth-card {
+    padding: 1rem;
+  }
+
+  .auth-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group input {
+    padding: 0.65rem;
+    font-size: 16px;
+  }
+
+  .auth-btn {
+    padding: 0.9rem;
+    font-size: 0.95rem;
   }
 }
 </style>

@@ -693,10 +693,22 @@ router.delete('/feladat/:id', verifyToken, async (req, res) => {
       });
     }
 
+    await pool.query(
+      'DELETE FROM "Naplo" WHERE feladat_id = $1',
+      [id]
+    );
+
     const deleteResult = await pool.query(
       'DELETE FROM "Feladat" WHERE id = $1 RETURNING id',
       [id]
     );
+
+    if (deleteResult.rows.length === 0) {
+      return res.status(500).json({
+        success: false,
+        message: 'Feladat törlése sikertelen'
+      });
+    }
 
     res.json({
       success: true,

@@ -1,10 +1,37 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const pool = require('../config/database');
-const auth = require('../middleware/auth');
+const fileUpload = require('express-fileupload');
+const filesPayloadExists = require('../middleware/filesPayloadExists');
+const fileExtLimiter = require('../middleware/fileExtLimiter');
+const fileSizeLimiter = require('../middleware/fileSizeLimiter');
+const { verifyToken, verifyRefreshToken } = require('../middleware/auth');
+const { accessTokenSecret, refreshTokenSecret, accessTokenExpiration, refreshTokenExpiration } = require('../config/jwt');
 
 const router = express.Router();
+
+const generateTokens = (user) => {
+  const accessToken = jwt.sign(
+    {
+      id: user.id,
+      felhasznalonev: user.felhasznalonev,
+      email: user.email,
+      szerep_tipus: user.szerep_tipus
+    },
+    accessTokenSecret,
+    { expiresIn: accessTokenExpiration }
+  );
+
+  const refreshToken = jwt.sign(
+    { id: user.id, felhasznalonev: user.felhasznalonev },
+    refreshTokenSecret,
+    { expiresIn: refreshTokenExpiration }
+  );
+
+  return { accessToken, refreshToken };
+};
 
 router.post('/register', [
   body('felhasznalonev')
@@ -67,11 +94,10 @@ router.post('/register', [
     });
 
   } catch (error) {
-    console.error('Registration error:', error.stack || error);
+    console.error('Szerver hiba a regisztráció során:', error);
     res.status(500).json({
       success: false,
-      message: 'Szerver hiba a regisztráció során',
-      error: error.message
+      message: 'Szerver hiba a regisztráció során'
     });
   }
 });
@@ -96,18 +122,12 @@ router.post('/login', [
 
     const { felhasznalonev, jelszo } = req.body;
 
-    console.log('Login request body:', req.body);
-
-    
-
     const userResult = await pool.query(
       `SELECT id, felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, aktiv, elerheto 
        FROM "Felhasznalo" 
        WHERE felhasznalonev = $1`,
       [felhasznalonev]
     );
-
-    console.log('Login query returned rows:', userResult.rows.length);
 
     if (userResult.rows.length === 0) {
       return res.status(401).json({
@@ -134,58 +154,98 @@ router.post('/login', [
     }
 
     await pool.query(
-      'UPDATE "Felhasznalo" SET utolso_bejelentkezes = NOW() WHERE id = $1',
+      'UPDATE "Felhasznalo" SET utolso_bejelentkezes = NOW(), elerheto = true WHERE id = $1',
       [user.id]
     );
 
     const { jelszo: _, ...userWithoutPassword } = user;
+    const { accessToken, refreshToken } = generateTokens(user);
 
     res.json({
       success: true,
       message: 'Sikeres bejelentkezés',
       data: {
-        user: userWithoutPassword
+        user: userWithoutPassword,
+        accessToken,
+        refreshToken
       }
     });
 
   } catch (error) {
-    console.error('Login error:', error.stack || error);
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Szerver hiba a bejelentkezés során',
-      error: error.message
+      message: 'Szerver hiba a bejelentkezés során'
     });
   }
 });
 
 
-
-router.get('/profile', auth, async (req, res) => {
+router.post('/logout', verifyToken, async (req, res) => {
   try {
+    const userId = req.user.id;
+
+    await pool.query(
+      'UPDATE "Felhasznalo" SET elerheto = false WHERE id = $1',
+      [userId]
+    );
+
     res.json({
       success: true,
-      data: {
-        user: req.user
-      }
+      message: 'Sikeres kijelentkezés'
     });
   } catch (error) {
-    console.error('Profile error:', error.stack || error);
+    console.error('Szerver hiba a kijelentkezés során:', error);
     res.status(500).json({
       success: false,
-      message: 'Szerver hiba a profil lekérése során',
-      error: error.message
+      message: 'Szerver hiba a kijelentkezés során'
     });
   }
 });
 
+router.get('/profileData', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-router.put('/profile', auth, [
+    const userResult = await pool.query(
+      `SELECT id, felhasznalonev, email, teljes_nev, szerep_tipus, aktiv, elerheto, letrehozas_idopont
+       FROM "Felhasznalo" WHERE id = $1`,
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Felhasználó nem található.'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { user: userResult.rows[0] }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a felhasználó lekérése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a felhasználó lekérése során'
+    });
+  }
+});
+
+router.put('/profile', verifyToken, [
   body('email')
     .optional()
     .isEmail()
     .withMessage('Érvényes email cím megadása kötelező'),
   body('teljes_nev')
+    .optional(),
+  body('jelszo')
+    .optional(),
+  body('elerheto')
     .optional()
+    .isBoolean()
+    .withMessage('Az elérhetőség boolean értéket kell hogy legyen')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -197,7 +257,7 @@ router.put('/profile', auth, [
       });
     }
 
-    const { email, teljes_nev } = req.body;
+    const { email, teljes_nev, jelszo, elerheto } = req.body;
     const userId = req.user.id;
 
     if (email) {
@@ -230,6 +290,19 @@ router.put('/profile', auth, [
       paramCount++;
     }
 
+    if (jelszo) {
+      updateFields.push(`jelszo = $${paramCount}`);
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(jelszo, saltRounds);
+      updateValues.push(hashedPassword);
+      paramCount++;
+    }
+
+    if (elerheto !== undefined) {
+      updateFields.push(`elerheto = $${paramCount}`);
+      updateValues.push(elerheto);
+      paramCount++;
+    }
     if (updateFields.length === 0) {
       return res.status(400).json({
         success: false,
@@ -257,14 +330,100 @@ router.put('/profile', auth, [
     });
 
   } catch (error) {
-    console.error('Profile update error:', error.stack || error);
+    console.error('Szerver hiba a profil frissítése során:', error);
     res.status(500).json({
       success: false,
-      message: 'Szerver hiba a profil frissítése során',
-      error: error.message
+      message: 'Szerver hiba a profil frissítése során'
+    });
+  }
+});
+
+
+router.post('/refresh-token', verifyRefreshToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const userResult = await pool.query(
+      `SELECT id, felhasznalonev, email, teljes_nev, szerep_tipus
+       FROM "Felhasznalo" 
+       WHERE id = $1`,
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Felhasználó nem található'
+      });
+    }
+
+    const user = userResult.rows[0];
+    const { accessToken, refreshToken } = generateTokens(user);
+
+    res.json({
+      success: true,
+      message: 'Token sikeresen frissítve',
+      data: {
+        accessToken,
+        refreshToken
+      }
+    });
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a token frissítése során'
+    });
+  }
+});
+
+router.put('/profile-torles', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const userResult = await pool.query(
+      'SELECT id, aktiv FROM "Felhasznalo" WHERE id = $1',
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Felhasználó nem található'
+      });
+    }
+
+    const user = userResult.rows[0];
+
+    if (!user.aktiv) {
+      return res.status(400).json({
+        success: false,
+        message: 'A felhasználói fiók már inaktív'
+      });
+    }
+
+    await pool.query(
+      `UPDATE "Felhasznalo" 
+       SET aktiv = false,
+           email = NULL,
+           jelszo = NULL,
+           teljes_nev = NULL
+       WHERE id = $1`,
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      message: 'Felhasználói fiók sikeresen törölve (deaktiválva)'
+    });
+
+  } catch (error) {
+    console.error('Szerver hiba a felhasználó törlése során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a felhasználó törlése során'
     });
   }
 });
 
 module.exports = router;
-
