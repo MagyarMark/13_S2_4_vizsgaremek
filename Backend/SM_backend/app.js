@@ -133,5 +133,8 @@ app.use('/api/auth', authRoutes);
 const projectRoutes = require('./routes/project');
 app.use('/api/project', projectRoutes);
 
+const messagesRoutes = require('./routes/messages');
+app.use('/api/messages', messagesRoutes);
+
 module.exports = app;
 
