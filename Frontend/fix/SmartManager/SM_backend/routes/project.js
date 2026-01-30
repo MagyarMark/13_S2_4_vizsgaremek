@@ -80,62 +80,10 @@ router.post('/ujProjekt', verifyToken, [
   }
 });
 
-router.delete('/projekt/:id', verifyToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.id;
-
-    const projektCheck = await pool.query(
-      'SELECT id, letrehozo_id FROM "Projekt" WHERE id = $1',
-      [id]
-    );
-
-    if (projektCheck.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Projekt nem található'
-      });
-    }
-
-    const projekt = projektCheck.rows[0];
-    if (projekt.letrehozo_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Nincs jogosultsága a projekt törléséhez'
-      });
-    }
-
-    await pool.query('DELETE FROM "ProjektTag" WHERE projekt_id = $1', [id]);
-    await pool.query('DELETE FROM "Feladat" WHERE projekt_id = $1', [id]);
-    await pool.query('DELETE FROM "Statisztika" WHERE projekt_id = $1', [id]);
-    await pool.query('DELETE FROM "Naplo" WHERE projekt_id = $1', [id]);
-
-    const deleteResult = await pool.query(
-      'DELETE FROM "Projekt" WHERE id = $1 RETURNING id',
-      [id]
-    );
-
-    res.json({
-      success: true,
-      message: 'Projekt sikeresen törölve',
-      data: {
-        deleted_id: deleteResult.rows[0].id
-      }
-    });
-  } catch (error) {
-    console.error('Szerver hiba a projekt törlése során:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Szerver hiba a projekt törlése során'
-    });
-  }
-});
-
 router.get('/projektTag', verifyToken, async (req, res) => {
   try {
     const usersResult = await pool.query(
       'SELECT id, felhasznalonev, teljes_nev, email, szerep_tipus FROM "Felhasznalo" WHERE aktiv = true ORDER BY teljes_nev, felhasznalonev'
-
     );
 
     return res.json({
@@ -253,66 +201,6 @@ router.post('/ujProjektTag', verifyToken, [
     }
 });
 
-router.delete('/ProjektTag', verifyToken, async (req, res) => {
-  try {
-    const { projekt_id, felhasznalo_id } = req.body;
-    const userId = req.user.id;
-
-    if (!projekt_id || !felhasznalo_id) {
-      return res.status(400).json({
-        success: false,
-        message: 'Projekt ID és felhasználó ID kötelező'
-      });
-    }
-
-    const projektCheck = await pool.query(
-      'SELECT letrehozo_id FROM "Projekt" WHERE id = $1',
-      [projekt_id]
-    );
-
-    if (projektCheck.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Projekt nem található'
-      });
-    }
-
-    if (projektCheck.rows[0].letrehozo_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Nincs jogosultsága a projekt tag eltávolítására'
-      });
-    }
-
-    const deleteResult = await pool.query(
-      'DELETE FROM "ProjektTag" WHERE projekt_id = $1 AND felhasznalo_id = $2 RETURNING projekt_id, felhasznalo_id',
-      [projekt_id, felhasznalo_id]
-    );
-
-    if (deleteResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Projekt tag nem található'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Projekt tag sikeresen eltávolítva',
-      data: {
-        projekt_id: deleteResult.rows[0].projekt_id,
-        felhasznalo_id: deleteResult.rows[0].felhasznalo_id
-      }
-    });
-  } catch (error) {
-    console.error('Szerver hiba a projekt tag eltávolítása során:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Szerver hiba a projekt tag eltávolítása során'
-    });
-  }
-})
-
 router.post('/ujFeladat', verifyToken, [
    body('projekt_id')
     .notEmpty()
@@ -408,7 +296,7 @@ router.get('/feladat', verifyToken, async (req, res) => {
     try {
       const userId = req.user.id;
       const tasksResult = await pool.query(
-        `SELECT id, projekt_id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido, letrehozas_idopont
+        `SELECT id, feladat_nev, feladat_leiras, letrehozo_id, felelos_id, prioritas, statusz, hatarido, letrehozas_idopont
          FROM "Feladat"
           WHERE letrehozo_id = $1 OR felelos_id = $1`,
         [userId]
@@ -576,52 +464,6 @@ router.get('/statisztika/:projektId', verifyToken, async (req, res) => {
   }
 });
 
-router.delete('/statisztika/:id', verifyToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.id;
-
-    const statCheck = await pool.query(
-      'SELECT id, felhasznalo_id FROM "Statisztika" WHERE id = $1',
-      [id]
-    );
-
-    if (statCheck.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Statisztika nem található'
-      });
-    }
-
-    const stat = statCheck.rows[0];
-    if (stat.felhasznalo_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Nincs jogosultsága a statisztika törléséhez'
-      });
-    }
-
-    const deleteResult = await pool.query(
-      'DELETE FROM "Statisztika" WHERE id = $1 RETURNING id',
-      [id]
-    );
-
-    res.json({
-      success: true,
-      message: 'Statisztika sikeresen törölve',
-      data: {
-        deleted_id: deleteResult.rows[0].id
-      }
-    });
-  } catch (error) {
-    console.error('Szerver hiba a statisztika törlése során:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Szerver hiba a statisztika törlése során'
-    });
-  }
-});
-
 router.get('/naplo', verifyToken, async (req, res) => {
   try {
     const { projekt_id, feladat_id } = req.query;
@@ -710,52 +552,6 @@ router.post('/ujNaplo', verifyToken, [
   }
 });
 
-router.delete('/naplo/:id', verifyToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.id;
-
-    const logCheck = await pool.query(
-      'SELECT id, felhasznalo_id FROM "Naplo" WHERE id = $1',
-      [id]
-    );
-
-    if (logCheck.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Napló bejegyzés nem található'
-      });
-    }
-
-    const logEntry = logCheck.rows[0];
-    if (logEntry.felhasznalo_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Nincs jogosultsága a napló bejegyzés törlésére'
-      });
-    }
-
-    const deleteResult = await pool.query(
-      'DELETE FROM "Naplo" WHERE id = $1 RETURNING id',
-      [id]
-    );
-
-    res.json({
-      success: true,
-      message: 'Napló bejegyzés sikeresen törölve',
-      data: {
-        deleted_id: deleteResult.rows[0].id
-      }
-    });
-  } catch (error) {
-    console.error('Szerver hiba a napló bejegyzés törlése során:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Szerver hiba a napló bejegyzés törlése során'
-    });
-  }
-});
-
 router.post('/ujFeladatKomment', verifyToken, [
   body('feladat_id')
     .notEmpty()
@@ -824,52 +620,6 @@ router.get('/feladatKommentek/:feladat_id', verifyToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Szerver hiba a kommentek lekérése során'
-    });
-  }
-});
-
-router.delete('/feladatKomment/:id', verifyToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.id;
-
-    const commentCheck = await pool.query(
-      'SELECT id, felhasznalo_id FROM "FeladatKomment" WHERE id = $1',
-      [id]
-    );
-
-    if (commentCheck.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Komment nem található'
-      });
-    }
-
-    const comment = commentCheck.rows[0];
-    if (comment.felhasznalo_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Nincs jogosultsága a komment törlésére'
-      });
-    }
-
-    const deleteResult = await pool.query(
-      'DELETE FROM "FeladatKomment" WHERE id = $1 RETURNING id',
-      [id]
-    );
-
-    res.json({
-      success: true,
-      message: 'Komment sikeresen törölve',
-      data: {
-        deleted_id: deleteResult.rows[0].id
-      }
-    });
-  } catch (error) {
-    console.error('Szerver hiba a komment törlése során:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Szerver hiba a komment törlése során'
     });
   }
 });

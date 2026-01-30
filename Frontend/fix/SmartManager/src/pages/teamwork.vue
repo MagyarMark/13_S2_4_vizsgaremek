@@ -336,6 +336,60 @@
         </form>
       </div>
     </div>
+
+    <div :class="['modal', { active: showUploadModal }]">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Fájlok feltöltése</h3>
+          <button class="close-modal" @click="showUploadModal = false">&times;</button>
+        </div>
+
+        <form @submit.prevent="uploadFiles">
+          <div class="form-group">
+            <label for="fileInput">Válassz fájlokat</label>
+            <input 
+              type="file" 
+              id="fileInput" 
+              @change="handleFileSelect" 
+              class="form-control" 
+              multiple
+              accept="*/*"
+            >
+          </div>
+
+          <div v-if="selectedFiles.length > 0" class="form-group">
+            <label>Kiválasztott fájlok:</label>
+            <div class="file-list">
+              <div v-for="(file, index) in selectedFiles" :key="index" class="file-item">
+                <i class="fas fa-file"></i>
+                <span>{{ file.name }}</span>
+                <small>({{ (file.size / 1024).toFixed(2) }} KB)</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" @click="showUploadModal = false">Mégse</button>
+            <button type="submit" class="btn btn-primary" :disabled="isUploading || selectedFiles.length === 0">
+              <i v-if="!isUploading" class="fas fa-upload"></i>
+              <i v-else class="fas fa-spinner fa-spin"></i>
+              {{ isUploading ? 'Feltöltés...' : 'Feltöltés' }}
+            </button>
+          </div>
+
+          <div v-if="uploadedFiles.length > 0" class="form-group" style="margin-top: 1.5rem; border-top: 2px solid #e2e8f0; padding-top: 1rem;">
+            <label style="color: #10b981; font-weight: 700;"><i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>Feltöltött fájlok:</label>
+            <div class="file-list">
+              <div v-for="(file, index) in uploadedFiles" :key="index" class="file-item" style="border-left-color: #10b981;">
+                <i class="fas fa-file-check" style="color: #10b981;"></i>
+                <span>{{ file.name }}</span>
+                <small style="color: #10b981;">({{ file.size }} KB)</small>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -358,6 +412,11 @@ export default {
       showTeamModal: false,
       showMemberModal: false,
       showTaskModal: false,
+      showUploadModal: false,
+      currentTaskId: null,
+      selectedFiles: [],
+      uploadedFiles: [],
+      isUploading: false,
       availableUsers: [],
       formData: {
         teamName: '',
@@ -522,8 +581,11 @@ export default {
       this.formData = { teamName: '', teamDesc: '', teamIcon: 'fas fa-code' };
       this.showTeamModal = true;
       },
-    openDownloadFileModal() {
-        alert('Fájl feltöltése funkció még nincs implementálva.');
+    openDownloadFileModal(taskId) {
+        this.currentTaskId = taskId;
+        this.selectedFiles = [];
+        this.uploadedFiles = [];
+        this.showUploadModal = true;
     },
     editTeam(team) {
       this.editingTeam = team;
@@ -785,9 +847,49 @@ export default {
       };
       this.showTaskModal = true;
     },
-    deleteTask(taskId) {
-      if (this.selectedTeam) {
-        this.selectedTeam.tasks = this.selectedTeam.tasks.filter(t => t.id !== taskId);
+    async deleteTask(taskId) {
+      if (!confirm('Biztosan törlöd ezt a feladatot?')) {
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          alert('Authentikációs token nem található');
+          return;
+        }
+
+        console.log('Feladat törlésének kezdete:', taskId);
+
+        const response = await fetch(`http://localhost:3000/api/project/feladat/${taskId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('Törlés válasz status:', response.status);
+
+        const data = await response.json();
+        console.log('Törlés válasz adatok:', data);
+
+        if (!response.ok) {
+          alert('Hiba a feladat törléskor: ' + (data.message || 'Ismeretlen hiba'));
+          return;
+        }
+
+        if (data.success) {
+          if (this.selectedTeam) {
+            this.selectedTeam.tasks = this.selectedTeam.tasks.filter(t => t.id !== taskId);
+          }
+          alert('Feladat sikeresen törölve!');
+        } else {
+          alert('Hiba: ' + (data.message || 'Ismeretlen hiba'));
+        }
+      } catch (error) {
+        console.error('Hiba a feladat törléskor:', error);
+        alert('Hiba a feladat törléskor: ' + error.message);
       }
     },
     toggleTaskComplete(taskId) {
@@ -966,6 +1068,98 @@ export default {
         }
       } catch (error) {
         console.error('Aktivitás betöltésének hiba:', error);
+      }
+    },
+    handleFileSelect(event) {
+      const files = Array.from(event.target.files);
+      this.selectedFiles = files;
+    },
+    async uploadFiles() {
+      if (!this.currentTaskId || this.selectedFiles.length === 0) {
+        alert('Válassz legalább egy fájlt!');
+        return;
+      }
+
+      try {
+        this.isUploading = true;
+        const token = localStorage.getItem('accessToken');
+        
+        if (!token) {
+          alert('Authentikációs token nem található');
+          return;
+        }
+
+        const formData = new FormData();
+        this.selectedFiles.forEach(file => {
+          formData.append('files', file);
+        });
+
+        console.log('Feltöltés indítása:', {
+          url: `http://localhost:3000/api/upload?feladat_id=${this.currentTaskId}`,
+          currentTaskId: this.currentTaskId,
+          filesCount: this.selectedFiles.length,
+          token: token ? 'létezik' : 'nincs'
+        });
+
+        const response = await fetch(`http://localhost:3000/api/upload?feladat_id=${this.currentTaskId}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        console.log('Szerver válasz status:', response.status, response.statusText);
+
+        let data;
+        try {
+          data = await response.json();
+        } catch (parseError) {
+          console.error('JSON parse hiba:', parseError);
+          data = { message: response.statusText || 'Szerver hiba' };
+        }
+
+        console.log('Szerver adatok:', data);
+
+        if (!response.ok) {
+          alert('Hiba a feltöltéskor: ' + (data.message || 'Ismeretlen hiba'));
+          return;
+        }
+
+        if (data.status === 'success' && data.uploadedFiles && data.uploadedFiles.length > 0) {
+          const filesWithSizes = this.selectedFiles.map(file => ({
+            name: file.name,
+            size: (file.size / 1024).toFixed(2)
+          }));
+          this.uploadedFiles.push(...filesWithSizes);
+
+          alert(`${data.uploadedFiles.length} fájl sikeresen feltöltve!`);
+          
+          setTimeout(() => {
+            const input = document.getElementById('fileInput');
+            if (input) {
+              input.value = '';
+            }
+            this.selectedFiles = [];
+          }, 500);
+          
+          if (this.selectedTeam) {
+            this.selectedTeam.activity.unshift({
+              id: Math.random(),
+              user: this.userProfile.teljes_nev || this.userProfile.felhasznalonev,
+              action: `feltöltött ${data.uploadedFiles.length} fájlt a feladathoz`,
+              type: 'upload',
+              timestamp: 'most'
+            });
+          }
+        } else {
+          alert('Hiba: ' + (data.message || 'Ismeretlen hiba'));
+        }
+      } catch (error) {
+        console.error('Feltöltési hiba:', error);
+        alert('Hiba a fájl feltöltéskor: ' + error.message);
+      } finally {
+        this.isUploading = false;
       }
     },
     saveTeamIconsToLocalStorage() {
@@ -2131,5 +2325,39 @@ textarea.form-control {
   .stat-value {
     font-size: 1.3rem;
   }
+}
+
+.file-list {
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 0.8rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: white;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  border-left: 3px solid #3b82f6;
+  font-size: 0.9rem;
+}
+
+.file-item:last-child {
+  margin-bottom: 0;
+}
+
+.file-item i {
+  color: #3b82f6;
+}
+
+.file-item small {
+  color: #64748b;
+  margin-left: auto;
+  font-size: 0.8rem;
 }
 </style>

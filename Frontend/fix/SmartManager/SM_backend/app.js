@@ -61,7 +61,7 @@ app.post('/api/upload',
                     `;
                     
                     const result = await pool.query(query, [
-                        beadas_id,
+                        null,
                         felhasznalo_id,
                         file.name,
                         fileSizeBytes,
