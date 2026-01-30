@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const { verifyToken } = require('../middleware/auth');
 const { 
     felhFeltoltesiElozmeny,
@@ -146,6 +147,68 @@ router.post('/beadas', verifyToken, [
         res.status(500).json({
             success: false,
             message: 'Szerver hiba a beadas létrehozása során'
+        });
+    }
+});
+
+router.delete('/:file_id', verifyToken, async (req, res) => {
+    try {
+        const { file_id } = req.params;
+
+        const fileResult = await pool.query(
+            `SELECT id, felhasznalo_id, file_eleresiut, file_nev
+             FROM "File"
+             WHERE id = $1`,
+            [file_id]
+        );
+
+        if (fileResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'A fájl nem található'
+            });
+        }
+
+        const file = fileResult.rows[0];
+        const isOwner = file.felhasznalo_id === req.user.id;
+        const isAdmin = req.user.szerep_tipus === 'admin';
+
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: 'Nincs jogosultsága a fájl törléséhez'
+            });
+        }
+
+        if (file.file_eleresiut) {
+            try {
+                if (fs.existsSync(file.file_eleresiut)) {
+                    await fs.promises.unlink(file.file_eleresiut);
+                }
+            } catch (deleteError) {
+                console.error('Hiba a fájl törlésekor a fájlrendszerből:', deleteError);
+            }
+        }
+
+        const deleteResult = await pool.query(
+            'DELETE FROM "File" WHERE id = $1 RETURNING id',
+            [file_id]
+        );
+
+        return res.json({
+            success: true,
+            message: 'Fájl sikeresen törölve',
+            data: {
+                deleted_id: deleteResult.rows[0].id,
+                file_nev: file.file_nev
+            }
+        });
+    } catch (error) {
+        console.error('Szerver hiba a fájl törlése során:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Szerver hiba a fájl törlése során',
+            error: error.message
         });
     }
 });
