@@ -693,10 +693,22 @@ router.delete('/feladat/:id', verifyToken, async (req, res) => {
       });
     }
 
+    await pool.query(
+      'DELETE FROM "Naplo" WHERE feladat_id = $1',
+      [id]
+    );
+
     const deleteResult = await pool.query(
       'DELETE FROM "Feladat" WHERE id = $1 RETURNING id',
       [id]
     );
+
+    if (deleteResult.rows.length === 0) {
+      return res.status(500).json({
+        success: false,
+        message: 'Feladat törlése sikertelen'
+      });
+    }
 
     res.json({
       success: true,
@@ -965,17 +977,20 @@ router.delete('/statisztika/:id', verifyToken, async (req, res) => {
 router.get('/naplo', verifyToken, async (req, res) => {
   try {
     const { projekt_id, feladat_id } = req.query;
-    let query = `SELECT id, felhasznalo_id, projekt_id, feladat_id, muvelet, leiras, idopont FROM "Naplo"`;
+    let query = `SELECT n.id, n.felhasznalo_id, n.projekt_id, n.feladat_id, n.muvelet, n.leiras, n.idopont,
+                        f.teljes_nev, f.felhasznalonev
+                 FROM "Naplo" n
+                 LEFT JOIN "Felhasznalo" f ON n.felhasznalo_id = f.id`;
     const params = [];
     const conditions = [];
 
     if (projekt_id) {
-      conditions.push(`projekt_id = $${params.length + 1}`);
+      conditions.push(`n.projekt_id = $${params.length + 1}`);
       params.push(projekt_id);
     }
 
     if (feladat_id) {
-      conditions.push(`feladat_id = $${params.length + 1}`);
+      conditions.push(`n.feladat_id = $${params.length + 1}`);
       params.push(feladat_id);
     }
 
@@ -983,7 +998,7 @@ router.get('/naplo', verifyToken, async (req, res) => {
       query += ` WHERE ${conditions.join(' AND ')}`;
     }
 
-    query += ` ORDER BY idopont DESC`;
+    query += ` ORDER BY n.idopont DESC`;
 
     const logsResult = await pool.query(query, params);
 

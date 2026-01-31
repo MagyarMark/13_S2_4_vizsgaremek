@@ -154,7 +154,7 @@ router.post('/login', [
     }
 
     await pool.query(
-      'UPDATE "Felhasznalo" SET utolso_bejelentkezes = NOW() WHERE id = $1',
+      'UPDATE "Felhasznalo" SET utolso_bejelentkezes = NOW(), elerheto = true WHERE id = $1',
       [user.id]
     );
 
@@ -180,6 +180,28 @@ router.post('/login', [
   }
 });
 
+
+router.post('/logout', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    await pool.query(
+      'UPDATE "Felhasznalo" SET elerheto = false WHERE id = $1',
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      message: 'Sikeres kijelentkezés'
+    });
+  } catch (error) {
+    console.error('Szerver hiba a kijelentkezés során:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a kijelentkezés során'
+    });
+  }
+});
 
 router.get('/profileData', verifyToken, async (req, res) => {
   try {
@@ -219,7 +241,11 @@ router.put('/profile', verifyToken, [
   body('teljes_nev')
     .optional(),
   body('jelszo')
+    .optional(),
+  body('elerheto')
     .optional()
+    .isBoolean()
+    .withMessage('Az elérhetőség boolean értéket kell hogy legyen')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -231,7 +257,7 @@ router.put('/profile', verifyToken, [
       });
     }
 
-    const { email, teljes_nev, jelszo } = req.body;
+    const { email, teljes_nev, jelszo, elerheto } = req.body;
     const userId = req.user.id;
 
     if (email) {
@@ -271,7 +297,12 @@ router.put('/profile', verifyToken, [
       updateValues.push(hashedPassword);
       paramCount++;
     }
-    
+
+    if (elerheto !== undefined) {
+      updateFields.push(`elerheto = $${paramCount}`);
+      updateValues.push(elerheto);
+      paramCount++;
+    }
     if (updateFields.length === 0) {
       return res.status(400).json({
         success: false,
