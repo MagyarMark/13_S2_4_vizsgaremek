@@ -11,7 +11,7 @@
 
       <ul v-if="userProfile.szerep_tipus === 'tanar'" class="nav-links">
         <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
         <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" class="active"><li ><i class="fas fa-cog"></i> Beállítások</li></router-link>
@@ -20,7 +20,7 @@
       <ul v-else class="nav-links">
         <router-link to="/diak"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
         <router-link to="/task"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
-        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Csapatmunka</li></router-link>
+        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Projektmunka</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" class="active"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
@@ -32,9 +32,6 @@
           <h1>Beállítások</h1>
         </div>
         <div class="header-right">
-          <div class="notifications">
-            <button class="notifications-button" title="Értesítések"><i class="fas fa-bell"></i></button>
-          </div>
           <div class="user-profile">
             <div class="avatar">{{ userProfile.initials }}</div>
             <div>
@@ -52,7 +49,7 @@
         <nav class="settings-nav">
           <button :class="{active: activeTab==='profile'}" @click="activeTab='profile'"><i class="fas fa-user"></i> Profil</button>
           <button :class="{active: activeTab==='account'}" @click="activeTab='account'"><i class="fas fa-lock"></i> Fiók</button>
-          <button :class="{active: activeTab==='notifications'}" @click="activeTab='notifications'"><i class="fas fa-bell"></i> Értesítések</button>
+          <!--<button :class="{active: activeTab==='notifications'}" @click="activeTab='notifications'"><i class="fas fa-bell"></i> Értesítések</button>-->
           <button :class="{active: activeTab==='appearance'}" @click="activeTab='appearance'"><i class="fas fa-paint-roller"></i> Megjelenés</button>
         </nav>
 
@@ -107,6 +104,16 @@
                 <button type="submit" class="btn primary">Mentés</button>
               </div>
               <div v-if="message.account" class="message">{{ message.account }}</div>
+
+              <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
+              
+              <h3 style="color: #dc2626;">Veszélyes zóna</h3>
+              <p style="color: #6b7280; font-size: 14px; margin-bottom: 15px;">
+                A fiók deaktiválása után nem lesz lehetőség az adatok helyreállítására.
+              </p>
+              <button type="button" class="btn danger" @click="deactivateAccount">
+                <i class="fas fa-trash"></i> Fiók deaktiválása
+              </button>
             </form>
           </div>
 
@@ -138,13 +145,6 @@
                 <select v-model="appearance.theme" @change="applyTheme">
                   <option value="light">Világos</option>
                   <option value="dark">Sötét</option>
-                </select>
-              </div>
-              <div class="form-row">
-                <label>Nyelv</label>
-                <select v-model="appearance.language">
-                  <option value="hu">Magyar</option>
-                  <option value="en">English</option>
                 </select>
               </div>
 
@@ -439,6 +439,60 @@ export default {
       setTimeout(() => (message.account = ''), 2000)
     }
 
+    const deactivateAccount = async () => {
+      const confirmed = confirm(
+        'Biztosan deaktiválni szeretnéd a fiókodat?\n\n' +
+        'Ez a lépés nem fordítható vissza!\n' +
+        'Az összes adatod véglegesen törlődik.'
+      )
+
+      if (!confirmed) return
+
+      const doubleConfirmed = confirm(
+        'Ez az utolsó figyelmeztetés!\n\n' +
+        'A fiók deaktiválása után nem lesz lehetőség az helyreállítására.'
+      )
+
+      if (!doubleConfirmed) return
+
+      try {
+        const token = localStorage.getItem('accessToken')
+        if (!token) {
+          message.account = 'Authentikációs hiba'
+          return
+        }
+
+        const response = await fetch('http://localhost:3000/api/auth/profile-torles', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+          message.account = 'Fiók sikeresen deaktiválva. Kijelentkezés...'
+          
+          setTimeout(() => {
+            localStorage.removeItem('user')
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('refreshToken')
+            localStorage.removeItem('sm_settings')
+            localStorage.removeItem('sm_appearance')
+            router.push('/home')
+          }, 2000)
+        } else {
+          message.account = data.message || 'Hiba a fiók deaktiválása során'
+        }
+      } catch (error) {
+        console.error('Fiók deaktiválási hiba:', error)
+        message.account = 'Hiba a fiók deaktiválása során: ' + error.message
+      }
+      setTimeout(() => (message.account = ''), 5000)
+    }
+
     const saveNotifications = () => {
       message.notifications = 'Értesítési beállítások mentve.'
       saveToStorage()
@@ -475,13 +529,34 @@ export default {
     }
 
     const router = useRouter();
-    const logout = () => {
+    const logout = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        
+        if (token) {
+          await fetch('http://localhost:3000/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              elerheto: false
+            })
+          });
+        }
+      } catch (error) {
+        console.error('Kijelentkezés hiba:', error);
+      }
+      
       localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('sm_settings');
       localStorage.removeItem('sm_appearance');
       
       router.push('/home');
-    }
+    };
 
     watch(() => appearance.theme, () => {
       applyTheme()
@@ -503,6 +578,7 @@ export default {
       resetProfile,
       saveAccount,
       resetAccount,
+      deactivateAccount,
       saveNotifications,
       resetNotifications,
       saveAppearance,
@@ -596,6 +672,8 @@ export default {
 .btn { padding:8px 12px; border-radius:8px; border:none; cursor:pointer; }
 .btn.primary { background:#7c3aed; color:#fff; }
 .btn.secondary { background:#eef2ff; color:#3730a3; }
+.btn.danger { background:#dc2626; color:#fff; }
+.btn.danger:hover { background:#b91c1c; }
 
 .message { margin-top:10px; color:#065f46; background:#ecfdf5; padding:8px 10px; border-radius:6px; font-size:13px; }
 

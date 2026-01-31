@@ -9,7 +9,7 @@
         </div>
         <ul class="nav-links">
             <li><a href="#" class="active"><i class="fas fa-home"></i> Áttekintés</a></li>
-            <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+            <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
             <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
             <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
             <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
@@ -25,9 +25,6 @@
             <h1>Tanári Dashboard</h1>
         </div>
         <div class="header-right">
-          <div class="notifications">
-            <button class="notifications-button" title="Értesítések"><i class="fas fa-bell"></i></button>
-          </div>
             <div class="user-profile">
                 <div class="avatar">{{ userProfile.initials }}</div>
                 <div>
@@ -449,14 +446,32 @@ export default {
 
     const router = useRouter();
 
-    const logout = () => {
+    const logout = async () => {
       try {
-        localStorage.removeItem('user');
-        localStorage.removeItem('sm_settings');
-        localStorage.removeItem('sm_appearance');
-      } catch (e) {
-        console.warn('Hiba a localStorage törlésekor:', e);
+        const token = localStorage.getItem('accessToken');
+        
+        if (token) {
+          await fetch('http://localhost:3000/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              elerheto: false
+            })
+          });
+        }
+      } catch (error) {
+        console.error('Kijelentkezés hiba:', error);
       }
+      
+      localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('sm_settings');
+      localStorage.removeItem('sm_appearance');
+      
       router.push('/home');
     };
 

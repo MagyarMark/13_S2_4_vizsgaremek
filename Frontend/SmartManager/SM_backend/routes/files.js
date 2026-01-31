@@ -151,6 +151,127 @@ router.post('/beadas', verifyToken, [
     }
 });
 
+router.put('/beadas/:beadas_id', verifyToken, [
+    body('pontszam')
+        .optional()
+        .isNumeric()
+        .withMessage('Pontszám számnak kell lennie'),
+    body('jegy')
+        .optional()
+        .isInt({ min: 1, max: 5 })
+        .withMessage('Jegy 1 és 5 között kell legyen'),
+    body('statusz')
+        .optional()
+        .isIn(['beadva', 'ertekelt', 'javitasra_visszaadva'])
+        .withMessage('Érvényes státusz: beadva, ertekelt, javitasra_visszaadva'),
+    body('visszajelzes')
+        .optional()
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Hibás adatok',
+                errors: errors.array()
+            });
+        }
+
+        const { beadas_id } = req.params;
+        const userId = req.user.id;
+        const userRole = req.user.szerep_tipus;
+        const { pontszam, jegy, statusz, visszajelzes } = req.body;
+
+        const beadasCheck = await pool.query(
+            'SELECT id, felhasznalo_id, tanar_id FROM "Beadas" WHERE id = $1',
+            [beadas_id]
+        );
+
+        if (beadasCheck.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Beadás nem található'
+            });
+        }
+
+        const beadas = beadasCheck.rows[0];
+        const isOwner = beadas.felhasznalo_id === userId;
+        const isTeacher = beadas.tanar_id === userId || userRole === 'tanar' || userRole === 'admin';
+
+        if (!isOwner && !isTeacher) {
+            return res.status(403).json({
+                success: false,
+                message: 'Nincs jogosultsága a beadás módosításához'
+            });
+        }
+
+        const updateFields = [];
+        const updateValues = [];
+        let paramCount = 1;
+
+        if (pontszam !== undefined) {
+            updateFields.push(`pontszam = $${paramCount}`);
+            updateValues.push(pontszam);
+            paramCount++;
+        }
+
+        if (jegy !== undefined) {
+            updateFields.push(`jegy = $${paramCount}`);
+            updateValues.push(jegy);
+            paramCount++;
+        }
+
+        if (statusz !== undefined) {
+            updateFields.push(`statusz = $${paramCount}`);
+            updateValues.push(statusz);
+            paramCount++;
+        }
+
+        if (visszajelzes !== undefined) {
+            updateFields.push(`visszajelzes = $${paramCount}`);
+            updateValues.push(visszajelzes);
+            paramCount++;
+        }
+
+        if (updateFields.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Nincs megadva frissítendő adat'
+            });
+        }
+
+        if (pontszam !== undefined || jegy !== undefined || visszajelzes !== undefined) {
+            updateFields.push(`ertekeles_idopont = NOW()`);
+        }
+
+        updateValues.push(beadas_id);
+
+        const updateQuery = `
+            UPDATE "Beadas" 
+            SET ${updateFields.join(', ')} 
+            WHERE id = $${paramCount}
+            RETURNING id, feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, bekuldes_idopont, ertekeles_idopont
+        `;
+
+        const updatedBeadas = await pool.query(updateQuery, updateValues);
+
+        res.json({
+            success: true,
+            message: 'Beadás sikeresen frissítve',
+            data: {
+                beadas: updatedBeadas.rows[0]
+            }
+        });
+    } catch (error) {
+        console.error('Szerver hiba a beadás frissítése során:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Szerver hiba a beadás frissítése során',
+            error: error.message
+        });
+    }
+});
+
 router.delete('/:file_id', verifyToken, async (req, res) => {
     try {
         const { file_id } = req.params;
