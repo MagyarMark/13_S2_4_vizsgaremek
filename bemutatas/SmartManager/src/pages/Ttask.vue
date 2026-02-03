@@ -5,12 +5,12 @@
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
-        <p>Diák Portál</p>
+        <p>Tanári Portál</p>
       </div>
       <ul class="nav-links">
-        <router-link to="/diak"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-        <router-link to="/task"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
-        <router-link to="/teamwork" class="active"><li><i class="fas fa-users"></i> Projektmunka</li></router-link>
+        <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
+        <router-link to="/Ttask" class="active"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+        <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
@@ -38,9 +38,9 @@
       <section class="teamwork-section">
         <div class="section-header">
           <h2 class="section-title">Projektek</h2>
-          <!--<button class="btn btn-primary" @click="openCreateTeamModal">
+          <button class="btn btn-primary" @click="openCreateTeamModal">
             <i class="fas fa-plus"></i> Új Projekt
-          </button>-->
+          </button>
         </div>
 
         <div class="teams-grid">
@@ -49,10 +49,10 @@
               <div class="team-icon">
                 <i :class="team.icon"></i>
               </div>
-              <!--<div class="team-actions">
+              <div class="team-actions">
                 <button class="btn-icon" @click.stop="editTeam(team)"><i class="fas fa-edit"></i></button>
                 <button class="btn-icon delete" @click.stop="deleteTeam(team.id)"><i class="fas fa-trash"></i></button>
-              </div>-->
+              </div>
             </div>
             <h3>{{ team.name }}</h3>
             <p class="team-description">{{ team.description }}</p>
@@ -87,11 +87,11 @@
 
           <div v-if="activeTab === 'members'" class="tab-content">
             <div class="members-section">
-              <!--<div class="section-actions">
+              <div class="section-actions">
                 <button class="btn btn-primary" @click="openAddMemberModal">
                   <i class="fas fa-user-plus"></i> Tag hozzáadása
                 </button>
-              </div>-->
+              </div>
 
               <div class="members-grid">
                 <div v-for="member in selectedTeam.members" :key="member.id" class="member-card">
@@ -101,7 +101,7 @@
                       <h4>{{ member.name }}</h4>
                       <span class="member-role">{{ member.role }}</span>
                     </div>
-                    <!--<button class="btn-icon" @click="removeMember(member.id)"><i class="fas fa-times"></i></button>-->
+                    <button class="btn-icon" @click="removeMember(member.id)"><i class="fas fa-times"></i></button>
                   </div>
                   <div class="member-status">
                     <span :class="['status-badge', member.status]">{{ member.status }}</span>
@@ -113,11 +113,11 @@
 
           <div v-if="activeTab === 'tasks'" class="tab-content">
             <div class="tasks-section">
-              <!--<div class="section-actions">
+              <div class="section-actions">
                 <button class="btn btn-primary" @click="openCreateTaskModal">
                   <i class="fas fa-plus"></i> Új feladat
                 </button>
-              </div>-->
+              </div>
 
               <div class="tasks-list">
                 <div v-for="task in selectedTeam.tasks" :key="task.id" class="task-item">
@@ -138,10 +138,10 @@
                   <div class="task-footer">
                     <span class="assignee"><i class="fas fa-user-circle"></i> {{ task.assignee }}</span>
                     <span class="deadline"><i class="fas fa-calendar"></i> {{ formatDate(task.deadline) }}</span>
-                    <!--<div class="task-actions">
+                    <div class="task-actions">
                       <button class="btn-icon" @click="editTask(task)"><i class="fas fa-edit"></i></button>
                       <button class="btn-icon delete" @click="deleteTask(task.id)"><i class="fas fa-trash"></i></button>
-                    </div>-->
+                    </div>
                   </div>
                 </div>
               </div>
@@ -389,7 +389,7 @@
           <div v-if="selectedFiles.length > 0" class="form-group">
             <label>Kiválasztott fájlok:</label>
             <div class="file-list">
-              <div v-for="(file, index) in selectedFiles" :key="index" class="file-item">
+              <div v-for="file in selectedFiles" :key="`selected-${file.name}-${file.size}`" class="file-item">
                 <i class="fas fa-file"></i>
                 <span>{{ file.name }}</span>
                 <small>({{ (file.size / 1024).toFixed(2) }} KB)</small>
@@ -426,13 +426,13 @@
 import { useRouter } from 'vue-router';
 
 export default {
-  name: "Teamwork",
+  name: "Ttask",
   data() {
     return {
       userProfile: {
         teljes_nev: '',
         felhasznalonev: '',
-        szerep_tipus: 'diak',
+        szerep_tipus: 'tanar',
         initials: ''
       },
       activeTab: 'members',
@@ -762,15 +762,12 @@ export default {
           const teamToDelete = this.teams.find(t => t.id === teamId);
           const teamName = teamToDelete?.name || 'Ismeretlen projekt';
           
-          // Törlés a teams listáról
           this.teams = this.teams.filter(t => t.id !== teamId);
 
-          // Ha az aktuálisan kiválasztott team volt, nullázzuk
           if (this.selectedTeam?.id === teamId) {
             this.selectedTeam = null;
           }
 
-          // Activity log
           await this.createActivityLog(
             'törölve',
             `"${teamName}" projekt sikeresen törölve`,
@@ -1017,12 +1014,10 @@ export default {
           const taskToDelete = this.selectedTeam?.tasks?.find(t => t.id === taskId);
           const taskTitle = taskToDelete?.title || 'Ismeretlen feladat';
           
-          // Törlés az aktuálisan kiválasztott teamből
           if (this.selectedTeam && this.selectedTeam.tasks) {
             this.selectedTeam.tasks = this.selectedTeam.tasks.filter(t => t.id !== taskId);
           }
 
-          // Törlés az összes teamből a listában (szinkronizálás)
           if (this.teams && Array.isArray(this.teams)) {
             this.teams.forEach(team => {
               if (team.tasks && Array.isArray(team.tasks)) {
@@ -1031,7 +1026,6 @@ export default {
             });
           }
           
-          // Activity log
           await this.createActivityLog(
             'törölve',
             `"${taskTitle}" feladat sikeresen törölve`,
@@ -1471,7 +1465,6 @@ export default {
 
         console.log('Törlés válasz status:', response.status);
 
-        // Ellenőrizzük az ok státusz
         if (!response.ok) {
           const data = await response.json();
           console.error('Törlés hiba válasz:', data);
@@ -1482,12 +1475,9 @@ export default {
         const data = await response.json();
         console.log('Törlés válasz adatok:', data);
 
-        // Sikeres törlés
         if (data.success) {
-          // Törlés az uploadedFiles listáról
           this.uploadedFiles = this.uploadedFiles.filter(f => f.id !== fileId);
 
-          // Törlés az összes feladat fájljairól az összes teamből
           if (this.selectedTeam && this.selectedTeam.tasks) {
             this.selectedTeam.tasks.forEach(task => {
               if (task.uploadedFiles && Array.isArray(task.uploadedFiles)) {
@@ -1496,7 +1486,6 @@ export default {
             });
           }
 
-          // Törlés az összes teamból (globális keresés)
           if (this.teams && Array.isArray(this.teams)) {
             this.teams.forEach(team => {
               if (team.tasks && Array.isArray(team.tasks)) {

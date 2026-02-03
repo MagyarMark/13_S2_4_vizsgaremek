@@ -9,7 +9,7 @@
     </div>
     <ul class="nav-links">
       <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-      <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
+      <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
       <router-link to="/ertekeles" class="active"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
       <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
       <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
@@ -21,6 +21,9 @@
       <h1>Értékelés</h1>
     </div>
     <div class="header-right">
+      <div class="notifications">
+      </div>
+
       <div class="user-profile">
         <div class="avatar">{{ userProfile.initials }}</div>
         <div>
@@ -40,22 +43,8 @@
       <section class="evaluation-card">
 
         <div class="form-group">
-          <label>Diák</label>
-          <select v-model="evaluation.student">
-            <option disabled value="">Válassz diákot</option>
-            <option
-              v-for="user in availableDiakUsers"
-              :key="user.id"
-              :value="user"
-            >
-              {{ user.teljes_nev }} ({{ user.felhasznalonev }})
-            </option>
-          </select>
-        </div>
-
-        <div class="form-group">
           <label>Feladat</label>
-          <select v-model="evaluation.task" :disabled="!evaluation.student">
+          <select v-model="evaluation.task">
             <option disabled value="">Válassz feladatot</option>
             <option
               v-for="task in availableTasks"
@@ -63,6 +52,20 @@
               :value="task"
             >
               {{ task.feladat_nev }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Diák</label>
+          <select v-model="evaluation.student" :disabled="!evaluation.task">
+            <option disabled value="">Válassz diákot</option>
+            <option
+              v-for="user in availableDiakUsers"
+              :key="user.id"
+              :value="user"
+            >
+              {{ user.teljes_nev }}
             </option>
           </select>
         </div>
@@ -110,7 +113,7 @@
           <select v-model="selectedStudentForStats">
             <option :value="null">-- Válassz diákot --</option>
             <option
-              v-for="student in availableDiakUsers"
+              v-for="student in allDiakUsers"
               :key="student.id"
               :value="student"
             >
@@ -211,6 +214,7 @@ export default {
     const submissionChart = ref(null);
 
     const students = ref([]);
+    const allStudents = ref([]);
     const tasks = ref([]);
     const studentGrades = ref([]);
     const selectedStudentForStats = ref(null);
@@ -225,6 +229,10 @@ export default {
 
     const availableDiakUsers = computed(() =>
       students.value.filter(u => u.szerep_tipus === 'diak')
+    );
+
+    const allDiakUsers = computed(() =>
+      allStudents.value.filter(u => u.szerep_tipus === 'diak')
     );
 
     const availableTasks = computed(() => tasks.value);
@@ -281,24 +289,37 @@ export default {
         });
         const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
-          students.value = data.data;
+          allStudents.value = data.data;
         }
       } catch (e) { console.error(e); }
     };
 
-    const fetchUserTasks = async () => {
-  if (!evaluation.value.student) return;
+    const fetchAllTasks = async () => {
   try {
     const token = localStorage.getItem('accessToken');
     const res = await fetch('http://localhost:3000/api/project/feladatok', {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
-    console.log("fetchUserTasks:", data);
-    const filteredTasks = (data.data.tasks || []).filter(
-      task => task.felelos_id === evaluation.value.student.id
-    );
-    tasks.value = filteredTasks;
+    console.log("fetchAllTasks:", data);
+    tasks.value = data.data.tasks || [];
+  } catch (e) { console.error(e); }
+};
+
+    const fetchTaskStudents = async () => {
+  if (!evaluation.value.task || !evaluation.value.task.projekt_id) return;
+  try {
+    const token = localStorage.getItem('accessToken');
+    const res = await fetch(`http://localhost:3000/api/project/projektTagok?projekt_id=${evaluation.value.task.projekt_id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.success && Array.isArray(data.data)) {
+      const filteredStudents = data.data.filter(
+        u => u.szerep_tipus === 'diak' && u.id === evaluation.value.task.felelos_id
+      );
+      students.value = filteredStudents;
+    }
   } catch (e) { console.error(e); }
 };
 
@@ -364,6 +385,10 @@ export default {
         return alert("Kérlek válassz diákot és feladatot!");
       }
 
+      if (evaluation.value.score > 100) {
+        return alert("A pontszám nem lehet nagyobb, mint 100!");
+      }
+
       try {
         const token = localStorage.getItem('accessToken');
         const res = await fetch('http://localhost:3000/api/files/beadas', {
@@ -403,11 +428,10 @@ export default {
     };
 
     watch(
-  () => evaluation.value.student,
-  (newStudent) => {
-    evaluation.value.task = null;
-    if (newStudent) fetchUserTasks();
-    else tasks.value = [];
+  () => evaluation.value.task,
+  (newTask) => {
+    evaluation.value.student = null;
+    if (newTask) fetchTaskStudents();
   }
 );
 
@@ -495,6 +519,7 @@ export default {
 
     onMounted(() => {
       fetchUserProfile();
+      fetchAllTasks();
       fetchTeamUsers();
       fetchBeadasEvaluations();
     });
@@ -502,7 +527,7 @@ export default {
     return {
       userProfile, showModal, showSidebar, performanceChart, submissionChart,
       students, tasks, studentGrades, evaluation, selectedStudentForStats,
-      availableDiakUsers, availableTasks,
+      availableDiakUsers, allDiakUsers, availableTasks,
       getRoleLabel, getPercentageClass, saveEvaluation, logout
     };
   }
@@ -556,6 +581,17 @@ export default {
 
 .form-group {
   margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
 }
 
 .form-group label {

@@ -9,7 +9,7 @@
       </div>
       <ul class="nav-links">
         <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-        <router-link to="/Ttask" class="active"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+        <router-link to="/Ttask" class="active"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
         <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
@@ -177,7 +177,7 @@
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-value">{{ selectedTeam ? 1 : teams.length }}</div>
-              <div class="stat-label">{{ selectedTeam ? 'Projekt' : 'Projektok' }}</div>
+              <div class="stat-label">{{ selectedTeam ? 'Projekt' : 'Projektek' }}</div>
             </div>
             <div class="stat-card">
               <div class="stat-value">{{ totalMembers }}</div>
@@ -1549,12 +1549,12 @@ export default {
         });
 
         if (!projectsResponse.ok) {
-          console.warn(`Projektok lekérésének hiba: ${projectsResponse.status}`);
+          console.warn(`Projektek lekérésének hiba: ${projectsResponse.status}`);
           return;
         }
 
         const projectsData = await projectsResponse.json();
-        console.log('Projektok adatai:', projectsData);
+        console.log('Projektek adatai:', projectsData);
 
         let projects = [];
         if (projectsData.success && projectsData.data && Array.isArray(projectsData.data.projects)) {
@@ -1656,9 +1656,9 @@ export default {
           }
         }
 
-        console.log('Teljes Projektok és feladatok:', this.teams);
+        console.log('Teljes Projektek és feladatok:', this.teams);
       } catch (error) {
-        console.error('Projektok és feladatok lekérésének hiba:', error);
+        console.error('Projektek és feladatok lekérésének hiba:', error);
       }
     },
   },

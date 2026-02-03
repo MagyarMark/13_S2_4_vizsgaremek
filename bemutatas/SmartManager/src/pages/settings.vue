@@ -11,7 +11,7 @@
 
       <ul v-if="userProfile.szerep_tipus === 'tanar'" class="nav-links">
         <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
+        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
         <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" class="active"><li ><i class="fas fa-cog"></i> Beállítások</li></router-link>
