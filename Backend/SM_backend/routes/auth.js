@@ -1,3 +1,43 @@
+/**
+ * @swagger
+ * tags:
+ *   - name: Auth
+ *     description: Felhasználói hitelesítés és profil kezelése
+ * paths:
+ *   /api/register:
+ *     post:
+ *       summary: Új felhasználó regisztrációja
+ *       tags: [Auth]
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 felhasznalonev:
+ *                   type: string
+ *                   description: A felhasználó egyedi felhasználóneve
+ *                   example: "ujfelhasznalo"
+ *                 jelszo:
+ *                   type: string
+ *                   description: A felhasználó jelszava
+ *                   example: "jelszo123"
+ *                 email:
+ *                   type: string
+ *                   description: A felhasználó email címe
+ *                   example: "user@example.com"
+ *                 teljes_nev:
+ *                   type: string
+ *                   description: A felhasználó teljes neve
+ *                   example: "Kiss Péter"
+ *                 szerep_tipus:
+ *                   type: string
+ *                   description: A felhasználó szerepe a rendszerben (tanar, diak, admin)
+ *                   example: "diak"
+ */
+
+
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
