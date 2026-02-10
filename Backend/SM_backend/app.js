@@ -3,8 +3,6 @@ const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const path = require('path');
 const fs = require('fs');
-const swaggerjsdoc = require('swagger-jsdoc');
-const swaggerui = require('swagger-ui-express');
 
 const pool = require('./config/database');
 const filesPayloadExists = require('./middleware/filesPayloadExists');
@@ -21,36 +19,6 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req,res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 })
-
-const options = {
-    definition: {
-        openapi: "3.0.0",
-        info: {
-            title: "SmartManager - API dokumentáció",
-            version: "0.1",
-            description: "",
-            contact: {
-                name: "",
-                url: "",
-                email: "",
-            },
-        },
-        servers: [
-            {
-                url: "http://localhost:3000/",
-            },
-        ],
-    },
-    apis: [`${path.join(__dirname, "./routes/*.js")}`]
-};
-
-const specs = swaggerjsdoc(options)
-
-app.use(
-    "/api-docs",
-    swaggerui.serve,
-    swaggerui.setup(specs)
-)
 
 app.post('/api/upload', 
     verifyToken,
