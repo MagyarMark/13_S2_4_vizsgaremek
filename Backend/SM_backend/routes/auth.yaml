@@ -1,0 +1,462 @@
+tags:
+  - name: Auth
+    description: Felhasználói hitelesítés és profil kezelése
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token az Authorization headerben (Bearer <token>).
+    refreshTokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Refresh token az Authorization headerben (Bearer <refresh_token>).
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - felhasznalonev
+        - jelszo
+        - email
+        - szerep_tipus
+      properties:
+        felhasznalonev:
+          type: string
+          description: A felhasználó egyedi felhasználóneve
+          example: ujfelhasznalo
+        jelszo:
+          type: string
+          description: A felhasználó jelszava
+          example: jelszo123
+        email:
+          type: string
+          description: A felhasználó email címe
+          example: user@example.com
+        teljes_nev:
+          type: string
+          description: A felhasználó teljes neve
+          example: Kiss Peter
+        szerep_tipus:
+          type: string
+          description: A felhasználó szerepe a rendszerben (tanar, diak, admin)
+          example: diak
+          enum: [tanar, diak, admin]
+    LoginRequest:
+      type: object
+      required:
+        - felhasznalonev
+        - jelszo
+      properties:
+        felhasznalonev:
+          type: string
+          example: ujfelhasznalo
+        jelszo:
+          type: string
+          example: jelszo123
+    UpdateProfileRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Uj email cim
+          example: updated@example.com
+        teljes_nev:
+          type: string
+          description: Uj teljes nev
+          example: Kiss Peter
+        jelszo:
+          type: string
+          description: Uj jelszo
+          example: ujjelszo123
+        elerheto:
+          type: boolean
+          description: Felhasznalo elerhetosege
+          example: true
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        felhasznalonev:
+          type: string
+          example: ujfelhasznalo
+        email:
+          type: string
+          example: user@example.com
+        teljes_nev:
+          type: string
+          example: Kiss Peter
+        szerep_tipus:
+          type: string
+          example: diak
+        aktiv:
+          type: boolean
+          example: true
+        elerheto:
+          type: boolean
+          example: true
+        letrehozas_idopont:
+          type: string
+          format: date-time
+          example: 2026-02-09T12:34:56.000Z
+    Tokens:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Hibas adatok
+        errors:
+          type: array
+          items:
+            type: object
+
+paths:
+  /api/auth/register:
+    post:
+      summary: Uj felhasznalo regisztracioja
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Sikeres regisztracio
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Sikeres regisztracio
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Hibas adatok vagy mar foglalt felhasznalonev/email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/login:
+    post:
+      summary: Bejelentkezes
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Sikeres bejelentkezes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Sikeres bejelentkezes
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+        '400':
+          description: Hibas adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Hibas felhasznalonev vagy jelszo, vagy inaktiv fiok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/logout:
+    post:
+      summary: Kijelentkezes
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Sikeres kijelentkezes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Sikeres kijelentkezes
+        '401':
+          description: Token szukseges vagy lejart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Ervenytelen token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/profileData:
+    get:
+      summary: Felhasznaloi profil lekerese
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Felhasznaloi adatok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '404':
+          description: Felhasznalo nem talalhato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szukseges vagy lejart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Ervenytelen token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/profile:
+    put:
+      summary: Profil frissitese
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profil sikeresen frissitve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Profil sikeresen frissitve
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Hibas adatok vagy email mar foglalt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szukseges vagy lejart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Ervenytelen token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/refresh-token:
+    post:
+      summary: Token frissitese
+      tags: [Auth]
+      security:
+        - refreshTokenAuth: []
+      responses:
+        '200':
+          description: Token sikeresen frissitve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Token sikeresen frissitve
+                  data:
+                    $ref: '#/components/schemas/Tokens'
+        '401':
+          description: Refresh token szukseges
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Ervenytelen vagy lejart refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Felhasznalo nem talalhato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/profile-torles:
+    put:
+      summary: Profil torlese (deaktivacio)
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profil sikeresen torolve (deaktivalva)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Felhasznaloi fiok sikeresen torolve (deaktivalva)
+        '400':
+          description: Fiok mar inaktiv
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szukseges vagy lejart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Ervenytelen token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Felhasznalo nem talalhato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
