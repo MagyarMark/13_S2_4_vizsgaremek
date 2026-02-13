@@ -73,7 +73,7 @@ components:
           example: ujjelszo123
         elerheto:
           type: boolean
-          description: Felhasznalo elerhetosege
+          description: Felhasználó elérhetősége
           example: true
     User:
       type: object
@@ -89,7 +89,7 @@ components:
           example: user@example.com
         teljes_nev:
           type: string
-          example: Kiss Peter
+          example: Gipsz Jakab
         szerep_tipus:
           type: string
           example: diak
@@ -102,7 +102,7 @@ components:
         letrehozas_idopont:
           type: string
           format: date-time
-          example: 2026-02-09T12:34:56.000Z
+          example: 2026-02-09T12:34:56
     Tokens:
       type: object
       properties:
@@ -120,7 +120,7 @@ components:
           example: false
         message:
           type: string
-          example: Hibas adatok
+          example: Hibás adatok
         errors:
           type: array
           items:
@@ -129,7 +129,7 @@ components:
 paths:
   /api/auth/register:
     post:
-      summary: Uj felhasznalo regisztracioja
+      summary: Új felhasználó regisztrációja
       tags: [Auth]
       requestBody:
         required: true
@@ -139,7 +139,7 @@ paths:
               $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
-          description: Sikeres regisztracio
+          description: Sikeres regisztráció
           content:
             application/json:
               schema:
@@ -150,14 +150,14 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Sikeres regisztracio
+                    example: Sikeres regisztráció
                   data:
                     type: object
                     properties:
                       user:
                         $ref: '#/components/schemas/User'
         '400':
-          description: Hibas adatok vagy mar foglalt felhasznalonev/email
+          description: Hibás adatok vagy már foglalt felhasználónév/email
           content:
             application/json:
               schema:
@@ -171,7 +171,7 @@ paths:
 
   /api/auth/login:
     post:
-      summary: Bejelentkezes
+      summary: Bejelentkezés
       tags: [Auth]
       requestBody:
         required: true
@@ -181,7 +181,7 @@ paths:
               $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: Sikeres bejelentkezes
+          description: Sikeres bejelentkezés
           content:
             application/json:
               schema:
@@ -192,7 +192,7 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Sikeres bejelentkezes
+                    example: Sikeres bejelentkezés
                   data:
                     type: object
                     properties:
@@ -203,13 +203,13 @@ paths:
                       refreshToken:
                         type: string
         '400':
-          description: Hibas adatok
+          description: Hibás adatok
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Hibas felhasznalonev vagy jelszo, vagy inaktiv fiok
+          description: Hibás felhasználónév vagy jelszó, vagy inaktív fiók
           content:
             application/json:
               schema:
@@ -223,13 +223,13 @@ paths:
 
   /api/auth/logout:
     post:
-      summary: Kijelentkezes
+      summary: Kijelentkezés
       tags: [Auth]
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Sikeres kijelentkezes
+          description: Sikeres kijelentkezés
           content:
             application/json:
               schema:
@@ -240,15 +240,15 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Sikeres kijelentkezes
+                    example: Sikeres kijelentkezés
         '401':
-          description: Token szukseges vagy lejart
+          description: Token szükséges vagy lejárt
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
-          description: Ervenytelen token
+          description: Érvénytelen token
           content:
             application/json:
               schema:
@@ -262,13 +262,13 @@ paths:
 
   /api/auth/profileData:
     get:
-      summary: Felhasznaloi profil lekerese
+      summary: Felhasználói profil lekérése
       tags: [Auth]
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Felhasznaloi adatok
+          description: Felhasználói adatok
           content:
             application/json:
               schema:
@@ -283,19 +283,19 @@ paths:
                       user:
                         $ref: '#/components/schemas/User'
         '404':
-          description: Felhasznalo nem talalhato
+          description: Felhasználó nem található
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Token szukseges vagy lejart
+          description: Token szükséges vagy lejárt
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
-          description: Ervenytelen token
+          description: Érvénytelen token
           content:
             application/json:
               schema:
@@ -309,7 +309,7 @@ paths:
 
   /api/auth/profile:
     put:
-      summary: Profil frissitese
+      summary: Profil frissítése
       tags: [Auth]
       security:
         - bearerAuth: []
@@ -321,7 +321,7 @@ paths:
               $ref: '#/components/schemas/UpdateProfileRequest'
       responses:
         '200':
-          description: Profil sikeresen frissitve
+          description: Profil sikeresen frissítve
           content:
             application/json:
               schema:
@@ -332,26 +332,26 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Profil sikeresen frissitve
+                    example: Profil sikeresen frissítve
                   data:
                     type: object
                     properties:
                       user:
                         $ref: '#/components/schemas/User'
         '400':
-          description: Hibas adatok vagy email mar foglalt
+          description: Hibás adatok vagy email már foglalt
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Token szukseges vagy lejart
+          description: Token szükséges vagy lejárt
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
-          description: Ervenytelen token
+          description: Érvénytelen token
           content:
             application/json:
               schema:
@@ -365,13 +365,13 @@ paths:
 
   /api/auth/refresh-token:
     post:
-      summary: Token frissitese
+      summary: Token frissítése
       tags: [Auth]
       security:
         - refreshTokenAuth: []
       responses:
         '200':
-          description: Token sikeresen frissitve
+          description: Token sikeresen frissítve
           content:
             application/json:
               schema:
@@ -382,23 +382,23 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Token sikeresen frissitve
+                    example: Token sikeresen frissítve
                   data:
                     $ref: '#/components/schemas/Tokens'
         '401':
-          description: Refresh token szukseges
+          description: Refresh token szükséges
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
-          description: Ervenytelen vagy lejart refresh token
+          description: Érvénytelen vagy lejárt refresh token
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Felhasznalo nem talalhato
+          description: Felhasználó nem található
           content:
             application/json:
               schema:
@@ -412,13 +412,13 @@ paths:
 
   /api/auth/profile-torles:
     put:
-      summary: Profil torlese (deaktivacio)
+      summary: Profil törlése (deaktiváció)
       tags: [Auth]
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Profil sikeresen torolve (deaktivalva)
+          description: Profil sikeresen törölve (deaktiválva)
           content:
             application/json:
               schema:
@@ -429,27 +429,27 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Felhasznaloi fiok sikeresen torolve (deaktivalva)
+                    example: Felhasználói fiók sikeresen törölve (deaktiválva)
         '400':
-          description: Fiok mar inaktiv
+          description: Fiók mar inaktív
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Token szukseges vagy lejart
+          description: Token szükséges vagy lejárt
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
-          description: Ervenytelen token
+          description: Érvénytelen token
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Felhasznalo nem talalhato
+          description: Felhasználó nem található
           content:
             application/json:
               schema:
