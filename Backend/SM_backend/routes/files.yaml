@@ -148,7 +148,7 @@ components:
         statusz:
           type: string
           example: beadva
-          enum: [folyamatban, beadva, ertekelt]
+          enum: [beadva, ertekelt, javitasra_visszaadva]
         visszajelzes:
           type: string
           example: Várom az értékelést.
@@ -168,11 +168,20 @@ components:
           example: 5
         statusz:
           type: string
-          enum: [folyamatban, beadva, ertekelt]
+          enum: [beadva, ertekelt, javitasra_visszaadva]
           example: ertekelt
         visszajelzes:
           type: string
           example: Nagyon jó munka.
+    BeadasStatusUpdateRequest:
+      type: object
+      required:
+        - statusz
+      properties:
+        statusz:
+          type: string
+          enum: [beküldve, értékelve]
+          example: értékelve
 
 paths:
   /api/files/feltoltesek:
@@ -452,6 +461,159 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/files/beadas/{beadas_id}/statusz:
+    patch:
+      summary: Beadás státusz frissítése
+      tags: [Files]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: beadas_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeadasStatusUpdateRequest'
+      responses:
+        '200':
+          description: Beadás státusz frissítve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Beadás státusza sikeresen frissítve
+                  data:
+                    type: object
+                    properties:
+                      beadas:
+                        $ref: '#/components/schemas/BeadasListItem'
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Nincs jogosultság a frissítéshez
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Beadás nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/upload:
+    post:
+      summary: Fájl feltöltés
+      tags: [Files]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                feladat_id:
+                  type: integer
+                  description: A feladat azonosítója (query-ben is megadható)
+                  example: 10
+                files:
+                  type: object
+                  additionalProperties:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Feltöltés sikeres
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: 2 fájl sikeresen feltöltve
+                  uploadedFiles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: beadando.pdf
+                        id:
+                          type: integer
+                          example: 45
+                  uploadInfo:
+                    type: object
+                    properties:
+                      felhasznalo_id:
+                        type: integer
+                        example: 7
+                      felhasznalonev:
+                        type: string
+                        example: diak1
+                      feladat_id:
+                        type: integer
+                        example: 10
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Érvénytelen token
           content:
             application/json:
               schema:
