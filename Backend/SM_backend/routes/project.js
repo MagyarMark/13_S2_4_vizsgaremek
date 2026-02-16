@@ -799,7 +799,7 @@ router.delete('/feladat/:id', verifyToken, async (req, res) => {
 });
 
 
-router.get('/statisztika/:projektId', verifyToken, async (req, res) => {
+router.get('/statisztika/projekt/:projektId', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const { projektId } = req.params;

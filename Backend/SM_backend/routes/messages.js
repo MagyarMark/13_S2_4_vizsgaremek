@@ -1,6 +1,6 @@
 const express = require('express');
 const pool = require('../config/database');
-const { body, validationResult } = require('express-validator');
+const { body, query, validationResult } = require('express-validator');
 const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
@@ -87,10 +87,10 @@ router.get('/osszes', verifyToken, async (req, res) => {
 });
 
 router.get('/beszelgetes', verifyToken, [
-  body('with')
+  query('with')
     .notEmpty()
     .withMessage('A másik felhasználó ID-ja kötelező'),
-  body('projektId')
+  query('projektId')
     .optional()
     .isInt()
 ], async (req, res) => {

@@ -272,6 +272,76 @@ router.put('/beadas/:beadas_id', verifyToken, [
     }
 });
 
+router.patch('/beadas/:beadas_id/statusz', verifyToken, [
+    body('statusz')
+        .notEmpty()
+        .withMessage('Státusz kötelező')
+        .isIn(['beküldve', 'értékelt'])
+        .withMessage('Érvényes státusz: beküldve, értékelt')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Hibás adatok',
+                errors: errors.array()
+            });
+        }
+
+        const { beadas_id } = req.params;
+        const userId = req.user.id;
+        const userRole = req.user.szerep_tipus;
+        const { statusz } = req.body;
+
+        const beadasCheck = await pool.query(
+            'SELECT id, felhasznalo_id, tanar_id FROM "Beadas" WHERE id = $1',
+            [beadas_id]
+        );
+
+        if (beadasCheck.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Beadás nem található'
+            });
+        }
+
+        const beadas = beadasCheck.rows[0];
+        const isOwner = beadas.felhasznalo_id === userId;
+        const isTeacher = beadas.tanar_id === userId || userRole === 'tanar' || userRole === 'admin';
+
+        if (!isOwner && !isTeacher) {
+            return res.status(403).json({
+                success: false,
+                message: 'Nincs jogosultsága a beadás státuszának módosításához'
+            });
+        }
+
+        const updatedBeadas = await pool.query(
+            `UPDATE "Beadas"
+             SET statusz = $1
+             WHERE id = $2
+             RETURNING id, feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, bekuldes_idopont, ertekeles_idopont`,
+            [statusz, beadas_id]
+        );
+
+        return res.json({
+            success: true,
+            message: 'Beadás státusza sikeresen frissítve',
+            data: {
+                beadas: updatedBeadas.rows[0]
+            }
+        });
+    } catch (error) {
+        console.error('Szerver hiba a beadás státusz frissítése során:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Szerver hiba a beadás státusz frissítése során',
+            error: error.message
+        });
+    }
+});
+
 router.delete('/:file_id', verifyToken, async (req, res) => {
     try {
         const { file_id } = req.params;
