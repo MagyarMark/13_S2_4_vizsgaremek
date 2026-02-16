@@ -1,0 +1,375 @@
+tags:
+  - name: Messages
+    description: Üzenetek kezelése
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Hibás adatok
+        error:
+          type: string
+          example: Hibaüzenet
+        errors:
+          type: array
+          items:
+            type: object
+    MessageItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        kuldo_id:
+          type: integer
+          example: 7
+        fogado_id:
+          type: integer
+          nullable: true
+          example: 9
+        projekt_id:
+          type: integer
+          nullable: true
+          example: 3
+        uzenet_tartalom:
+          type: string
+          example: Szia! Nézd át kérlek a feladatot.
+        allapot:
+          type: string
+          enum: [nem_olvasott, olvasott, torlolt]
+          example: nem_olvasott
+        kuldes_ideje:
+          type: string
+          format: date-time
+          example: 2026-02-15T08:12:00
+    MessageCreateRequest:
+      type: object
+      required:
+        - uzenet_tartalom
+      properties:
+        fogado_id:
+          type: integer
+          nullable: true
+          example: 9
+        uzenet_tartalom:
+          type: string
+          example: Szia! Nézd át kérlek a feladatot.
+        projekt_id:
+          type: integer
+          nullable: true
+          example: 3
+        allapot:
+          type: string
+          enum: [nem_olvasott, olvasott, torlolt]
+          example: nem_olvasott
+      description: A fogadó ID vagy a projekt ID kötelezően megadandó.
+    MessageUpdateRequest:
+      type: object
+      properties:
+        allapot:
+          type: string
+          enum: [nem_olvasott, olvasott, torlolt]
+          example: olvasott
+        uzenet_tartalom:
+          type: string
+          example: Frissített üzenet.
+
+paths:
+  /api/messages/osszes:
+    get:
+      summary: Üzenetek listázása
+      tags: [Messages]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: recipientId
+          required: false
+          schema:
+            type: integer
+          description: Másik felhasználó ID-ja
+        - in: query
+          name: projektId
+          required: false
+          schema:
+            type: integer
+          description: Projekt ID szűréshez
+      responses:
+        '200':
+          description: Üzenet lista
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      messages:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MessageItem'
+                      count:
+                        type: integer
+                        example: 4
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Nincs jogosultság a projekt üzeneteihez
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/messages/beszelgetes:
+    get:
+      summary: Beszélgetés lekérdezése két felhasználó között
+      tags: [Messages]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: with
+          required: true
+          schema:
+            type: integer
+          description: Másik felhasználó ID-ja
+        - in: query
+          name: projektId
+          required: false
+          schema:
+            type: integer
+          description: Projekt ID szűréshez
+      responses:
+        '200':
+          description: Beszélgetés üzenetei
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      messages:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MessageItem'
+                      count:
+                        type: integer
+                        example: 8
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/messages/kuldes:
+    post:
+      summary: Új üzenet küldése
+      tags: [Messages]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreateRequest'
+      responses:
+        '201':
+          description: Üzenet elküldve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Üzenet sikeresen elküldve
+                  data:
+                    $ref: '#/components/schemas/MessageItem'
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Nincs jogosultság az adott projekthez
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Felhasználó vagy projekt nem létezik
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/messages/frissites/{id}:
+    put:
+      summary: Üzenet frissítése
+      tags: [Messages]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageUpdateRequest'
+      responses:
+        '200':
+          description: Üzenet frissítve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Üzenet sikeresen frissítve
+                  data:
+                    $ref: '#/components/schemas/MessageItem'
+        '400':
+          description: Hibás adatok vagy nincs frissítendő adat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Üzenet nem létezik
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/messages/torles/{id}:
+    delete:
+      summary: Üzenet törlése
+      tags: [Messages]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Üzenet törölve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Üzenet sikeresen törölve
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Üzenet nem létezik
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
