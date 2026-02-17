@@ -1,0 +1,1837 @@
+tags:
+  - name: Project
+    description: Projekttel kapcsolatos műveletek
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Hibás adatok
+        error:
+          type: string
+          example: Hibaüzenet
+        errors:
+          type: array
+          items:
+            type: object
+    ProjectItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        projekt_nev:
+          type: string
+          example: Szoftver projekt
+        leiras:
+          type: string
+          nullable: true
+          example: Fejlesztés és tesztelés
+        letrehozo_id:
+          type: integer
+          example: 7
+        statusz:
+          type: string
+          enum: [aktiv, inaktiv, befejezett]
+          example: aktiv
+        hatarido:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2026-03-01T00:00:00
+        letrehozas_idopont:
+          type: string
+          format: date-time
+          example: 2026-02-12T10:00:00
+    ProjectCreateRequest:
+      type: object
+      required:
+        - projekt_nev
+      properties:
+        projekt_nev:
+          type: string
+          example: Szoftver projekt
+        leiras:
+          type: string
+          nullable: true
+          example: Fejlesztés és tesztelés
+        statusz:
+          type: string
+          enum: [aktiv, inaktiv, befejezett]
+          example: aktiv
+        hatarido:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2026-03-01T00:00:00
+    ProjectUpdateRequest:
+      type: object
+      properties:
+        projekt_nev:
+          type: string
+          example: Frissített projekt
+        leiras:
+          type: string
+          nullable: true
+          example: Frissített leírás
+        statusz:
+          type: string
+          enum: [aktiv, inaktiv, befejezett]
+          example: inaktiv
+        hatarido:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2026-03-10T00:00:00
+    ProjectTagUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        felhasznalonev:
+          type: string
+          example: diak1
+        teljes_nev:
+          type: string
+          example: Kovács József
+        email:
+          type: string
+          example: diak1@gmail.com
+        szerep_tipus:
+          type: string
+          example: diák
+    ProjectTagMember:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        teljes_nev:
+          type: string
+          example: Kovács József
+        email:
+          type: string
+          example: diak1@gmail.com
+        szerep_tipus:
+          type: string
+          example: diák
+    ProjectTagCreateRequest:
+      type: object
+      required:
+        - projekt_id
+      properties:
+        projekt_id:
+          type: integer
+          example: 2
+        felhasznalo_id:
+          type: integer
+          nullable: true
+          example: 7
+    ProjectTagItem:
+      type: object
+      properties:
+        projekt_id:
+          type: integer
+          example: 2
+        felhasznalo_id:
+          type: integer
+          example: 7
+        csatlakozas_idopont:
+          type: string
+          format: date-time
+          example: 2026-02-12T12:00:00
+    ProjectTagDeleteRequest:
+      type: object
+      required:
+        - projekt_id
+        - felhasznalo_id
+      properties:
+        projekt_id:
+          type: integer
+          example: 2
+        felhasznalo_id:
+          type: integer
+          example: 7
+    TaskItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        projekt_id:
+          type: integer
+          example: 2
+        feladat_nev:
+          type: string
+          example: Dokumentáció
+        feladat_leiras:
+          type: string
+          nullable: true
+          example: API leírás
+        letrehozo_id:
+          type: integer
+          example: 7
+        felelos_id:
+          type: integer
+          nullable: true
+          example: 9
+        prioritas:
+          type: string
+          enum: [alacsony, közepes, magas]
+          example: közepes
+        statusz:
+          type: string
+          enum: [folyamatban, befejezett, késett]
+          example: folyamatban
+        hatarido:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2026-02-20T00:00:00
+        letrehozas_idopont:
+          type: string
+          format: date-time
+          example: 2026-02-12T10:00:00
+    TaskItemWithAssignee:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        feladat_nev:
+          type: string
+          example: Dokumentáció
+        feladat_leiras:
+          type: string
+          nullable: true
+          example: API leírás
+        letrehozo_id:
+          type: integer
+          example: 7
+        felelos_id:
+          type: integer
+          nullable: true
+          example: 9
+        prioritas:
+          type: string
+          enum: [alacsony, közepes, magas]
+          example: közepes
+        statusz:
+          type: string
+          enum: [folyamatban, befejezett, késett]
+          example: folyamatban
+        hatarido:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2026-02-20T00:00:00
+        letrehozas_idopont:
+          type: string
+          format: date-time
+          example: 2026-02-12T10:00:00
+        felelos_nev:
+          type: string
+          example: Nagy Éva
+    TaskCreateRequest:
+      type: object
+      required:
+        - projekt_id
+        - feladat_nev
+        - prioritas
+        - statusz
+      properties:
+        projekt_id:
+          type: integer
+          example: 2
+        feladat_nev:
+          type: string
+          example: Dokumentáció
+        feladat_leiras:
+          type: string
+          nullable: true
+          example: API leírás
+        felelos_id:
+          type: integer
+          nullable: true
+          example: 9
+        prioritas:
+          type: string
+          enum: [alacsony, közepes, magas]
+          example: közepes
+        statusz:
+          type: string
+          enum: [folyamatban, befejezett, késett]
+          example: folyamatban
+        hatarido:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2026-02-20T00:00:00
+    TaskUpdateRequest:
+      type: object
+      properties:
+        feladat_nev:
+          type: string
+          example: Frissített feladat
+        feladat_leiras:
+          type: string
+          nullable: true
+          example: Frissített leírás
+        felelos_id:
+          type: integer
+          nullable: true
+          example: 9
+        prioritas:
+          type: string
+          enum: [alacsony, közepes, magas]
+          example: magas
+        statusz:
+          type: string
+          enum: [folyamatban, befejezett, késett]
+          example: befejezett
+        hatarido:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2026-02-22T00:00:00
+    StatisticsItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 4
+        felhasznalo_id:
+          type: integer
+          example: 7
+        projekt_id:
+          type: integer
+          example: 2
+        statisztika_nev:
+          type: string
+          example: Teljesítés
+        ertek:
+          type: string
+          nullable: true
+          example: 80%
+        meresi_idopont:
+          type: string
+          format: date-time
+          example: 2026-02-15T10:00:00
+        pontszam:
+          type: number
+          nullable: true
+          example: 88
+    StatisticsCreateRequest:
+      type: object
+      required:
+        - projekt_id
+        - statisztika_nev
+      properties:
+        projekt_id:
+          type: integer
+          example: 2
+        statisztika_nev:
+          type: string
+          example: Teljesítés
+        ertek:
+          type: string
+          nullable: true
+          example: 80%
+        pontszam:
+          type: number
+          nullable: true
+          example: 88
+    StatisticsUpdateRequest:
+      type: object
+      properties:
+        statisztika_nev:
+          type: string
+          example: Frissített stat
+        ertek:
+          type: string
+          nullable: true
+          example: 85%
+        pontszam:
+          type: number
+          nullable: true
+          example: 90
+    LogItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        felhasznalo_id:
+          type: integer
+          example: 7
+        projekt_id:
+          type: integer
+          example: 2
+        feladat_id:
+          type: integer
+          nullable: true
+          example: 10
+        muvelet:
+          type: string
+          example: Státusz frissítés
+        leiras:
+          type: string
+          nullable: true
+          example: A feladat befejezve
+        idopont:
+          type: string
+          format: date-time
+          example: 2026-02-15T09:20:00
+        teljes_nev:
+          type: string
+          example: Nagy Éva
+        felhasznalonev:
+          type: string
+          example: tanar1
+    LogCreateRequest:
+      type: object
+      required:
+        - projekt_id
+        - muvelet
+      properties:
+        projekt_id:
+          type: integer
+          example: 2
+        feladat_id:
+          type: integer
+          nullable: true
+          example: 10
+        muvelet:
+          type: string
+          example: Státusz frissítés
+        leiras:
+          type: string
+          nullable: true
+          example: A feladat befejezve
+    LogUpdateRequest:
+      type: object
+      properties:
+        muvelet:
+          type: string
+          example: Frissített művelet
+        leiras:
+          type: string
+          nullable: true
+          example: Frissített leírás
+    CommentItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 11
+        feladat_id:
+          type: integer
+          example: 10
+        felhasznalo_id:
+          type: integer
+          example: 7
+        komment_szoveg:
+          type: string
+          example: Jó munka!
+        letrehozas_idopont:
+          type: string
+          format: date-time
+          example: 2026-02-15T12:10:00
+        felhasznalonev:
+          type: string
+          example: diak1
+    CommentCreateRequest:
+      type: object
+      required:
+        - feladat_id
+        - komment_szoveg
+      properties:
+        feladat_id:
+          type: integer
+          example: 10
+        komment_szoveg:
+          type: string
+          example: Jó munka!
+    CommentUpdateRequest:
+      type: object
+      required:
+        - komment_szoveg
+      properties:
+        komment_szoveg:
+          type: string
+          example: Frissített komment
+
+paths:
+  /api/project/projektek:
+    get:
+      summary: Projektek listázása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Projekt lista
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      projects:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProjectItem'
+                      count:
+                        type: integer
+                        example: 2
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/ujProjekt:
+    post:
+      summary: Új projekt létrehozása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreateRequest'
+      responses:
+        '201':
+          description: Projekt létrehozva
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Sikeres projekt létrehozás
+                  data:
+                    type: object
+                    properties:
+                      project:
+                        $ref: '#/components/schemas/ProjectItem'
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/projekt/{id}:
+    put:
+      summary: Projekt frissítése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpdateRequest'
+      responses:
+        '200':
+          description: Projekt frissítve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Projekt sikeresen frissítve
+                  data:
+                    type: object
+                    properties:
+                      project:
+                        $ref: '#/components/schemas/ProjectItem'
+        '400':
+          description: Hibás adatok vagy nincs frissítendő adat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Projekt nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Projekt törlése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Projekt törölve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Projekt sikeresen törölve
+                  data:
+                    type: object
+                    properties:
+                      deleted_id:
+                        type: integer
+                        example: 2
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Projekt nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/projektTag:
+    get:
+      summary: Aktív felhasználók listája projekttagokhoz
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Felhasználók listája
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProjectTagUser'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/projektTagok:
+    get:
+      summary: Projekt tagok listázása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: projekt_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Projekt tagok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProjectTagMember'
+        '400':
+          description: Projekt ID kötelező
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/ujProjektTag:
+    post:
+      summary: Projekttag hozzáadása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectTagCreateRequest'
+      responses:
+        '201':
+          description: Projekttag létrehozva
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Projekttag sikeres hozzáadása
+                  data:
+                    type: object
+                    properties:
+                      projekttag:
+                        $ref: '#/components/schemas/ProjectTagItem'
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/ProjektTag:
+    delete:
+      summary: Projekttag eltávolítása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectTagDeleteRequest'
+      responses:
+        '200':
+          description: Projekttag eltávolítva
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Projekt tag sikeresen eltávolítva
+                  data:
+                    type: object
+                    properties:
+                      projekt_id:
+                        type: integer
+                        example: 2
+                      felhasznalo_id:
+                        type: integer
+                        example: 7
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Projekt tag nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/ujFeladat:
+    post:
+      summary: Új feladat létrehozása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreateRequest'
+      responses:
+        '201':
+          description: Feladat létrehozva
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Sikeres feladat létrehozás
+                  data:
+                    type: object
+                    properties:
+                      task:
+                        $ref: '#/components/schemas/TaskItem'
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/feladat:
+    get:
+      summary: Projekt feladatok lekérdezése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: projekt_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Feladatok listája
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TaskItemWithAssignee'
+        '400':
+          description: Projekt ID kötelező
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/feladatok:
+    get:
+      summary: Feladatok listázása a felhasználónak
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Feladat lista
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      tasks:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TaskItem'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/feladat/{id}:
+    put:
+      summary: Feladat frissítése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdateRequest'
+      responses:
+        '200':
+          description: Feladat frissítve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Feladat sikeresen frissítve
+                  data:
+                    type: object
+                    properties:
+                      task:
+                        $ref: '#/components/schemas/TaskItem'
+        '400':
+          description: Hibás adatok vagy nincs frissítendő adat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Feladat nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Feladat törlése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Feladat törölve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Feladat sikeresen törölve
+                  data:
+                    type: object
+                    properties:
+                      deleted_id:
+                        type: integer
+                        example: 10
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Feladat nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/ujStat:
+    post:
+      summary: Új statisztika létrehozása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatisticsCreateRequest'
+      responses:
+        '201':
+          description: Statisztika létrehozva
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Sikeres statisztika létrehozás
+                  data:
+                    type: object
+                    properties:
+                      statistics:
+                        $ref: '#/components/schemas/StatisticsItem'
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/statisztika:
+    get:
+      summary: Statisztikák listázása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statisztika lista
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      statistics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StatisticsItem'
+                      count:
+                        type: integer
+                        example: 3
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/statisztika/projekt/{projektId}:
+    get:
+      summary: Statisztikák listázása projektre
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: projektId
+          required: true
+          schema:
+            type: integer
+          description: Projekt ID
+      responses:
+        '200':
+          description: Statisztika lista projektre
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      statistics:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StatisticsItem'
+                      count:
+                        type: integer
+                        example: 2
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/statisztika/{id}:
+    put:
+      summary: Statisztika frissítése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Statisztika ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatisticsUpdateRequest'
+      responses:
+        '200':
+          description: Statisztika frissítve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Statisztika sikeresen frissítve
+                  data:
+                    type: object
+                    properties:
+                      statistics:
+                        $ref: '#/components/schemas/StatisticsItem'
+        '400':
+          description: Hibás adatok vagy nincs frissítendő adat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Statisztika nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Statisztika törlése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Statisztika ID
+      responses:
+        '200':
+          description: Statisztika törölve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Statisztika sikeresen törölve
+                  data:
+                    type: object
+                    properties:
+                      deleted_id:
+                        type: integer
+                        example: 4
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Statisztika nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/naplo:
+    get:
+      summary: Napló bejegyzések listázása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: projekt_id
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: feladat_id
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Napló lista
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      logs:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LogItem'
+                      count:
+                        type: integer
+                        example: 5
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/ujNaplo:
+    post:
+      summary: Új napló bejegyzés létrehozása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogCreateRequest'
+      responses:
+        '201':
+          description: Napló bejegyzés létrehozva
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Sikeres naplóbejegyzés létrehozás
+                  data:
+                    type: object
+                    properties:
+                      log:
+                        $ref: '#/components/schemas/LogItem'
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/naplo/{id}:
+    put:
+      summary: Napló bejegyzés frissítése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogUpdateRequest'
+      responses:
+        '200':
+          description: Napló bejegyzés frissítve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Napló bejegyzés sikeresen frissítve
+                  data:
+                    type: object
+                    properties:
+                      log:
+                        $ref: '#/components/schemas/LogItem'
+        '400':
+          description: Hibás adatok vagy nincs frissítendő adat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Napló bejegyzés nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Napló bejegyzés törlése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Napló bejegyzés törölve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Napló bejegyzés sikeresen törölve
+                  data:
+                    type: object
+                    properties:
+                      deleted_id:
+                        type: integer
+                        example: 3
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Napló bejegyzés nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/ujFeladatKomment:
+    post:
+      summary: Új feladat komment létrehozása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreateRequest'
+      responses:
+        '201':
+          description: Komment létrehozva
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Komment sikeresen létrehozva
+                  data:
+                    type: object
+                    properties:
+                      comment:
+                        $ref: '#/components/schemas/CommentItem'
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/feladatKommentek/{feladat_id}:
+    get:
+      summary: Feladat kommentek listázása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feladat_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Kommentek listája
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      comments:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CommentItem'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/project/feladatKomment/{id}:
+    put:
+      summary: Feladat komment frissítése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentUpdateRequest'
+      responses:
+        '200':
+          description: Komment frissítve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Komment sikeresen frissítve
+                  data:
+                    type: object
+                    properties:
+                      comment:
+                        $ref: '#/components/schemas/CommentItem'
+        '400':
+          description: Hibás adatok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Komment nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Feladat komment törlése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Komment törölve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Komment sikeresen törölve
+                  data:
+                    type: object
+                    properties:
+                      deleted_id:
+                        type: integer
+                        example: 11
+        '403':
+          description: Nincs jogosultság
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Komment nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token szükséges vagy lejárt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

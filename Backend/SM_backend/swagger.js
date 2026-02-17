@@ -5,8 +5,8 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'SmartManager API Dokumentacio',
-      description: 'API vegpontok a SmartManager webalkalmazashoz, Swagger segitsegevel dokumentalva.',
+      title: 'SmartManager API Dokumentáció',
+      description: 'API végpontok a SmartManager webalkalmazáshoz, Swagger segitségével dokumentálva.',
       contact: {
         name: 'Magyar Mark, Nagy Huba',
         email: 'smartmanager.help@gmail.com',
