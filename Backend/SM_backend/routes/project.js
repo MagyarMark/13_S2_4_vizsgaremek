@@ -190,7 +190,7 @@ router.put('/projekt/:id', verifyToken, [
   }
 });
 
-router.delete('/projekt/:id', verifyToken, async (req, res) => {
+router.delete('/projektDel/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
