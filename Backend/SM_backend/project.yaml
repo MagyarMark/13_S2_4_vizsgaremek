@@ -1,0 +1,205 @@
+tags:
+  - name: Project
+    description: Projekt műveletek kezelése
+
+components:
+  schemas:
+    Projektek:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        projekt_nev:
+          type: string
+          example: Backend projekt
+        leiras:
+          type: string
+          example: Projekt leírása
+        letrehozo_id:
+          type: integer
+          example: 1
+        statusz:
+          type: string
+          example: befejezve
+        hatarido: 
+          type: date-time
+          example: 2026-02-17T10:13:00
+        letrehozas_idopont:
+          type: date-time
+          example: 2026-02-17T10:13:30
+    ProjektCreate:
+      type: object
+      requiered:
+        - projekt_nev
+        - leiras
+        - statusz
+        - hatarido
+      properties:
+        projekt_nev:
+          tpye: string
+          description: A projekt megnevezése
+          example: Backend fejlesztés
+        leiras:
+          type: string
+          description: A projekt leírása
+          example: Ez egy backend fejlesztési projekt
+        statusz:
+          type: string
+          description: Egy projekt állapota
+          exapample: folyamatban
+        hatarido:
+          type: date-time
+          description: Egy projekt leadásának határideje
+          exapmle: 2026-02-17T10:15:00
+    ProjektUpdate:
+      type: object
+      required:
+        - projekt_nev
+        - leiras
+        - statusz
+        - hatarido
+      properties:
+        projekt_nev:
+          type: string
+          example: Projekt neve
+        leiras:
+          type: string
+          example: Projekt leírás
+        statusz:
+          type: string
+          example: folyamatban
+        hatarido:
+          type: time-date
+          example: 2026-02-17T11:50:00
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Hibás adatok
+        errors:
+          type: array
+          items:
+            type: object
+
+paths:
+  /api/project/projektek:
+    get:
+      summary: Meglévő projekt információinak megtekintése.
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Projekt adatok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      projekt:
+                        $ref: '#/components/schemas/Projektek'
+        '404':
+          description: Projekt nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+  /api/project/ujProjekt:
+    post:
+      summary: Új projekt létrehozása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Sikeres projekt létrehozás
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message: 
+                    type: string
+                    exapmle: Sikeres projekt létrehozás
+    
+  /api/project/projekt/:id:
+    put:
+      summary: Projekt módosítása
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/'
+      responses:
+        '200':
+          description: Projekt módosítása sikeres
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Projekt módosítása sikeres
+                  data:
+                    $ref: '#/components/schemas/ProjektUpdate'
+
+  /api/project/projektDel/:id:
+    delete:
+      summary: Projekt törlése
+      tags: [Project]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Projekt törölve
+          content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: Projekt sikeresen törölve
+  /api/project/projektTag:
+    get:
+      
+      
+
+
+        
+
+
+
+  
