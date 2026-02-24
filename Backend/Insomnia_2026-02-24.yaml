@@ -1,0 +1,1990 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: SM Backend API
+meta:
+  id: wrk_0ddb549a591d4d178a451c3c2ce793b4
+  created: 1771932755570
+  modified: 1771932923423
+  description: ""
+collection:
+  - name: 5. Health
+    meta:
+      id: fld_58cd6522ef8a4bb0bd885d9f52d894e9
+      created: 1771932755579
+      modified: 1771932810256
+      sortKey: -1771932755579
+      description: Health check endpoint
+    children:
+      - url: "{{ _.base_url }}/api/health"
+        name: Health Check
+        meta:
+          id: req_0a1625a5781f45e6a7602c9b6c8d8d57
+          created: 1771932755578
+          modified: 1771932755578
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755578
+        method: GET
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Health check passed', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body).to.have.property('timestamp');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 9. Deletes
+    meta:
+      id: fld_33fa82b31d0b4b38a511c63edaa72828
+      created: 1771932755580
+      modified: 1771932810202
+      sortKey: -1771932755580
+      description: Delete endpoints (run last)
+    children:
+      - url: "{{ _.base_url }}/api/project/projektDel/{{ _.project_id }}"
+        name: Delete Project
+        meta:
+          id: req_6d7db2930a134cea8956f8cd2dac8c6e
+          created: 1771932755577
+          modified: 1771932755577
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755577
+        method: DELETE
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Project deleted successfully', () => {
+              insomnia.expect(body).to.have.property('success', true);
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/files/{{ _.file_id }}"
+        name: Delete File
+        meta:
+          id: req_a0a45a7211b142eea995530cdd4aa16b
+          created: 1771932755582
+          modified: 1771932755582
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755582
+        method: DELETE
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+            const fileId = insomnia.environment.get('file_id');
+
+            if (!fileId) {
+              insomnia.test('Status is 404 when file_id missing', () => {
+                insomnia.expect(insomnia.response.code).to.equal(404);
+              });
+            } else {
+              insomnia.test('Status is 200', () => {
+                insomnia.expect(insomnia.response.code).to.equal(200);
+              });
+
+              insomnia.test('File deleted', () => {
+                insomnia.expect(body).to.have.property('success', true);
+              });
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/messages/torles/{{ _.message_id }}"
+        name: Delete Message
+        meta:
+          id: req_5da61180454440d5a51245c3274e5964
+          created: 1771932755594
+          modified: 1771932755594
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755594
+        method: DELETE
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Message deleted', () => {
+              insomnia.expect(body).to.have.property('success', true);
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/project/naplo/{{ _.naplo_id }}"
+        name: Delete Log Entry
+        meta:
+          id: req_5d9ec7d75c7948baa03c0d40b454539d
+          created: 1771932755602
+          modified: 1771932755602
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755602
+        method: DELETE
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Log deleted', () => {
+              insomnia.expect(body).to.have.property('success', true);
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/project/statisztika/{{ _.stat_id }}"
+        name: Delete Statistic
+        meta:
+          id: req_db8b7b09612c4fb79f386a38d02255ce
+          created: 1771932755608
+          modified: 1771932755608
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755608
+        method: DELETE
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Statistic deleted', () => {
+              insomnia.expect(body).to.have.property('success', true);
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/project/feladatKomment/{{ _.comment_id }}"
+        name: Delete Task Comment
+        meta:
+          id: req_8f9a6aad007c413f970143606935bc35
+          created: 1771932755614
+          modified: 1771932765202
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755621
+        method: DELETE
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Comment deleted', () => {
+              insomnia.expect(body).to.have.property('success', true);
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/project/feladat/{{ _.task_id }}"
+        name: Delete Task
+        meta:
+          id: req_563105495bb048bca5b15b34d5676c93
+          created: 1771932755618
+          modified: 1771932755618
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755618
+        method: DELETE
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Task deleted successfully', () => {
+              insomnia.expect(body).to.have.property('success', true);
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/project/ProjektTag"
+        name: Remove Project Member
+        meta:
+          id: req_cd1e10fccd914c65a1849f165962f362
+          created: 1771932755624
+          modified: 1771932755624
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755624
+        method: DELETE
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "projekt_id": "{{ _.project_id }}",
+              "felhasznalo_id": "{{ _.user_id }}"
+            }
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+          - name: Content-Type
+            value: application/json
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Project member removed', () => {
+              insomnia.expect(body).to.have.property('success', true);
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/auth/profile-torles"
+        name: Delete Profile (Soft Delete)
+        meta:
+          id: req_e9f06a623ce14a4e89980b04864a92c4
+          created: 1771932755625
+          modified: 1771932755625
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755625
+        method: PUT
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Profile marked as deleted', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.message).to.include('törölve');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 4. Files
+    meta:
+      id: fld_b0a3b35f308f427983f65285cd16f736
+      created: 1771932755593
+      modified: 1771932809654
+      sortKey: -1771932755593
+      description: File upload and submission management
+    children:
+      - url: "{{ _.base_url }}/api/files/beadas/{{ _.beadas_id }}/statusz"
+        name: Update Submission Status
+        meta:
+          id: req_fe066a7a9c05419aa6c2c12dff404ccc
+          created: 1771932755584
+          modified: 1771932755584
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755584
+        method: PATCH
+        body:
+          text: |-
+            {
+              "statusz": "értékelt"
+            }
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+          - name: Content-Type
+            value: application/json
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Submission status updated', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data.beadas.statusz).to.equal('értékelt');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/files/beadas/{{ _.beadas_id }}"
+        name: Update Submission
+        meta:
+          id: req_df97f052ee0240db89528aacb97480da
+          created: 1771932755586
+          modified: 1771932755586
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755586
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "visszajelzes": "Updated submission note"
+            }
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+          - name: Content-Type
+            value: application/json
+        scripts:
+          afterResponse: >-
+            const body = insomnia.response.json();
+
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+
+            insomnia.test('Submission updated', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data.beadas.visszajelzes).to.equal('Updated submission note');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/files/beadas/{{ _.beadas_id }}"
+        name: Get Single Submission
+        meta:
+          id: req_a61cf6e4c0894d01ba921f7b63dd62ae
+          created: 1771932755588
+          modified: 1771932755588
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755588
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Submission data returned', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data).to.have.property('files');
+              insomnia.expect(body.data.files).to.be.an('array');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/files/beadas"
+        name: Get All Submissions
+        meta:
+          id: req_3a50c9a70f744e0e980c3de9700d691b
+          created: 1771932755589
+          modified: 1771932755589
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755589
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: >-
+            const body = insomnia.response.json();
+
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+
+            insomnia.test('Submissions array returned', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data).to.have.property('beadasList');
+              insomnia.expect(body.data.beadasList).to.be.an('array');
+            });
+
+
+            const existingBeadasId = insomnia.environment.get('beadas_id');
+
+            if (!existingBeadasId && body.data.beadasList &&
+            body.data.beadasList.length > 0) {
+              insomnia.environment.set('beadas_id', body.data.beadasList[0].id);
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/files/beadas"
+        name: Create Submission
+        meta:
+          id: req_586ef55a6fdd44229659056239475c43
+          created: 1771932755591
+          modified: 1771932755591
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755591
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "feladat_id": "{{ _.task_id }}",
+              "felhasznalo_id": "{{ _.user_id }}",
+              "tanar_id": "{{ _.user_id }}",
+              "pontszam": 0,
+              "jegy": 1,
+              "statusz": "beadva",
+              "visszajelzes": "Test submission"
+            }
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+          - name: Content-Type
+            value: application/json
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 201', () => {
+              insomnia.expect(insomnia.response.code).to.equal(201);
+            });
+
+            insomnia.test('Submission created', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data).to.have.property('beadas');
+              insomnia.expect(body.data.beadas).to.have.property('id');
+            });
+
+            if (body.success && body.data && body.data.beadas) {
+              insomnia.environment.set('beadas_id', body.data.beadas.id);
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/files/feltoltesek"
+        name: Get Upload History
+        meta:
+          id: req_33c79e30799d4c2a923b9b6b2a3a1cb2
+          created: 1771932755592
+          modified: 1771932755592
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755592
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Upload history returned', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data).to.have.property('uploads');
+              insomnia.expect(body.data.uploads).to.be.an('array');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 3. Messages
+    meta:
+      id: fld_d98b6e9ecc8545189464b1da9058b4c8
+      created: 1771932755601
+      modified: 1771932809265
+      sortKey: -1771932755601
+      description: Messaging endpoints
+    children:
+      - url: "{{ _.base_url }}/api/messages/frissites/{{ _.message_id }}"
+        name: Update Message Status
+        meta:
+          id: req_5fb9707c3a844a4fa05811e0ddc6d7e2
+          created: 1771932755596
+          modified: 1771932755596
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755596
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "allapot": "olvasott"
+            }
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+          - name: Content-Type
+            value: application/json
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Message status updated', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data.allapot).to.equal('olvasott');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/messages/kuldes"
+        name: Send Message
+        meta:
+          id: req_8b20811185a448c4ac4c224a8c667206
+          created: 1771932755597
+          modified: 1771932755597
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755597
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "projekt_id": "{{ _.project_id }}",
+              "uzenet_tartalom": "Test message content"
+            }
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+          - name: Content-Type
+            value: application/json
+        scripts:
+          afterResponse: >-
+            const body = insomnia.response.json();
+
+
+            insomnia.test('Status is 201', () => {
+              insomnia.expect(insomnia.response.code).to.equal(201);
+            });
+
+
+            insomnia.test('Message sent successfully', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data).to.have.property('id');
+              insomnia.expect(body.data.uzenet_tartalom).to.equal('Test message content');
+            });
+
+
+            if (body.success && body.data && body.data.id) {
+              insomnia.environment.set('message_id', body.data.id);
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/messages/beszelgetes?with={{ _.user_id
+          }}&projektId={{ _.project_id }}"
+        name: Get Conversation
+        meta:
+          id: req_2014bcfb7932431ea22ccee173a34d91
+          created: 1771932755599
+          modified: 1771932755599
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755599
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Conversation data returned', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data).to.have.property('messages');
+              insomnia.expect(body.data.messages).to.be.an('array');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/messages/osszes"
+        name: Get All Messages
+        meta:
+          id: req_371ebd9b71ef44c4a1608be9046eca95
+          created: 1771932755600
+          modified: 1771932755600
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755600
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Messages array returned', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data).to.have.property('messages');
+              insomnia.expect(body.data.messages).to.be.an('array');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 2. Projects
+    meta:
+      id: fld_a0eb954098a94c4897ed6e8b493ea077
+      created: 1771932755633
+      modified: 1771932808950
+      sortKey: -1771932755633
+      description: Project management endpoints
+    children:
+      - url: "{{ _.base_url }}/api/project/projekt/{{ _.project_id }}"
+        name: Update Project
+        meta:
+          id: req_880fbd56a57244b794208d0fe13e980b
+          created: 1771932755630
+          modified: 1771932755630
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755630
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "projekt_nev": "Updated Test Project",
+              "leiras": "Updated description",
+              "statusz": "inaktiv"
+            }
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+          - name: Content-Type
+            value: application/json
+        scripts:
+          afterResponse: >-
+            const body = insomnia.response.json();
+
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+
+            insomnia.test('Project updated successfully', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data.project.projekt_nev).to.equal('Updated Test Project');
+              insomnia.expect(body.data.project.statusz).to.equal('inaktiv');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/project/ujProjekt"
+        name: Create Project
+        meta:
+          id: req_d18165a1107b49bdb57aeb16cb858687
+          created: 1771932755631
+          modified: 1771932755631
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755631
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "projekt_nev": "Test Project {{ _.timestamp }}",
+              "leiras": "This is a test project for API testing",
+              "statusz": "aktiv",
+              "hatarido": "2026-12-31"
+            }
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+          - name: Content-Type
+            value: application/json
+        scripts:
+          preRequest: insomnia.environment.set('timestamp', Date.now().toString());
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 201', () => {
+              insomnia.expect(insomnia.response.code).to.equal(201);
+            });
+
+            insomnia.test('Project created successfully', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.data).to.have.property('project');
+              insomnia.expect(body.data.project).to.have.property('id');
+              insomnia.expect(body.data.project.statusz).to.equal('aktiv');
+            });
+
+            if (body.success && body.data && body.data.project) {
+              insomnia.environment.set('project_id', body.data.project.id);
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/project/projektek"
+        name: Get All Projects
+        meta:
+          id: req_b0d394cade0643fa98025f8debe9930f
+          created: 1771932755632
+          modified: 1771932755632
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755632
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Response contains projects array', () => {
+              insomnia.expect(body.data).to.have.property('projects');
+              insomnia.expect(body.data.projects).to.be.an('array');
+              insomnia.expect(body.data).to.have.property('count');
+            });
+
+            if (body.data.projects.length > 0) {
+              const project = body.data.projects[0];
+              insomnia.test('Project has required fields', () => {
+                insomnia.expect(project).to.have.property('id');
+                insomnia.expect(project).to.have.property('projekt_nev');
+              });
+              insomnia.environment.set('project_id', project.id);
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - name: Logs (Napló)
+        meta:
+          id: fld_2936839e27ce47dba2f00b56a5b1cbf7
+          created: 1771932755607
+          modified: 1771932808951
+          sortKey: -1771932755607
+          description: Project log endpoints
+        children:
+          - url: "{{ _.base_url }}/api/project/naplo/{{ _.naplo_id }}"
+            name: Update Log Entry
+            meta:
+              id: req_2d376f2e18164139b9fa0eeac3e1fc20
+              created: 1771932755603
+              modified: 1771932755603
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755603
+            method: PUT
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "muvelet": "Updated log entry text"
+                }
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+              - name: Content-Type
+                value: application/json
+            scripts:
+              afterResponse: >-
+                const body = insomnia.response.json();
+
+
+                insomnia.test('Status is 200', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(200);
+                });
+
+
+                insomnia.test('Log updated', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data.log.muvelet).to.equal('Updated log entry text');
+                });
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/api/project/ujNaplo"
+            name: Create Log Entry
+            meta:
+              id: req_0e17463cedc644f486ab483111cf91e7
+              created: 1771932755604
+              modified: 1771932755604
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755604
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "projekt_id": "{{ _.project_id }}",
+                  "muvelet": "Test log entry for project",
+                  "leiras": "2026-02-24"
+                }
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+              - name: Content-Type
+                value: application/json
+            scripts:
+              afterResponse: |-
+                const body = insomnia.response.json();
+
+                insomnia.test('Status is 201', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(201);
+                });
+
+                insomnia.test('Log created', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data).to.have.property('log');
+                  insomnia.expect(body.data.log).to.have.property('id');
+                });
+
+                if (body.success && body.data && body.data.log) {
+                  insomnia.environment.set('naplo_id', body.data.log.id);
+                }
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/api/project/naplo?projekt_id={{ _.project_id }}"
+            name: Get All Logs
+            meta:
+              id: req_8bc3565249b54a27801b386be0ca9b42
+              created: 1771932755606
+              modified: 1771932755606
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755606
+            method: GET
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+            scripts:
+              afterResponse: |-
+                const body = insomnia.response.json();
+
+                insomnia.test('Status is 200', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(200);
+                });
+
+                insomnia.test('Logs array returned', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data).to.have.property('logs');
+                  insomnia.expect(body.data.logs).to.be.an('array');
+                });
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: Statistics
+        meta:
+          id: fld_eea8070caa2248289e1b9cc0038f32ff
+          created: 1771932755613
+          modified: 1771932808760
+          sortKey: -1771932755613
+          description: Project statistics endpoints
+        children:
+          - url: "{{ _.base_url }}/api/project/statisztika/{{ _.stat_id }}"
+            name: Update Statistic
+            meta:
+              id: req_ab19afef4ebf4b3c92d3ae2d441b8934
+              created: 1771932755609
+              modified: 1771932755609
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755609
+            method: PUT
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "statisztika_nev": "Updated Metric",
+                  "ertek": 150
+                }
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+              - name: Content-Type
+                value: application/json
+            scripts:
+              afterResponse: >-
+                const body = insomnia.response.json();
+
+
+                insomnia.test('Status is 200', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(200);
+                });
+
+
+                insomnia.test('Statistic updated', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data.statistics.statisztika_nev).to.equal('Updated Metric');
+                  insomnia.expect(body.data.statistics.ertek).to.equal(150);
+                });
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/api/project/statisztika/projekt/{{ _.project_id }}"
+            name: Get Statistics by Project
+            meta:
+              id: req_7d29b77b47784ae2a0f38b21c5cf8160
+              created: 1771932755610
+              modified: 1771932755610
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755610
+            method: GET
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+            scripts:
+              afterResponse: |-
+                const body = insomnia.response.json();
+
+                insomnia.test('Status is 200', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(200);
+                });
+
+                insomnia.test('Project statistics returned', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data).to.have.property('statistics');
+                  insomnia.expect(body.data.statistics).to.be.an('array');
+                });
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/api/project/statisztika"
+            name: Get All Statistics
+            meta:
+              id: req_fd3f82bf08414e0b938884d4633c9ea8
+              created: 1771932755611
+              modified: 1771932755611
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755611
+            method: GET
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+            scripts:
+              afterResponse: |-
+                const body = insomnia.response.json();
+
+                insomnia.test('Status is 200', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(200);
+                });
+
+                insomnia.test('Statistics array returned', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data).to.have.property('statistics');
+                  insomnia.expect(body.data.statistics).to.be.an('array');
+                });
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/api/project/ujStat"
+            name: Create Statistic
+            meta:
+              id: req_51f0f9b2e8074408a21cf95766283bf2
+              created: 1771932755612
+              modified: 1771932755612
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755612
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "projekt_id": "{{ _.project_id }}",
+                  "statisztika_nev": "Test Metric",
+                  "ertek": 100,
+                  "pontszam": 0
+                }
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+              - name: Content-Type
+                value: application/json
+            scripts:
+              afterResponse: |-
+                const body = insomnia.response.json();
+
+                insomnia.test('Status is 201', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(201);
+                });
+
+                insomnia.test('Statistic created', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data).to.have.property('statistics');
+                  insomnia.expect(body.data.statistics).to.have.property('id');
+                });
+
+                if (body.success && body.data && body.data.statistics) {
+                  insomnia.environment.set('stat_id', body.data.statistics.id);
+                }
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: Tasks
+        meta:
+          id: fld_aa1bad2464254689a893ea576f07f837
+          created: 1771932755623
+          modified: 1771932808510
+          sortKey: -1771932755623
+          description: Task management endpoints
+        children:
+          - url: "{{ _.base_url }}/api/project/feladat/{{ _.task_id }}"
+            name: Update Task
+            meta:
+              id: req_99c3e0e73fe24c9dad32c5eb8d8d8604
+              created: 1771932755619
+              modified: 1771932755619
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755619
+            method: PUT
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "feladat_nev": "Updated Task Name",
+                  "statusz": "befejezett",
+                  "prioritas": "alacsony"
+                }
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+              - name: Content-Type
+                value: application/json
+            scripts:
+              afterResponse: >-
+                const body = insomnia.response.json();
+
+
+                insomnia.test('Status is 200', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(200);
+                });
+
+
+                insomnia.test('Task updated successfully', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data.task.feladat_nev).to.equal('Updated Task Name');
+                  insomnia.expect(body.data.task.statusz).to.equal('befejezett');
+                });
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/api/project/feladatok?projekt_id={{ _.project_id }}"
+            name: Get All Tasks
+            meta:
+              id: req_6c28df8b58cf445482ab699912dd9db0
+              created: 1771932755620
+              modified: 1771932755620
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755620
+            method: GET
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+            scripts:
+              afterResponse: |-
+                const body = insomnia.response.json();
+
+                insomnia.test('Status is 200', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(200);
+                });
+
+                insomnia.test('Tasks array returned', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data).to.have.property('tasks');
+                  insomnia.expect(body.data.tasks).to.be.an('array');
+                });
+
+                if (body.data.tasks && body.data.tasks.length > 0) {
+                  insomnia.test('Task has required fields', () => {
+                    const task = body.data.tasks[0];
+                    insomnia.expect(task).to.have.property('id');
+                    insomnia.expect(task).to.have.property('feladat_nev');
+                  });
+                }
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/api/project/feladat?projekt_id={{ _.project_id }}"
+            name: Get Single Task
+            meta:
+              id: req_948ab98c8e4f48139f62c05c724ac10a
+              created: 1771932755621
+              modified: 1771932755621
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755621
+            method: GET
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+            scripts:
+              afterResponse: |-
+                const body = insomnia.response.json();
+
+                insomnia.test('Status is 200', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(200);
+                });
+
+                insomnia.test('Task data returned', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data).to.be.an('array');
+                });
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/api/project/ujFeladat"
+            name: Create Task
+            meta:
+              id: req_8d2bb9d8581c4d85940b2bf70a4053e8
+              created: 1771932755622
+              modified: 1771932755622
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755622
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "feladat_nev": "Test Task {{ _.timestamp }}",
+                  "feladat_leiras": "Task description for testing",
+                  "projekt_id": "{{ _.project_id }}",
+                  "prioritas": "magas",
+                  "statusz": "folyamatban",
+                  "hatarido": "2026-06-30"
+                }
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+              - name: Content-Type
+                value: application/json
+            scripts:
+              preRequest: insomnia.environment.set('timestamp', Date.now().toString());
+              afterResponse: |-
+                const body = insomnia.response.json();
+
+                insomnia.test('Status is 201', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(201);
+                });
+
+                insomnia.test('Task created successfully', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data).to.have.property('task');
+                  insomnia.expect(body.data.task).to.have.property('id');
+                  insomnia.expect(body.data.task.prioritas).to.equal('magas');
+                });
+
+                if (body.success && body.data && body.data.task) {
+                  insomnia.environment.set('task_id', body.data.task.id);
+                }
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - name: Task Comments
+            meta:
+              id: fld_b8e52ea27f5446e997c82e7d4f819160
+              created: 1771932755618
+              modified: 1771932808510
+              sortKey: -1771932755618
+              description: Task comment endpoints
+            children:
+              - url: "{{ _.base_url }}/api/project/feladatKomment/{{ _.comment_id }}"
+                name: Update Task Comment
+                meta:
+                  id: req_b1f5d42ac6294b67974cf5966f049c41
+                  created: 1771932755615
+                  modified: 1771932755615
+                  isPrivate: false
+                  description: ""
+                  sortKey: -1771932755615
+                method: PUT
+                body:
+                  mimeType: application/json
+                  text: |-
+                    {
+                      "komment_szoveg": "Updated comment text"
+                    }
+                headers:
+                  - name: Authorization
+                    value: Bearer {{ _.access_token }}
+                  - name: Content-Type
+                    value: application/json
+                scripts:
+                  afterResponse: >-
+                    const body = insomnia.response.json();
+
+
+                    insomnia.test('Status is 200', () => {
+                      insomnia.expect(insomnia.response.code).to.equal(200);
+                    });
+
+
+                    insomnia.test('Comment updated', () => {
+                      insomnia.expect(body).to.have.property('success', true);
+                      insomnia.expect(body.data.comment.komment_szoveg).to.equal('Updated comment text');
+                    });
+                settings:
+                  renderRequestBody: true
+                  encodeUrl: true
+                  followRedirects: global
+                  cookies:
+                    send: true
+                    store: true
+                  rebuildPath: true
+              - url: "{{ _.base_url }}/api/project/feladatKommentek/{{ _.task_id }}"
+                name: Get Task Comments
+                meta:
+                  id: req_11ca4fbf88c2497dbeac2346314fcc6f
+                  created: 1771932755616
+                  modified: 1771932755616
+                  isPrivate: false
+                  description: ""
+                  sortKey: -1771932755616
+                method: GET
+                headers:
+                  - name: Authorization
+                    value: Bearer {{ _.access_token }}
+                scripts:
+                  afterResponse: |-
+                    const body = insomnia.response.json();
+
+                    insomnia.test('Status is 200', () => {
+                      insomnia.expect(insomnia.response.code).to.equal(200);
+                    });
+
+                    insomnia.test('Comments array returned', () => {
+                      insomnia.expect(body).to.have.property('success', true);
+                      insomnia.expect(body.data).to.have.property('comments');
+                      insomnia.expect(body.data.comments).to.be.an('array');
+                    });
+                settings:
+                  renderRequestBody: true
+                  encodeUrl: true
+                  followRedirects: global
+                  cookies:
+                    send: true
+                    store: true
+                  rebuildPath: true
+              - url: "{{ _.base_url }}/api/project/ujFeladatKomment"
+                name: Create Task Comment
+                meta:
+                  id: req_6a7e1054beb24728b5960f8907bac704
+                  created: 1771932755617
+                  modified: 1771932755617
+                  isPrivate: false
+                  description: ""
+                  sortKey: -1771932755617
+                method: POST
+                body:
+                  mimeType: application/json
+                  text: |-
+                    {
+                      "feladat_id": "{{ _.task_id }}",
+                      "komment_szoveg": "This is a test comment on the task"
+                    }
+                headers:
+                  - name: Authorization
+                    value: Bearer {{ _.access_token }}
+                  - name: Content-Type
+                    value: application/json
+                scripts:
+                  afterResponse: >-
+                    const body = insomnia.response.json();
+
+
+                    insomnia.test('Status is 201', () => {
+                      insomnia.expect(insomnia.response.code).to.equal(201);
+                    });
+
+
+                    insomnia.test('Comment created', () => {
+                      insomnia.expect(body).to.have.property('success', true);
+                      insomnia.expect(body.data).to.have.property('comment');
+                      insomnia.expect(body.data.comment).to.have.property('id');
+                      insomnia.expect(body.data.comment).to.have.property('komment_szoveg');
+                    });
+
+
+                    if (body.success && body.data && body.data.comment) {
+                      insomnia.environment.set('comment_id', body.data.comment.id);
+                    }
+                settings:
+                  renderRequestBody: true
+                  encodeUrl: true
+                  followRedirects: global
+                  cookies:
+                    send: true
+                    store: true
+                  rebuildPath: true
+      - name: Project Members
+        meta:
+          id: fld_23e7e28d531748ea8d56d67a9ad58464
+          created: 1771932755629
+          modified: 1771932808088
+          sortKey: -1771932755629
+          description: Project member management
+        children:
+          - url: "{{ _.base_url }}/api/project/ujProjektTag"
+            name: Add Project Member
+            meta:
+              id: req_f09e0e0bdb9d41268daba63d24c548ba
+              created: 1771932755626
+              modified: 1771932755626
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755626
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "projekt_id": "{{ _.project_id }}"
+                }
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+              - name: Content-Type
+                value: application/json
+            scripts:
+              afterResponse: >-
+                const body = insomnia.response.json();
+
+
+                insomnia.test('Status is 201', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(201);
+                });
+
+
+                insomnia.test('Project member added', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data).to.have.property('projekttag');
+                  insomnia.expect(body.data.projekttag).to.have.property('projekt_id');
+                  insomnia.expect(body.data.projekttag).to.have.property('felhasznalo_id');
+                });
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/api/project/projektTagok?projekt_id={{ _.project_id }}"
+            name: Get All Project Members
+            meta:
+              id: req_927ffbda80714d1884ee307659236436
+              created: 1771932755627
+              modified: 1771932755627
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755627
+            method: GET
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+            scripts:
+              afterResponse: |-
+                const body = insomnia.response.json();
+
+                insomnia.test('Status is 200', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(200);
+                });
+
+                insomnia.test('Response contains members array', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body.data).to.be.an('array');
+                });
+
+                if (body.data && body.data.length > 0) {
+                  insomnia.environment.set('projekt_tag_id', body.data[0].id);
+                }
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/api/project/projektTag?projekt_id={{ _.project_id }}"
+            name: Get Project Tag (Member)
+            meta:
+              id: req_fa0926d7d6824ba68b85292696a73b2a
+              created: 1771932755628
+              modified: 1771932755628
+              isPrivate: false
+              description: ""
+              sortKey: -1771932755628
+            method: GET
+            headers:
+              - name: Authorization
+                value: Bearer {{ _.access_token }}
+            scripts:
+              afterResponse: |-
+                const body = insomnia.response.json();
+
+                insomnia.test('Status is 200', () => {
+                  insomnia.expect(insomnia.response.code).to.equal(200);
+                });
+
+                insomnia.test('Response contains project tag data', () => {
+                  insomnia.expect(body).to.have.property('success', true);
+                  insomnia.expect(body).to.have.property('data');
+                });
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+  - name: 1. Authentication
+    meta:
+      id: fld_031dbf45a48c49c3adc3656d3664c182
+      created: 1771932755641
+      modified: 1771932807684
+      sortKey: -1771932755641
+      description: Authentication endpoints - Register, Login, Logout, Profile management
+    children:
+      - url: "{{ _.base_url }}/api/auth/logout"
+        name: Logout
+        meta:
+          id: req_cf6703d7da574db0823fd53d98f996a1
+          created: 1771932755635
+          modified: 1771932755635
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755635
+        method: POST
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: |-
+            const body = insomnia.response.json();
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+            insomnia.test('Logout successful', () => {
+              insomnia.expect(body).to.have.property('success', true);
+              insomnia.expect(body.message).to.include('kijelentkezés');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/auth/refresh-token"
+        name: Refresh Token
+        meta:
+          id: req_da8e4a07a119415b8bc13b7f737a91a6
+          created: 1771932755636
+          modified: 1771932755636
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755636
+        method: POST
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.refresh_token }}
+        scripts:
+          afterResponse: >-
+            const body = insomnia.response.json();
+
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+
+            insomnia.test('New access token received', () => {
+              insomnia.expect(body.data).to.have.property('accessToken');
+              insomnia.expect(body.data.accessToken).to.be.a('string').with.length.greaterThan(0);
+            });
+
+
+            if (body.success && body.data) {
+              insomnia.environment.set('access_token', body.data.accessToken);
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/auth/profile"
+        name: Update Profile
+        meta:
+          id: req_8a9340149fa14aac8ba476e0d86c3964
+          created: 1771932755637
+          modified: 1771932755637
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755637
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "teljes_nev": "Updated Test User",
+              "email": "updated@example.com"
+            }
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+          - name: Content-Type
+            value: application/json
+        scripts:
+          afterResponse: >-
+            const body = insomnia.response.json();
+
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+
+            insomnia.test('Profile was updated', () => {
+              insomnia.expect(body.data.user.teljes_nev).to.equal('Updated Test User');
+              insomnia.expect(body.data.user.email).to.equal('updated@example.com');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/auth/profileData"
+        name: Get Profile Data
+        meta:
+          id: req_ed9bedfbfab54caca096441fb165dd84
+          created: 1771932755638
+          modified: 1771932755638
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755638
+        method: GET
+        headers:
+          - name: Authorization
+            value: Bearer {{ _.access_token }}
+        scripts:
+          afterResponse: >-
+            const body = insomnia.response.json();
+
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+
+            insomnia.test('Response contains user data', () => {
+              insomnia.expect(body.data).to.have.property('user');
+              insomnia.expect(body.data.user).to.have.property('id');
+              insomnia.expect(body.data.user).to.have.property('felhasznalonev');
+              insomnia.expect(body.data.user).to.have.property('email');
+            });
+
+
+            insomnia.test('Password is not exposed', () => {
+              insomnia.expect(body.data.user).to.not.have.property('jelszo');
+            });
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/auth/login"
+        name: Login
+        meta:
+          id: req_14e33150681c44c0afa9f664351ea38f
+          created: 1771932755639
+          modified: 1771932755639
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755639
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "felhasznalonev": "{{ _.login_username }}",
+              "jelszo": "{{ _.login_password }}"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        scripts:
+          afterResponse: >-
+            const body = insomnia.response.json();
+
+
+            insomnia.test('Status is 200', () => {
+              insomnia.expect(insomnia.response.code).to.equal(200);
+            });
+
+
+            insomnia.test('Response contains tokens', () => {
+              insomnia.expect(body.data).to.have.property('accessToken');
+              insomnia.expect(body.data).to.have.property('refreshToken');
+              insomnia.expect(body.data.accessToken).to.be.a('string').with.length.greaterThan(0);
+            });
+
+
+            insomnia.test('Response contains user data', () => {
+              insomnia.expect(body.data).to.have.property('user');
+              insomnia.expect(body.data.user).to.have.property('id');
+            });
+
+
+            if (body.success && body.data) {
+              insomnia.environment.set('access_token', body.data.accessToken);
+              insomnia.environment.set('refresh_token', body.data.refreshToken);
+              insomnia.environment.set('user_id', body.data.user.id);
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/api/auth/register"
+        name: Register
+        meta:
+          id: req_12841cdd5b794bc6aceba9ba9f328b5a
+          created: 1771932755640
+          modified: 1771932755640
+          isPrivate: false
+          description: ""
+          sortKey: -1771932755640
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "felhasznalonev": "testuser_{{ _.timestamp }}",
+              "email": "test_{{ _.timestamp }}@example.com",
+              "jelszo": "Test123!",
+              "teljes_nev": "Test User",
+              "szerep_tipus": "diak"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        scripts:
+          preRequest: insomnia.environment.set('timestamp', Date.now().toString());
+          afterResponse: >-
+            const body = insomnia.response.json();
+
+
+            insomnia.test('Status is 201', () => {
+              insomnia.expect(insomnia.response.code).to.equal(201);
+            });
+
+
+            insomnia.test('Response has success property', () => {
+              insomnia.expect(body).to.have.property('success', true);
+            });
+
+
+            insomnia.test('Response contains user data', () => {
+              insomnia.expect(body.data).to.have.property('user');
+              insomnia.expect(body.data.user).to.have.property('id');
+              insomnia.expect(body.data.user).to.have.property('felhasznalonev');
+              insomnia.expect(body.data.user).to.have.property('email');
+              insomnia.expect(body.data.user).to.have.property('szerep_tipus', 'diak');
+            });
+
+
+            if (body.success && body.data && body.data.user) {
+              insomnia.environment.set('user_id', body.data.user.id);
+              insomnia.environment.set('login_username', body.data.user.felhasznalonev);
+              insomnia.environment.set('login_password', 'Test123!');
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_fcce093f26f64aeaa5b68beaf80534b5
+    created: 1771932755574
+    modified: 1771932810254
+environments:
+  name: Base Environment
+  meta:
+    id: env_4be1f9bc796b4f7497a88c1c9d23a96d
+    created: 1771932755573
+    modified: 1771932810255
+    isPrivate: false
+  data:
+    base_url: http://localhost:3000
+    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzUsImZlbGhhc3puYWxvbmV2IjoidGVzdHVzZXJfMTc3MTkzMjgwNjc1NCIsImVtYWlsIjoidXBkYXRlZEBleGFtcGxlLmNvbSIsInN6ZXJlcF90aXB1cyI6ImRpYWsiLCJpYXQiOjE3NzE5MzI4MDcsImV4cCI6MTc3MTkzNTUwN30.r2N_R1zw99Yxy0cSuNsFQ1OmRso1F6p_IdNwFmzcH10
+    refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzUsImZlbGhhc3puYWxvbmV2IjoidGVzdHVzZXJfMTc3MTkzMjgwNjc1NCIsImlhdCI6MTc3MTkzMjgwNywiZXhwIjoxNzcyNTM3NjA3fQ.-LKADgHiOuNgRnTbPExvCv6Jfge6HKPPi5Yt0WIMIiM
+    user_id: 35
+    user_id_2: ""
+    project_id: 37
+    projekt_tag_id: 35
+    task_id: 32
+    message_id: 13
+    beadas_id: 32
+    file_id: ""
+    stat_id: 27
+    naplo_id: 31
+    comment_id: 17
+    login_username: testuser_1771932806754
+    login_password: Test123!
+    timestamp: "1771932808110"
