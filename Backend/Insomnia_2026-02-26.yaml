@@ -2,23 +2,23 @@ type: collection.insomnia.rest/5.0
 schema_version: "5.1"
 name: SM Backend API
 meta:
-  id: wrk_0ddb549a591d4d178a451c3c2ce793b4
-  created: 1771932755570
-  modified: 1771932923423
+  id: wrk_90087fdc95484f12a67fe69a156306bb
+  created: 1772144509911
+  modified: 1772144509911
   description: ""
 collection:
   - name: 5. Health
     meta:
-      id: fld_58cd6522ef8a4bb0bd885d9f52d894e9
+      id: fld_da5cacad6fe1455fba68e103aec10eb7
       created: 1771932755579
-      modified: 1771932810256
+      modified: 1772144535622
       sortKey: -1771932755579
       description: Health check endpoint
     children:
       - url: "{{ _.base_url }}/api/health"
         name: Health Check
         meta:
-          id: req_0a1625a5781f45e6a7602c9b6c8d8d57
+          id: req_209dc08421554becaffa085c8484454f
           created: 1771932755578
           modified: 1771932755578
           isPrivate: false
@@ -29,11 +29,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Health check passed', () => {
+            insomnia.test('Health ellenőrzés sikeres', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body).to.have.property('timestamp');
             });
@@ -47,16 +47,16 @@ collection:
           rebuildPath: true
   - name: 9. Deletes
     meta:
-      id: fld_33fa82b31d0b4b38a511c63edaa72828
+      id: fld_05cbdaf3b9de4bf493304f85e6dc994e
       created: 1771932755580
-      modified: 1771932810202
+      modified: 1772144535584
       sortKey: -1771932755580
       description: Delete endpoints (run last)
     children:
       - url: "{{ _.base_url }}/api/project/projektDel/{{ _.project_id }}"
         name: Delete Project
         meta:
-          id: req_6d7db2930a134cea8956f8cd2dac8c6e
+          id: req_536c1e5f9a0a43d0816601e55309f61d
           created: 1771932755577
           modified: 1771932755577
           isPrivate: false
@@ -70,11 +70,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Project deleted successfully', () => {
+            insomnia.test('Projekt sikeresen törölve', () => {
               insomnia.expect(body).to.have.property('success', true);
             });
         settings:
@@ -88,9 +88,9 @@ collection:
       - url: "{{ _.base_url }}/api/files/{{ _.file_id }}"
         name: Delete File
         meta:
-          id: req_a0a45a7211b142eea995530cdd4aa16b
+          id: req_c1ae07acb2d642228003540312a58b99
           created: 1771932755582
-          modified: 1771932755582
+          modified: 1772133862088
           isPrivate: false
           description: ""
           sortKey: -1771932755582
@@ -104,15 +104,15 @@ collection:
             const fileId = insomnia.environment.get('file_id');
 
             if (!fileId) {
-              insomnia.test('Status is 404 when file_id missing', () => {
+              insomnia.test('404-es státusz a file_id hiánya esetén', () => {
                 insomnia.expect(insomnia.response.code).to.equal(404);
               });
             } else {
-              insomnia.test('Status is 200', () => {
+              insomnia.test('200-as státusz', () => {
                 insomnia.expect(insomnia.response.code).to.equal(200);
               });
 
-              insomnia.test('File deleted', () => {
+              insomnia.test('File törölve', () => {
                 insomnia.expect(body).to.have.property('success', true);
               });
             }
@@ -127,9 +127,9 @@ collection:
       - url: "{{ _.base_url }}/api/messages/torles/{{ _.message_id }}"
         name: Delete Message
         meta:
-          id: req_5da61180454440d5a51245c3274e5964
+          id: req_0d011d800d1b46d190b6e0f7d604d19f
           created: 1771932755594
-          modified: 1771932755594
+          modified: 1772134138648
           isPrivate: false
           description: ""
           sortKey: -1771932755594
@@ -141,11 +141,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Message deleted', () => {
+            insomnia.test('Üzenet törölve', () => {
               insomnia.expect(body).to.have.property('success', true);
             });
         settings:
@@ -159,7 +159,7 @@ collection:
       - url: "{{ _.base_url }}/api/project/naplo/{{ _.naplo_id }}"
         name: Delete Log Entry
         meta:
-          id: req_5d9ec7d75c7948baa03c0d40b454539d
+          id: req_afdea572cb4949b08013066c0286000c
           created: 1771932755602
           modified: 1771932755602
           isPrivate: false
@@ -173,11 +173,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Log deleted', () => {
+            insomnia.test('Napló törölve', () => {
               insomnia.expect(body).to.have.property('success', true);
             });
         settings:
@@ -191,7 +191,7 @@ collection:
       - url: "{{ _.base_url }}/api/project/statisztika/{{ _.stat_id }}"
         name: Delete Statistic
         meta:
-          id: req_db8b7b09612c4fb79f386a38d02255ce
+          id: req_9c91eefde292407688b8354845ed3b77
           created: 1771932755608
           modified: 1771932755608
           isPrivate: false
@@ -205,11 +205,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Statistic deleted', () => {
+            insomnia.test('Statisztika törölve', () => {
               insomnia.expect(body).to.have.property('success', true);
             });
         settings:
@@ -223,7 +223,7 @@ collection:
       - url: "{{ _.base_url }}/api/project/feladatKomment/{{ _.comment_id }}"
         name: Delete Task Comment
         meta:
-          id: req_8f9a6aad007c413f970143606935bc35
+          id: req_3e357c1b55ff448d97870c98e71acc65
           created: 1771932755614
           modified: 1771932765202
           isPrivate: false
@@ -237,11 +237,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Comment deleted', () => {
+            insomnia.test('Komment törölve', () => {
               insomnia.expect(body).to.have.property('success', true);
             });
         settings:
@@ -255,7 +255,7 @@ collection:
       - url: "{{ _.base_url }}/api/project/feladat/{{ _.task_id }}"
         name: Delete Task
         meta:
-          id: req_563105495bb048bca5b15b34d5676c93
+          id: req_db87d8171df2455b8f5f7d6452f9ef09
           created: 1771932755618
           modified: 1771932755618
           isPrivate: false
@@ -269,11 +269,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Task deleted successfully', () => {
+            insomnia.test('Feladat sikeresen törölve', () => {
               insomnia.expect(body).to.have.property('success', true);
             });
         settings:
@@ -287,7 +287,7 @@ collection:
       - url: "{{ _.base_url }}/api/project/ProjektTag"
         name: Remove Project Member
         meta:
-          id: req_cd1e10fccd914c65a1849f165962f362
+          id: req_425ff55393fc4313b7e9f618d6734b65
           created: 1771932755624
           modified: 1771932755624
           isPrivate: false
@@ -310,11 +310,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Project member removed', () => {
+            insomnia.test('Projekt tag eltávolítva', () => {
               insomnia.expect(body).to.have.property('success', true);
             });
         settings:
@@ -328,7 +328,7 @@ collection:
       - url: "{{ _.base_url }}/api/auth/profile-torles"
         name: Delete Profile (Soft Delete)
         meta:
-          id: req_e9f06a623ce14a4e89980b04864a92c4
+          id: req_347686875b004d7680f2df3fe15a85ae
           created: 1771932755625
           modified: 1771932755625
           isPrivate: false
@@ -342,11 +342,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Profile marked as deleted', () => {
+            insomnia.test('Profil töröltként megjelölve', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.message).to.include('törölve');
             });
@@ -360,16 +360,16 @@ collection:
           rebuildPath: true
   - name: 4. Files
     meta:
-      id: fld_b0a3b35f308f427983f65285cd16f736
+      id: fld_1829d44c3ef34f01a88f709d341dbc28
       created: 1771932755593
-      modified: 1771932809654
+      modified: 1772144535133
       sortKey: -1771932755593
       description: File upload and submission management
     children:
       - url: "{{ _.base_url }}/api/files/beadas/{{ _.beadas_id }}/statusz"
         name: Update Submission Status
         meta:
-          id: req_fe066a7a9c05419aa6c2c12dff404ccc
+          id: req_f62b513aef8f40129505d517652b634b
           created: 1771932755584
           modified: 1771932755584
           isPrivate: false
@@ -390,11 +390,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Submission status updated', () => {
+            insomnia.test('Beadás státusza frissítve', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.data.beadas.statusz).to.equal('értékelt');
             });
@@ -409,7 +409,7 @@ collection:
       - url: "{{ _.base_url }}/api/files/beadas/{{ _.beadas_id }}"
         name: Update Submission
         meta:
-          id: req_df97f052ee0240db89528aacb97480da
+          id: req_8fff90a7c7bd4f5e86033473e7345ac5
           created: 1771932755586
           modified: 1771932755586
           isPrivate: false
@@ -420,7 +420,7 @@ collection:
           mimeType: application/json
           text: |-
             {
-              "visszajelzes": "Updated submission note"
+              "visszajelzes": "Frissített beadási megjegyzés"
             }
         headers:
           - name: Authorization
@@ -432,14 +432,14 @@ collection:
             const body = insomnia.response.json();
 
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
 
-            insomnia.test('Submission updated', () => {
+            insomnia.test('Beadás frissítve', () => {
               insomnia.expect(body).to.have.property('success', true);
-              insomnia.expect(body.data.beadas.visszajelzes).to.equal('Updated submission note');
+              insomnia.expect(body.data.beadas.visszajelzes).to.equal('Frissített beadási megjegyzés');
             });
         settings:
           renderRequestBody: true
@@ -452,7 +452,7 @@ collection:
       - url: "{{ _.base_url }}/api/files/beadas/{{ _.beadas_id }}"
         name: Get Single Submission
         meta:
-          id: req_a61cf6e4c0894d01ba921f7b63dd62ae
+          id: req_77313ce62fa34d9ca5899f60d7dbd7f8
           created: 1771932755588
           modified: 1771932755588
           isPrivate: false
@@ -466,11 +466,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Submission data returned', () => {
+            insomnia.test('Beadás adatai visszakülve', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.data).to.have.property('files');
               insomnia.expect(body.data.files).to.be.an('array');
@@ -486,7 +486,7 @@ collection:
       - url: "{{ _.base_url }}/api/files/beadas"
         name: Get All Submissions
         meta:
-          id: req_3a50c9a70f744e0e980c3de9700d691b
+          id: req_93a748b3f0bf40e4ab3b1bf7337bc174
           created: 1771932755589
           modified: 1771932755589
           isPrivate: false
@@ -501,12 +501,12 @@ collection:
             const body = insomnia.response.json();
 
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
 
-            insomnia.test('Submissions array returned', () => {
+            insomnia.test('Beadások listája visszakülve', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.data).to.have.property('beadasList');
               insomnia.expect(body.data.beadasList).to.be.an('array');
@@ -530,9 +530,9 @@ collection:
       - url: "{{ _.base_url }}/api/files/beadas"
         name: Create Submission
         meta:
-          id: req_586ef55a6fdd44229659056239475c43
+          id: req_1ebbca50d9024d43883373a87352ea77
           created: 1771932755591
-          modified: 1771932755591
+          modified: 1772133353470
           isPrivate: false
           description: ""
           sortKey: -1771932755591
@@ -547,7 +547,7 @@ collection:
               "pontszam": 0,
               "jegy": 1,
               "statusz": "beadva",
-              "visszajelzes": "Test submission"
+              "visszajelzes": "Teszt beadás"
             }
         headers:
           - name: Authorization
@@ -558,11 +558,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 201', () => {
+            insomnia.test('201-es státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(201);
             });
 
-            insomnia.test('Submission created', () => {
+            insomnia.test('Beadás létrehozva', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.data).to.have.property('beadas');
               insomnia.expect(body.data.beadas).to.have.property('id');
@@ -582,7 +582,7 @@ collection:
       - url: "{{ _.base_url }}/api/files/feltoltesek"
         name: Get Upload History
         meta:
-          id: req_33c79e30799d4c2a923b9b6b2a3a1cb2
+          id: req_d4767e74e1214ab7b46f82d01544eff9
           created: 1771932755592
           modified: 1771932755592
           isPrivate: false
@@ -596,11 +596,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Upload history returned', () => {
+            insomnia.test('Feltöltési előzmények visszakülve', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.data).to.have.property('uploads');
               insomnia.expect(body.data.uploads).to.be.an('array');
@@ -615,16 +615,16 @@ collection:
           rebuildPath: true
   - name: 3. Messages
     meta:
-      id: fld_d98b6e9ecc8545189464b1da9058b4c8
+      id: fld_ae11508b84b74117bcfdae96dbc7e3ca
       created: 1771932755601
-      modified: 1771932809265
+      modified: 1772144534786
       sortKey: -1771932755601
       description: Messaging endpoints
     children:
       - url: "{{ _.base_url }}/api/messages/frissites/{{ _.message_id }}"
         name: Update Message Status
         meta:
-          id: req_5fb9707c3a844a4fa05811e0ddc6d7e2
+          id: req_dbc428d67d614e56a774df0204d04793
           created: 1771932755596
           modified: 1771932755596
           isPrivate: false
@@ -646,11 +646,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Message status updated', () => {
+            insomnia.test('Üzenet státusza frissítve', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.data.allapot).to.equal('olvasott');
             });
@@ -665,7 +665,7 @@ collection:
       - url: "{{ _.base_url }}/api/messages/kuldes"
         name: Send Message
         meta:
-          id: req_8b20811185a448c4ac4c224a8c667206
+          id: req_b0c8280bad464c9b8add288a1646f07c
           created: 1771932755597
           modified: 1771932755597
           isPrivate: false
@@ -677,7 +677,7 @@ collection:
           text: |-
             {
               "projekt_id": "{{ _.project_id }}",
-              "uzenet_tartalom": "Test message content"
+              "uzenet_tartalom": "Teszt üzenet tartalom"
             }
         headers:
           - name: Authorization
@@ -689,15 +689,15 @@ collection:
             const body = insomnia.response.json();
 
 
-            insomnia.test('Status is 201', () => {
+            insomnia.test('201-es státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(201);
             });
 
 
-            insomnia.test('Message sent successfully', () => {
+            insomnia.test('Üzenet sikeresen elküldve', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.data).to.have.property('id');
-              insomnia.expect(body.data.uzenet_tartalom).to.equal('Test message content');
+              insomnia.expect(body.data.uzenet_tartalom).to.equal('Teszt üzenet tartalom');
             });
 
 
@@ -716,9 +716,9 @@ collection:
           }}&projektId={{ _.project_id }}"
         name: Get Conversation
         meta:
-          id: req_2014bcfb7932431ea22ccee173a34d91
+          id: req_3d11e8100c7a4e00a851aaababd2b891
           created: 1771932755599
-          modified: 1771932755599
+          modified: 1772132908277
           isPrivate: false
           description: ""
           sortKey: -1771932755599
@@ -730,11 +730,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Conversation data returned', () => {
+            insomnia.test('Beszélgetés adatai visszakülve', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.data).to.have.property('messages');
               insomnia.expect(body.data.messages).to.be.an('array');
@@ -750,7 +750,7 @@ collection:
       - url: "{{ _.base_url }}/api/messages/osszes"
         name: Get All Messages
         meta:
-          id: req_371ebd9b71ef44c4a1608be9046eca95
+          id: req_b8724057aee7475ab50ee99b3c6399cc
           created: 1771932755600
           modified: 1771932755600
           isPrivate: false
@@ -764,11 +764,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Messages array returned', () => {
+            insomnia.test('Üzenetek listája visszakülve', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.data).to.have.property('messages');
               insomnia.expect(body.data.messages).to.be.an('array');
@@ -783,16 +783,16 @@ collection:
           rebuildPath: true
   - name: 2. Projects
     meta:
-      id: fld_a0eb954098a94c4897ed6e8b493ea077
+      id: fld_e7db8b30f1a649eaba3fdf77192a47b1
       created: 1771932755633
-      modified: 1771932808950
+      modified: 1772144534570
       sortKey: -1771932755633
       description: Project management endpoints
     children:
       - url: "{{ _.base_url }}/api/project/projekt/{{ _.project_id }}"
         name: Update Project
         meta:
-          id: req_880fbd56a57244b794208d0fe13e980b
+          id: req_943bf32dd1c245f08d509ca64a920f87
           created: 1771932755630
           modified: 1771932755630
           isPrivate: false
@@ -803,8 +803,8 @@ collection:
           mimeType: application/json
           text: |-
             {
-              "projekt_nev": "Updated Test Project",
-              "leiras": "Updated description",
+              "projekt_nev": "Frissített Teszt Projekt",
+              "leiras": "Frissített leírás",
               "statusz": "inaktiv"
             }
         headers:
@@ -817,14 +817,14 @@ collection:
             const body = insomnia.response.json();
 
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
 
-            insomnia.test('Project updated successfully', () => {
+            insomnia.test('Projekt sikeresen frissítve', () => {
               insomnia.expect(body).to.have.property('success', true);
-              insomnia.expect(body.data.project.projekt_nev).to.equal('Updated Test Project');
+              insomnia.expect(body.data.project.projekt_nev).to.equal('Frissített Teszt Projekt');
               insomnia.expect(body.data.project.statusz).to.equal('inaktiv');
             });
         settings:
@@ -838,7 +838,7 @@ collection:
       - url: "{{ _.base_url }}/api/project/ujProjekt"
         name: Create Project
         meta:
-          id: req_d18165a1107b49bdb57aeb16cb858687
+          id: req_d3e9d34705e14c96995405550ffc22fb
           created: 1771932755631
           modified: 1771932755631
           isPrivate: false
@@ -849,8 +849,8 @@ collection:
           mimeType: application/json
           text: |-
             {
-              "projekt_nev": "Test Project {{ _.timestamp }}",
-              "leiras": "This is a test project for API testing",
+              "projekt_nev": "Teszt Projekt {{ _.timestamp }}",
+              "leiras": "Ez egy teszt projekt az API teszteléshez",
               "statusz": "aktiv",
               "hatarido": "2026-12-31"
             }
@@ -864,11 +864,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 201', () => {
+            insomnia.test('201-es státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(201);
             });
 
-            insomnia.test('Project created successfully', () => {
+            insomnia.test('Projekt sikeresen létrehozva', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.data).to.have.property('project');
               insomnia.expect(body.data.project).to.have.property('id');
@@ -889,7 +889,7 @@ collection:
       - url: "{{ _.base_url }}/api/project/projektek"
         name: Get All Projects
         meta:
-          id: req_b0d394cade0643fa98025f8debe9930f
+          id: req_3d8cc5aad8db497d86f9094c37d31d89
           created: 1771932755632
           modified: 1771932755632
           isPrivate: false
@@ -903,11 +903,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Response contains projects array', () => {
+            insomnia.test('Válasz tartalmazza a projektek listáját', () => {
               insomnia.expect(body.data).to.have.property('projects');
               insomnia.expect(body.data.projects).to.be.an('array');
               insomnia.expect(body.data).to.have.property('count');
@@ -915,7 +915,7 @@ collection:
 
             if (body.data.projects.length > 0) {
               const project = body.data.projects[0];
-              insomnia.test('Project has required fields', () => {
+              insomnia.test('Projekt tartalmazza a kötelező mezőket', () => {
                 insomnia.expect(project).to.have.property('id');
                 insomnia.expect(project).to.have.property('projekt_nev');
               });
@@ -931,16 +931,16 @@ collection:
           rebuildPath: true
       - name: Logs (Napló)
         meta:
-          id: fld_2936839e27ce47dba2f00b56a5b1cbf7
+          id: fld_d6556c7f982b4e94904e92e9f8c5e5e6
           created: 1771932755607
-          modified: 1771932808951
+          modified: 1772144534570
           sortKey: -1771932755607
           description: Project log endpoints
         children:
           - url: "{{ _.base_url }}/api/project/naplo/{{ _.naplo_id }}"
             name: Update Log Entry
             meta:
-              id: req_2d376f2e18164139b9fa0eeac3e1fc20
+              id: req_f631080451ba4a38ae7894415caa1d17
               created: 1771932755603
               modified: 1771932755603
               isPrivate: false
@@ -951,7 +951,7 @@ collection:
               mimeType: application/json
               text: |-
                 {
-                  "muvelet": "Updated log entry text"
+                  "muvelet": "Frissített napló bejegyzés szöveg"
                 }
             headers:
               - name: Authorization
@@ -963,14 +963,14 @@ collection:
                 const body = insomnia.response.json();
 
 
-                insomnia.test('Status is 200', () => {
+                insomnia.test('200-as státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(200);
                 });
 
 
-                insomnia.test('Log updated', () => {
+                insomnia.test('Napló frissítve', () => {
                   insomnia.expect(body).to.have.property('success', true);
-                  insomnia.expect(body.data.log.muvelet).to.equal('Updated log entry text');
+                  insomnia.expect(body.data.log.muvelet).to.equal('Frissített napló bejegyzés szöveg');
                 });
             settings:
               renderRequestBody: true
@@ -983,7 +983,7 @@ collection:
           - url: "{{ _.base_url }}/api/project/ujNaplo"
             name: Create Log Entry
             meta:
-              id: req_0e17463cedc644f486ab483111cf91e7
+              id: req_249b9d8289904705a2f9e1d6faae6b0e
               created: 1771932755604
               modified: 1771932755604
               isPrivate: false
@@ -995,7 +995,7 @@ collection:
               text: |-
                 {
                   "projekt_id": "{{ _.project_id }}",
-                  "muvelet": "Test log entry for project",
+                  "muvelet": "Teszt napló bejegyzés a projekthez",
                   "leiras": "2026-02-24"
                 }
             headers:
@@ -1007,11 +1007,11 @@ collection:
               afterResponse: |-
                 const body = insomnia.response.json();
 
-                insomnia.test('Status is 201', () => {
+                insomnia.test('201-es státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(201);
                 });
 
-                insomnia.test('Log created', () => {
+                insomnia.test('Napló létrehozva', () => {
                   insomnia.expect(body).to.have.property('success', true);
                   insomnia.expect(body.data).to.have.property('log');
                   insomnia.expect(body.data.log).to.have.property('id');
@@ -1031,7 +1031,7 @@ collection:
           - url: "{{ _.base_url }}/api/project/naplo?projekt_id={{ _.project_id }}"
             name: Get All Logs
             meta:
-              id: req_8bc3565249b54a27801b386be0ca9b42
+              id: req_0e60d6b7e9734bfea7c0bb3fc24cb4c1
               created: 1771932755606
               modified: 1771932755606
               isPrivate: false
@@ -1045,11 +1045,11 @@ collection:
               afterResponse: |-
                 const body = insomnia.response.json();
 
-                insomnia.test('Status is 200', () => {
+                insomnia.test('200-as státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(200);
                 });
 
-                insomnia.test('Logs array returned', () => {
+                insomnia.test('Naplók listája visszakülve', () => {
                   insomnia.expect(body).to.have.property('success', true);
                   insomnia.expect(body.data).to.have.property('logs');
                   insomnia.expect(body.data.logs).to.be.an('array');
@@ -1064,16 +1064,16 @@ collection:
               rebuildPath: true
       - name: Statistics
         meta:
-          id: fld_eea8070caa2248289e1b9cc0038f32ff
+          id: fld_cc565d5a16d541daa48a1b5f44a7081a
           created: 1771932755613
-          modified: 1771932808760
+          modified: 1772144534363
           sortKey: -1771932755613
           description: Project statistics endpoints
         children:
           - url: "{{ _.base_url }}/api/project/statisztika/{{ _.stat_id }}"
             name: Update Statistic
             meta:
-              id: req_ab19afef4ebf4b3c92d3ae2d441b8934
+              id: req_ebbc76ca676943758fffe225f50244d5
               created: 1771932755609
               modified: 1771932755609
               isPrivate: false
@@ -1084,7 +1084,7 @@ collection:
               mimeType: application/json
               text: |-
                 {
-                  "statisztika_nev": "Updated Metric",
+                  "statisztika_nev": "Frissített Métér",
                   "ertek": 150
                 }
             headers:
@@ -1097,14 +1097,14 @@ collection:
                 const body = insomnia.response.json();
 
 
-                insomnia.test('Status is 200', () => {
+                insomnia.test('200-as státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(200);
                 });
 
 
-                insomnia.test('Statistic updated', () => {
+                insomnia.test('Statisztika frissítve', () => {
                   insomnia.expect(body).to.have.property('success', true);
-                  insomnia.expect(body.data.statistics.statisztika_nev).to.equal('Updated Metric');
+                  insomnia.expect(body.data.statistics.statisztika_nev).to.equal('Frissített Métér');
                   insomnia.expect(body.data.statistics.ertek).to.equal(150);
                 });
             settings:
@@ -1118,7 +1118,7 @@ collection:
           - url: "{{ _.base_url }}/api/project/statisztika/projekt/{{ _.project_id }}"
             name: Get Statistics by Project
             meta:
-              id: req_7d29b77b47784ae2a0f38b21c5cf8160
+              id: req_0aa988207a074ba49593f85e448ae509
               created: 1771932755610
               modified: 1771932755610
               isPrivate: false
@@ -1132,11 +1132,11 @@ collection:
               afterResponse: |-
                 const body = insomnia.response.json();
 
-                insomnia.test('Status is 200', () => {
+                insomnia.test('200-as státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(200);
                 });
 
-                insomnia.test('Project statistics returned', () => {
+                insomnia.test('Projekt statisztikák visszakülve', () => {
                   insomnia.expect(body).to.have.property('success', true);
                   insomnia.expect(body.data).to.have.property('statistics');
                   insomnia.expect(body.data.statistics).to.be.an('array');
@@ -1152,7 +1152,7 @@ collection:
           - url: "{{ _.base_url }}/api/project/statisztika"
             name: Get All Statistics
             meta:
-              id: req_fd3f82bf08414e0b938884d4633c9ea8
+              id: req_19de8f1dbaed45e981c7fbce9edc58ae
               created: 1771932755611
               modified: 1771932755611
               isPrivate: false
@@ -1166,11 +1166,11 @@ collection:
               afterResponse: |-
                 const body = insomnia.response.json();
 
-                insomnia.test('Status is 200', () => {
+                insomnia.test('200-as státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(200);
                 });
 
-                insomnia.test('Statistics array returned', () => {
+                insomnia.test('Statisztikák listája visszakülve', () => {
                   insomnia.expect(body).to.have.property('success', true);
                   insomnia.expect(body.data).to.have.property('statistics');
                   insomnia.expect(body.data.statistics).to.be.an('array');
@@ -1186,7 +1186,7 @@ collection:
           - url: "{{ _.base_url }}/api/project/ujStat"
             name: Create Statistic
             meta:
-              id: req_51f0f9b2e8074408a21cf95766283bf2
+              id: req_d1d562db31464cce857fafeca5cb5fb4
               created: 1771932755612
               modified: 1771932755612
               isPrivate: false
@@ -1198,7 +1198,7 @@ collection:
               text: |-
                 {
                   "projekt_id": "{{ _.project_id }}",
-                  "statisztika_nev": "Test Metric",
+                  "statisztika_nev": "Teszt Métér",
                   "ertek": 100,
                   "pontszam": 0
                 }
@@ -1211,11 +1211,11 @@ collection:
               afterResponse: |-
                 const body = insomnia.response.json();
 
-                insomnia.test('Status is 201', () => {
+                insomnia.test('201-es státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(201);
                 });
 
-                insomnia.test('Statistic created', () => {
+                insomnia.test('Statisztika létrehozva', () => {
                   insomnia.expect(body).to.have.property('success', true);
                   insomnia.expect(body.data).to.have.property('statistics');
                   insomnia.expect(body.data.statistics).to.have.property('id');
@@ -1234,18 +1234,18 @@ collection:
               rebuildPath: true
       - name: Tasks
         meta:
-          id: fld_aa1bad2464254689a893ea576f07f837
+          id: fld_f5226c89f295422588fd37121ec9119e
           created: 1771932755623
-          modified: 1771932808510
+          modified: 1772144534142
           sortKey: -1771932755623
           description: Task management endpoints
         children:
           - url: "{{ _.base_url }}/api/project/feladat/{{ _.task_id }}"
             name: Update Task
             meta:
-              id: req_99c3e0e73fe24c9dad32c5eb8d8d8604
+              id: req_56b93ee134a247f3ae679f50ead7063a
               created: 1771932755619
-              modified: 1771932755619
+              modified: 1772131885199
               isPrivate: false
               description: ""
               sortKey: -1771932755619
@@ -1254,7 +1254,7 @@ collection:
               mimeType: application/json
               text: |-
                 {
-                  "feladat_nev": "Updated Task Name",
+                  "feladat_nev": "Új feladat név",
                   "statusz": "befejezett",
                   "prioritas": "alacsony"
                 }
@@ -1268,14 +1268,14 @@ collection:
                 const body = insomnia.response.json();
 
 
-                insomnia.test('Status is 200', () => {
+                insomnia.test('200-as státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(200);
                 });
 
 
-                insomnia.test('Task updated successfully', () => {
+                insomnia.test('Feladat sikeresen frissítve', () => {
                   insomnia.expect(body).to.have.property('success', true);
-                  insomnia.expect(body.data.task.feladat_nev).to.equal('Updated Task Name');
+                  insomnia.expect(body.data.task.feladat_nev).to.equal('Új feladat név');
                   insomnia.expect(body.data.task.statusz).to.equal('befejezett');
                 });
             settings:
@@ -1289,7 +1289,7 @@ collection:
           - url: "{{ _.base_url }}/api/project/feladatok?projekt_id={{ _.project_id }}"
             name: Get All Tasks
             meta:
-              id: req_6c28df8b58cf445482ab699912dd9db0
+              id: req_d51d5ac0425a48b7afb504a94a5dc118
               created: 1771932755620
               modified: 1771932755620
               isPrivate: false
@@ -1300,21 +1300,24 @@ collection:
               - name: Authorization
                 value: Bearer {{ _.access_token }}
             scripts:
-              afterResponse: |-
+              afterResponse: >-
                 const body = insomnia.response.json();
 
-                insomnia.test('Status is 200', () => {
+
+                insomnia.test('200-as státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(200);
                 });
 
-                insomnia.test('Tasks array returned', () => {
+
+                insomnia.test('Feladatok listája visszakülve', () => {
                   insomnia.expect(body).to.have.property('success', true);
                   insomnia.expect(body.data).to.have.property('tasks');
                   insomnia.expect(body.data.tasks).to.be.an('array');
                 });
 
+
                 if (body.data.tasks && body.data.tasks.length > 0) {
-                  insomnia.test('Task has required fields', () => {
+                  insomnia.test('Feladat tartalmazza a kötelező mezőket', () => {
                     const task = body.data.tasks[0];
                     insomnia.expect(task).to.have.property('id');
                     insomnia.expect(task).to.have.property('feladat_nev');
@@ -1331,7 +1334,7 @@ collection:
           - url: "{{ _.base_url }}/api/project/feladat?projekt_id={{ _.project_id }}"
             name: Get Single Task
             meta:
-              id: req_948ab98c8e4f48139f62c05c724ac10a
+              id: req_57b611adfbf34da98136f040ff0fb4dc
               created: 1771932755621
               modified: 1771932755621
               isPrivate: false
@@ -1345,11 +1348,11 @@ collection:
               afterResponse: |-
                 const body = insomnia.response.json();
 
-                insomnia.test('Status is 200', () => {
+                insomnia.test('200-as státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(200);
                 });
 
-                insomnia.test('Task data returned', () => {
+                insomnia.test('Feladat adatai visszakülve', () => {
                   insomnia.expect(body).to.have.property('success', true);
                   insomnia.expect(body.data).to.be.an('array');
                 });
@@ -1364,9 +1367,9 @@ collection:
           - url: "{{ _.base_url }}/api/project/ujFeladat"
             name: Create Task
             meta:
-              id: req_8d2bb9d8581c4d85940b2bf70a4053e8
+              id: req_aff4837683e5468e91799474e3cded8f
               created: 1771932755622
-              modified: 1771932755622
+              modified: 1772132088990
               isPrivate: false
               description: ""
               sortKey: -1771932755622
@@ -1375,8 +1378,8 @@ collection:
               mimeType: application/json
               text: |-
                 {
-                  "feladat_nev": "Test Task {{ _.timestamp }}",
-                  "feladat_leiras": "Task description for testing",
+                  "feladat_nev": "Teszt Feladat {{ _.timestamp }}",
+                  "feladat_leiras": "Feladat leírás teszteléshez",
                   "projekt_id": "{{ _.project_id }}",
                   "prioritas": "magas",
                   "statusz": "folyamatban",
@@ -1392,11 +1395,11 @@ collection:
               afterResponse: |-
                 const body = insomnia.response.json();
 
-                insomnia.test('Status is 201', () => {
+                insomnia.test('201-es státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(201);
                 });
 
-                insomnia.test('Task created successfully', () => {
+                insomnia.test('Feladat sikeresen létrehozva', () => {
                   insomnia.expect(body).to.have.property('success', true);
                   insomnia.expect(body.data).to.have.property('task');
                   insomnia.expect(body.data.task).to.have.property('id');
@@ -1416,16 +1419,16 @@ collection:
               rebuildPath: true
           - name: Task Comments
             meta:
-              id: fld_b8e52ea27f5446e997c82e7d4f819160
+              id: fld_3b0a4cac53e942aa9a306665d17d7f9e
               created: 1771932755618
-              modified: 1771932808510
+              modified: 1772144534142
               sortKey: -1771932755618
               description: Task comment endpoints
             children:
               - url: "{{ _.base_url }}/api/project/feladatKomment/{{ _.comment_id }}"
                 name: Update Task Comment
                 meta:
-                  id: req_b1f5d42ac6294b67974cf5966f049c41
+                  id: req_771d13bc7eb0408cb6eb8207da658c9e
                   created: 1771932755615
                   modified: 1771932755615
                   isPrivate: false
@@ -1436,7 +1439,7 @@ collection:
                   mimeType: application/json
                   text: |-
                     {
-                      "komment_szoveg": "Updated comment text"
+                      "komment_szoveg": "Frissített komment szöveg"
                     }
                 headers:
                   - name: Authorization
@@ -1448,14 +1451,14 @@ collection:
                     const body = insomnia.response.json();
 
 
-                    insomnia.test('Status is 200', () => {
+                    insomnia.test('200-as státusz', () => {
                       insomnia.expect(insomnia.response.code).to.equal(200);
                     });
 
 
-                    insomnia.test('Comment updated', () => {
+                    insomnia.test('Komment frissítve', () => {
                       insomnia.expect(body).to.have.property('success', true);
-                      insomnia.expect(body.data.comment.komment_szoveg).to.equal('Updated comment text');
+                      insomnia.expect(body.data.comment.komment_szoveg).to.equal('Frissített komment szöveg');
                     });
                 settings:
                   renderRequestBody: true
@@ -1468,7 +1471,7 @@ collection:
               - url: "{{ _.base_url }}/api/project/feladatKommentek/{{ _.task_id }}"
                 name: Get Task Comments
                 meta:
-                  id: req_11ca4fbf88c2497dbeac2346314fcc6f
+                  id: req_336e5ba84240416ca41ddb9564ce85fa
                   created: 1771932755616
                   modified: 1771932755616
                   isPrivate: false
@@ -1482,11 +1485,11 @@ collection:
                   afterResponse: |-
                     const body = insomnia.response.json();
 
-                    insomnia.test('Status is 200', () => {
+                    insomnia.test('200-as státusz', () => {
                       insomnia.expect(insomnia.response.code).to.equal(200);
                     });
 
-                    insomnia.test('Comments array returned', () => {
+                    insomnia.test('Kommentek listája visszakülve', () => {
                       insomnia.expect(body).to.have.property('success', true);
                       insomnia.expect(body.data).to.have.property('comments');
                       insomnia.expect(body.data.comments).to.be.an('array');
@@ -1502,9 +1505,9 @@ collection:
               - url: "{{ _.base_url }}/api/project/ujFeladatKomment"
                 name: Create Task Comment
                 meta:
-                  id: req_6a7e1054beb24728b5960f8907bac704
+                  id: req_4f1a7a7430f64b97835ec959538550a0
                   created: 1771932755617
-                  modified: 1771932755617
+                  modified: 1772132405726
                   isPrivate: false
                   description: ""
                   sortKey: -1771932755617
@@ -1514,7 +1517,7 @@ collection:
                   text: |-
                     {
                       "feladat_id": "{{ _.task_id }}",
-                      "komment_szoveg": "This is a test comment on the task"
+                      "komment_szoveg": "Ez egy teszt komment a feladathoz"
                     }
                 headers:
                   - name: Authorization
@@ -1526,12 +1529,12 @@ collection:
                     const body = insomnia.response.json();
 
 
-                    insomnia.test('Status is 201', () => {
+                    insomnia.test('201-es státusz', () => {
                       insomnia.expect(insomnia.response.code).to.equal(201);
                     });
 
 
-                    insomnia.test('Comment created', () => {
+                    insomnia.test('Komment létrehozva', () => {
                       insomnia.expect(body).to.have.property('success', true);
                       insomnia.expect(body.data).to.have.property('comment');
                       insomnia.expect(body.data.comment).to.have.property('id');
@@ -1552,16 +1555,16 @@ collection:
                   rebuildPath: true
       - name: Project Members
         meta:
-          id: fld_23e7e28d531748ea8d56d67a9ad58464
+          id: fld_e5f22cf91f574e79a7fe59c6db70076b
           created: 1771932755629
-          modified: 1771932808088
+          modified: 1772144533707
           sortKey: -1771932755629
           description: Project member management
         children:
           - url: "{{ _.base_url }}/api/project/ujProjektTag"
             name: Add Project Member
             meta:
-              id: req_f09e0e0bdb9d41268daba63d24c548ba
+              id: req_d6a656aec0e64bee909a904e4ebd9031
               created: 1771932755626
               modified: 1771932755626
               isPrivate: false
@@ -1584,12 +1587,12 @@ collection:
                 const body = insomnia.response.json();
 
 
-                insomnia.test('Status is 201', () => {
+                insomnia.test('201-es státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(201);
                 });
 
 
-                insomnia.test('Project member added', () => {
+                insomnia.test('Projekt tag hozzáadva', () => {
                   insomnia.expect(body).to.have.property('success', true);
                   insomnia.expect(body.data).to.have.property('projekttag');
                   insomnia.expect(body.data.projekttag).to.have.property('projekt_id');
@@ -1606,7 +1609,7 @@ collection:
           - url: "{{ _.base_url }}/api/project/projektTagok?projekt_id={{ _.project_id }}"
             name: Get All Project Members
             meta:
-              id: req_927ffbda80714d1884ee307659236436
+              id: req_18f160f175cd421c9c62f1ef7092ef68
               created: 1771932755627
               modified: 1771932755627
               isPrivate: false
@@ -1620,11 +1623,11 @@ collection:
               afterResponse: |-
                 const body = insomnia.response.json();
 
-                insomnia.test('Status is 200', () => {
+                insomnia.test('200-as státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(200);
                 });
 
-                insomnia.test('Response contains members array', () => {
+                insomnia.test('Válasz tartalmazza a tagok listáját', () => {
                   insomnia.expect(body).to.have.property('success', true);
                   insomnia.expect(body.data).to.be.an('array');
                 });
@@ -1643,7 +1646,7 @@ collection:
           - url: "{{ _.base_url }}/api/project/projektTag?projekt_id={{ _.project_id }}"
             name: Get Project Tag (Member)
             meta:
-              id: req_fa0926d7d6824ba68b85292696a73b2a
+              id: req_461a61feccc9481f96648ba6729ebb09
               created: 1771932755628
               modified: 1771932755628
               isPrivate: false
@@ -1654,14 +1657,17 @@ collection:
               - name: Authorization
                 value: Bearer {{ _.access_token }}
             scripts:
-              afterResponse: |-
+              afterResponse: >-
                 const body = insomnia.response.json();
 
-                insomnia.test('Status is 200', () => {
+
+                insomnia.test('200-as státusz', () => {
                   insomnia.expect(insomnia.response.code).to.equal(200);
                 });
 
-                insomnia.test('Response contains project tag data', () => {
+
+                insomnia.test('Válasz tartalmazza a projekt tag adatait', () =>
+                {
                   insomnia.expect(body).to.have.property('success', true);
                   insomnia.expect(body).to.have.property('data');
                 });
@@ -1675,16 +1681,16 @@ collection:
               rebuildPath: true
   - name: 1. Authentication
     meta:
-      id: fld_031dbf45a48c49c3adc3656d3664c182
+      id: fld_eaef8004191f475899776d0c6a3c5000
       created: 1771932755641
-      modified: 1771932807684
+      modified: 1772144533359
       sortKey: -1771932755641
       description: Authentication endpoints - Register, Login, Logout, Profile management
     children:
       - url: "{{ _.base_url }}/api/auth/logout"
         name: Logout
         meta:
-          id: req_cf6703d7da574db0823fd53d98f996a1
+          id: req_0f221f1b7bd043d586c7a67de0c22251
           created: 1771932755635
           modified: 1771932755635
           isPrivate: false
@@ -1698,11 +1704,11 @@ collection:
           afterResponse: |-
             const body = insomnia.response.json();
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
-            insomnia.test('Logout successful', () => {
+            insomnia.test('Kijelentkezés sikeres', () => {
               insomnia.expect(body).to.have.property('success', true);
               insomnia.expect(body.message).to.include('kijelentkezés');
             });
@@ -1717,7 +1723,7 @@ collection:
       - url: "{{ _.base_url }}/api/auth/refresh-token"
         name: Refresh Token
         meta:
-          id: req_da8e4a07a119415b8bc13b7f737a91a6
+          id: req_4a821a4b52a0473482f8742028cc26b5
           created: 1771932755636
           modified: 1771932755636
           isPrivate: false
@@ -1732,12 +1738,12 @@ collection:
             const body = insomnia.response.json();
 
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
 
-            insomnia.test('New access token received', () => {
+            insomnia.test('Új hozzáférési token megérkezett', () => {
               insomnia.expect(body.data).to.have.property('accessToken');
               insomnia.expect(body.data.accessToken).to.be.a('string').with.length.greaterThan(0);
             });
@@ -1757,7 +1763,7 @@ collection:
       - url: "{{ _.base_url }}/api/auth/profile"
         name: Update Profile
         meta:
-          id: req_8a9340149fa14aac8ba476e0d86c3964
+          id: req_2dd012085b6142c8b1028dc36ee68379
           created: 1771932755637
           modified: 1771932755637
           isPrivate: false
@@ -1768,7 +1774,7 @@ collection:
           mimeType: application/json
           text: |-
             {
-              "teljes_nev": "Updated Test User",
+              "teljes_nev": "Frissített Teszt Felhasználó",
               "email": "updated@example.com"
             }
         headers:
@@ -1781,13 +1787,13 @@ collection:
             const body = insomnia.response.json();
 
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
 
-            insomnia.test('Profile was updated', () => {
-              insomnia.expect(body.data.user.teljes_nev).to.equal('Updated Test User');
+            insomnia.test('Profil frissítve', () => {
+              insomnia.expect(body.data.user.teljes_nev).to.equal('Frissített Teszt Felhasználó');
               insomnia.expect(body.data.user.email).to.equal('updated@example.com');
             });
         settings:
@@ -1801,9 +1807,9 @@ collection:
       - url: "{{ _.base_url }}/api/auth/profileData"
         name: Get Profile Data
         meta:
-          id: req_ed9bedfbfab54caca096441fb165dd84
+          id: req_4cb4d6ac44dd47c983157cc4eaf60ce0
           created: 1771932755638
-          modified: 1771932755638
+          modified: 1772131218787
           isPrivate: false
           description: ""
           sortKey: -1771932755638
@@ -1816,12 +1822,12 @@ collection:
             const body = insomnia.response.json();
 
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
 
-            insomnia.test('Response contains user data', () => {
+            insomnia.test('Válasz tartalmazza a felhasználói adatokat', () => {
               insomnia.expect(body.data).to.have.property('user');
               insomnia.expect(body.data.user).to.have.property('id');
               insomnia.expect(body.data.user).to.have.property('felhasznalonev');
@@ -1829,7 +1835,7 @@ collection:
             });
 
 
-            insomnia.test('Password is not exposed', () => {
+            insomnia.test('Jelszó nincs visszaküldve', () => {
               insomnia.expect(body.data.user).to.not.have.property('jelszo');
             });
         settings:
@@ -1843,7 +1849,7 @@ collection:
       - url: "{{ _.base_url }}/api/auth/login"
         name: Login
         meta:
-          id: req_14e33150681c44c0afa9f664351ea38f
+          id: req_182bbf7fe5cc404185291a5e1757de2b
           created: 1771932755639
           modified: 1771932755639
           isPrivate: false
@@ -1865,19 +1871,19 @@ collection:
             const body = insomnia.response.json();
 
 
-            insomnia.test('Status is 200', () => {
+            insomnia.test('200-as státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(200);
             });
 
 
-            insomnia.test('Response contains tokens', () => {
+            insomnia.test('Válasz tartalmazza a token-eket', () => {
               insomnia.expect(body.data).to.have.property('accessToken');
               insomnia.expect(body.data).to.have.property('refreshToken');
               insomnia.expect(body.data.accessToken).to.be.a('string').with.length.greaterThan(0);
             });
 
 
-            insomnia.test('Response contains user data', () => {
+            insomnia.test('Válasz tartalmazza a felhasználói adatokat', () => {
               insomnia.expect(body.data).to.have.property('user');
               insomnia.expect(body.data.user).to.have.property('id');
             });
@@ -1899,9 +1905,9 @@ collection:
       - url: "{{ _.base_url }}/api/auth/register"
         name: Register
         meta:
-          id: req_12841cdd5b794bc6aceba9ba9f328b5a
+          id: req_e04af782f54b4abcbd67e7c540574d49
           created: 1771932755640
-          modified: 1771932755640
+          modified: 1772144745186
           isPrivate: false
           description: ""
           sortKey: -1771932755640
@@ -1913,7 +1919,7 @@ collection:
               "felhasznalonev": "testuser_{{ _.timestamp }}",
               "email": "test_{{ _.timestamp }}@example.com",
               "jelszo": "Test123!",
-              "teljes_nev": "Test User",
+              "teljes_nev": "Teszt Felhasználó",
               "szerep_tipus": "diak"
             }
         headers:
@@ -1925,17 +1931,17 @@ collection:
             const body = insomnia.response.json();
 
 
-            insomnia.test('Status is 201', () => {
+            insomnia.test('201-es státusz', () => {
               insomnia.expect(insomnia.response.code).to.equal(201);
             });
 
 
-            insomnia.test('Response has success property', () => {
+            insomnia.test('Válasz tartalmazza a sikereségi jelzést', () => {
               insomnia.expect(body).to.have.property('success', true);
             });
 
 
-            insomnia.test('Response contains user data', () => {
+            insomnia.test('Válasz tartalmazza a felhasználói adatokat', () => {
               insomnia.expect(body.data).to.have.property('user');
               insomnia.expect(body.data.user).to.have.property('id');
               insomnia.expect(body.data.user).to.have.property('felhasznalonev');
@@ -1960,31 +1966,31 @@ collection:
 cookieJar:
   name: Default Jar
   meta:
-    id: jar_fcce093f26f64aeaa5b68beaf80534b5
+    id: jar_d7eb010f7d40467cb1a216f9d976e872
     created: 1771932755574
-    modified: 1771932810254
+    modified: 1772144535620
 environments:
   name: Base Environment
   meta:
-    id: env_4be1f9bc796b4f7497a88c1c9d23a96d
+    id: env_918d7ef619a0403497190dcc3086ef57
     created: 1771932755573
-    modified: 1771932810255
+    modified: 1772144535621
     isPrivate: false
   data:
     base_url: http://localhost:3000
-    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzUsImZlbGhhc3puYWxvbmV2IjoidGVzdHVzZXJfMTc3MTkzMjgwNjc1NCIsImVtYWlsIjoidXBkYXRlZEBleGFtcGxlLmNvbSIsInN6ZXJlcF90aXB1cyI6ImRpYWsiLCJpYXQiOjE3NzE5MzI4MDcsImV4cCI6MTc3MTkzNTUwN30.r2N_R1zw99Yxy0cSuNsFQ1OmRso1F6p_IdNwFmzcH10
-    refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzUsImZlbGhhc3puYWxvbmV2IjoidGVzdHVzZXJfMTc3MTkzMjgwNjc1NCIsImlhdCI6MTc3MTkzMjgwNywiZXhwIjoxNzcyNTM3NjA3fQ.-LKADgHiOuNgRnTbPExvCv6Jfge6HKPPi5Yt0WIMIiM
-    user_id: 35
+    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NDcsImZlbGhhc3puYWxvbmV2IjoidGVzdHVzZXJfMTc3MjE0NDUzMjgxMyIsImVtYWlsIjoidXBkYXRlZEBleGFtcGxlLmNvbSIsInN6ZXJlcF90aXB1cyI6ImRpYWsiLCJpYXQiOjE3NzIxNDQ1MzMsImV4cCI6MTc3MjE0NzIzM30.eNMp-RYGMk-CWAYCpEQfF0GZgG8C0vmfQIrnkh23gJ4
+    refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NDcsImZlbGhhc3puYWxvbmV2IjoidGVzdHVzZXJfMTc3MjE0NDUzMjgxMyIsImlhdCI6MTc3MjE0NDUzMywiZXhwIjoxNzcyNzQ5MzMzfQ.O8xJtXrc6eaR4CmGD6x5mEtPyAkwLc66Z2SgqqS_h6k
+    user_id: 47
     user_id_2: ""
-    project_id: 37
-    projekt_tag_id: 35
-    task_id: 32
-    message_id: 13
-    beadas_id: 32
+    project_id: 49
+    projekt_tag_id: 47
+    task_id: 44
+    message_id: 25
+    beadas_id: 44
     file_id: ""
-    stat_id: 27
-    naplo_id: 31
-    comment_id: 17
-    login_username: testuser_1771932806754
+    stat_id: 39
+    naplo_id: 43
+    comment_id: 29
+    login_username: testuser_1772144532813
     login_password: Test123!
-    timestamp: "1771932808110"
+    timestamp: "1772144533730"
