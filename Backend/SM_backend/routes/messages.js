@@ -1,5 +1,5 @@
 const express = require('express');
-const pool = require('../config/database');
+const pool = require('../config/db');
 const { body, query, validationResult } = require('express-validator');
 const { verifyToken } = require('../middleware/auth');
 
@@ -244,7 +244,7 @@ router.post('/kuldes', verifyToken, [
 router.put('/frissites/:id', verifyToken, [
   body('allapot')
     .optional()
-    .isIn(['nem_olvasott', 'olvasott', 'torlolt'])
+    .isIn(['nem_olvasott', 'olvasott', 'torolt'])
     .withMessage('Az állapot értéke hibás'),
   body('uzenet_tartalom')
     .optional()

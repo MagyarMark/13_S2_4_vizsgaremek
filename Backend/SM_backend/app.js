@@ -4,7 +4,7 @@ const fileUpload = require('express-fileupload');
 const path = require('path');
 const fs = require('fs');
 
-const pool = require('./config/database');
+const pool = require('./config/db');
 const filesPayloadExists = require('./middleware/filesPayloadExists');
 const fileExtLimiter = require('./middleware/fileExtLimiter');
 const fileSizeLimiter = require('./middleware/fileSizeLimiter');
