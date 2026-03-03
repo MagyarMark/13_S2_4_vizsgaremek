@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+const pool = require('../config/db');
 
 const felhFeltoltesiElozmeny = async (felhasznalo_id, beadas_id = null) => {
     try {

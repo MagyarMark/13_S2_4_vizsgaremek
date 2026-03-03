@@ -1,6 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const pool = require('../config/database');
+const pool = require('../config/db');
 const { body, validationResult } = require('express-validator');
 const { verifyToken } = require('../middleware/auth');
 
@@ -669,11 +669,15 @@ router.put('/feladat/:id', verifyToken, [
 });
 
 router.delete('/feladat/:id', verifyToken, async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const taskCheck = await pool.query(
+    await client.query('BEGIN');
+
+    const taskCheck = await client.query(
       'SELECT id, letrehozo_id, felelos_id FROM "Feladat" WHERE id = $1',
       [id]
     );
@@ -687,28 +691,35 @@ router.delete('/feladat/:id', verifyToken, async (req, res) => {
 
     const task = taskCheck.rows[0];
     if (task.letrehozo_id !== userId && task.felelos_id !== userId) {
+      await client.query('ROLLBACK');
       return res.status(403).json({
         success: false,
         message: 'Nincs jogosultsága a feladat törlésére'
       });
     }
 
-    await pool.query(
-      'DELETE FROM "Naplo" WHERE feladat_id = $1',
+    await client.query('DELETE FROM "Naplo" WHERE feladat_id = $1', [id]);
+    await client.query('DELETE FROM "FeladatKomment" WHERE feladat_id = $1', [id]);
+    await client.query(
+      'DELETE FROM "File" WHERE beadas_id IN (SELECT id FROM "Beadas" WHERE feladat_id = $1)',
       [id]
     );
+    await client.query('DELETE FROM "Beadas" WHERE feladat_id = $1', [id]);
 
-    const deleteResult = await pool.query(
+    const deleteResult = await client.query(
       'DELETE FROM "Feladat" WHERE id = $1 RETURNING id',
       [id]
     );
 
     if (deleteResult.rows.length === 0) {
+      await client.query('ROLLBACK');
       return res.status(500).json({
         success: false,
         message: 'Feladat törlése sikertelen'
       });
     }
+
+    await client.query('COMMIT');
 
     res.json({
       success: true,
@@ -718,11 +729,18 @@ router.delete('/feladat/:id', verifyToken, async (req, res) => {
       }
     });
   } catch (error) {
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackError) {
+      console.error('Szerver hiba a feladat törlésének visszavonásakor:', rollbackError);
+    }
     console.error('Szerver hiba a feladat törlése során:', error);
     res.status(500).json({
       success: false,
       message: 'Szerver hiba a feladat törlése során'
     });
+  } finally {
+    client.release();
   }
 });
 
