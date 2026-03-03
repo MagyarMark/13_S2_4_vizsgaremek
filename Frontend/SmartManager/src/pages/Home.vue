@@ -1,7 +1,8 @@
 <template>
-
     <header>
-        <div class="logo">Smart<span>Manager</span></div>
+        <div class="logo">
+          Smart<span>Manager</span>
+        </div>
     </header>
 
     <main>
@@ -23,6 +24,7 @@
                 <h2 class="logo">Miért válassza a Smart<span>Manager</span>-t?</h2>
                 <p>Fedezze fel a hatékony projektmenedzsment kulcsfontosságú funkcióit</p>
             </div>
+          <div class="feature-card">
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">📊</div>
@@ -55,6 +57,7 @@
                     <p>Beépített csevegés és kommentelés a gyors csapatkommunikációért.</p>
                 </div>
             </div>
+          </div>
         </section>
 
         <section id="contact">
