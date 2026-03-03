@@ -4,7 +4,7 @@
     <nav>
       <button class="mobile-menu-btn" @click="toggleMenu" :aria-expanded="navActive" aria-label="Menü">☰</button>
       <ul :class="{ show: navActive }">
-        <li><a href="Home.vue" @click="navActive = false">Kezdőlap</a></li>
+        <router-link to="/home"><li><a @click="navActive = false">Kezdőlap</a></li></router-link>
       </ul>
     </nav>
   </header>

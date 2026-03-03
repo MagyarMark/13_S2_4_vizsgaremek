@@ -11,7 +11,7 @@
 
       <ul v-if="userProfile.szerep_tipus === 'tanar'" class="nav-links">
         <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
+        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
         <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" class="active"><li ><i class="fas fa-cog"></i> Beállítások</li></router-link>
@@ -396,10 +396,17 @@ export default {
       }
 
       try {
+        const token = localStorage.getItem('accessToken')
+        if (!token) {
+          message.account = 'Authentikáció szükséges. Kérjük, jelentkezzen be újra.'
+          return
+        }
+
         const response = await fetch('http://localhost:3000/api/auth/profile', {
           method: 'PUT',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
             id: userProfile.value.id,
