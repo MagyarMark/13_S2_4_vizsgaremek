@@ -383,9 +383,12 @@ export default {
         const data = await response.json()
         if (data.success && data.data && data.data.tasks) {
 
-          const filteredTasks = data.data.tasks.filter(task => 
-            task.statusz !== 'beadva' && task.statusz !== 'elvégezve'
-          )
+          const filteredTasks = data.data.tasks.filter(task => {
+            if (userProfile.value.szerep_tipus === 'tanar' || userProfile.value.szerep_tipus === 'admin') {
+              return true
+            }
+            return task.statusz !== 'befejezett'
+          })
           
           tasks.value = filteredTasks.map(task => ({
             id: task.id,
@@ -395,7 +398,7 @@ export default {
             subject: 'Általános',
             priority: mapPriorityToFrontend(task.prioritas),
             deadline: task.hatarido,
-            completed: task.statusz === 'elvégezve'
+            completed: task.statusz === 'befejezett'
           }))
           tasks.value.sort((a, b) => {
             const deadlineA = new Date(a.deadline)
@@ -499,13 +502,13 @@ export default {
         }
 
         const response = await fetch(`http://localhost:3000/api/project/feladat/${taskId}`, {
-          method: 'PATCH',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({
-            statusz: 'beadva'
+            statusz: 'befejezett'
           })
         })
 
@@ -533,41 +536,6 @@ export default {
         tasks.value = tasks.value.filter(t => t.id != id)
         renderTasks()
         }
-        /*
-        const id = e.currentTarget.getAttribute('data-id')
-      if (confirm('Biztosan törölni szeretnéd ezt a feladatot?')) {
-        try {
-          const token = localStorage.getItem('accessToken')
-          if (!token) {
-            alert('Nincs bejelentkezett felhasználó')
-            return
-          }
-
-          const response = await fetch(`http://localhost:3000/api/auth/torlesFeladat/${id}`, {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
-            }
-          })
-
-          const result = await response.json()
-
-          if (!response.ok) {
-            throw new Error(result.message || `Hiba: ${response.status}`)
-          }
-
-          if (result.success) {
-            tasks.value = tasks.value.filter(t => t.id != id)
-            renderTasks()
-          } else {
-            throw new Error(result.message || 'Ismeretlen hiba')
-          }
-        } catch (error) {
-          console.error('Hiba a feladat törlése során:', error)
-          alert('Hiba: ' + error.message)
-        }
-      }*/
     }
 
     function toggleMenu() {
