@@ -25,14 +25,50 @@
       </div>
 
       <div class="user-profile">
-        <div class="avatar">{{ userProfile.initials }}</div>
-        <div>
-          <div class="user-name">{{ userProfile.teljes_nev || userProfile.felhasznalonev }}</div>
-          <div class="user-role">{{ getRoleLabel(userProfile.szerep_tipus) }}</div>
-        </div>
-        <div class="logout-button">
-          <button @click="logout"><i class="fas fa-sign-out-alt"></i></button>
-        </div>
+        <div class="dropdown" @click="dropdownOpen = !dropdownOpen">
+                    <div class="avatar">{{ userProfile.initials }}</div>
+                    <div>
+                        <div class="user-name">{{ userProfile.teljes_nev || userProfile.felhasznalonev }}</div>
+                        <div class="user-role">{{ getRoleLabel(userProfile.szerep_tipus) }}</div>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                    <div :class="['dropdown-menu', { show: dropdownOpen }]" @click.stop>
+                      <button class="dropdown-item" @click="openProfile" title="Főoldal">
+                        <i class="fas fa-home"></i>
+                        <router-link to="/tanar" style="color: inherit; text-decoration: none;">
+                          <span>Főoldal</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openProfile" title="Feladatok">
+                        <i class="fas fa-tasks"></i> 
+                        <router-link to="/Ttask" style="color: inherit; text-decoration: none;">
+                          <span>Feladatok</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openTasks" title="Értékelés">
+                        <i class="fas fa-check-circle"></i>
+                        <router-link to="/ertekeles" style="color: inherit; text-decoration: none;">
+                          <span>Értékelés</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openChat" title="Üzenetek">
+                        <i class="fas fa-comments"></i>
+                        <router-link to="/chat" style="color: inherit; text-decoration: none;">
+                          <span>Üzenetek</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openSettings" title="Beállítások">
+                        <i class="fas fa-cog"></i>
+                        <router-link to="/settings" style="color: inherit; text-decoration: none;">
+                          <span>Beállítások</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="logout" title="Kijelentkezés">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Kijelentkezés</span>
+                      </button>
+                    </div>
+                </div>
       </div>
     </div>
   </header>
@@ -200,7 +236,7 @@ export default {
   name: "Ertekeles",
   setup() {
     const router = useRouter();
-
+    const dropdownOpen = ref(false);
     const userProfile = ref({
       teljes_nev: '',
       felhasznalonev: '',
@@ -522,12 +558,18 @@ export default {
       fetchAllTasks();
       fetchTeamUsers();
       fetchBeadasEvaluations();
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.user-profile')) {
+          dropdownOpen.value = false;
+        }
+      });
     });
 
     return {
       userProfile, showModal, showSidebar, performanceChart, submissionChart,
       students, tasks, studentGrades, evaluation, selectedStudentForStats,
-      availableDiakUsers, allDiakUsers, availableTasks,
+      availableDiakUsers, allDiakUsers, availableTasks, dropdownOpen,
       getRoleLabel, getPercentageClass, saveEvaluation, logout
     };
   }
@@ -537,6 +579,86 @@ export default {
 
 
 <style scoped>
+
+.dashboard-wrapper .dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  transition: background 0.3s;
+  cursor: pointer;
+}
+
+.dashboard-wrapper .dropdown:hover {
+  background: #f0f0f0;
+}
+
+.dashboard-wrapper .dropdown i {
+  font-size: 0.8rem;
+  transition: transform 0.3s;
+}
+
+.dashboard-wrapper .dropdown.show i {
+  transform: rotate(180deg);
+}
+
+.dashboard-wrapper .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1200;
+  margin-top: 0.5rem;
+}
+
+.dashboard-wrapper .dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dashboard-wrapper .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--dark);
+  transition: background 0.2s;
+  font-size: 0.95rem;
+}
+
+.dashboard-wrapper .dropdown-item:first-child {
+  border-radius: 4px 4px 0 0;
+}
+
+.dashboard-wrapper .dropdown-item:last-child {
+  border-radius: 0 0 4px 4px;
+}
+
+.dashboard-wrapper .dropdown-item:hover {
+  background: #f0f2f5;
+  color: var(--primary);
+}
+
+.dashboard-wrapper .dropdown-item i {
+  width: 20px;
+  text-align: center;
+}
 
 .content-wrapper {
   display: grid;
@@ -749,10 +871,13 @@ export default {
   header {
     left: 0;
     width: 100%;
+    padding: 0 1rem;
   }
 
   main {
     margin-left: 0;
+    padding: 1rem;
+    margin-top: 60px;
   }
 
   .content-wrapper {
@@ -770,60 +895,14 @@ export default {
 
 @media (max-width: 768px) {
   header {
-    padding: 0 1rem;
-    height: 60px;
-  }
-
-  main {
-    padding: 1rem;
-    margin-top: 60px;
-  }
-
-  .content-wrapper {
-    gap: 1rem;
-  }
-
-  .evaluation-card {
-    padding: 1rem;
-  }
-
-  .form-group {
-    margin-bottom: 0.75rem;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    padding: 0.75rem;
-  }
-
-  .save-btn {
-    padding: 0.75rem 1rem;
-  }
-
-  .grades-table {
-    font-size: 0.85rem;
-  }
-
-  .grades-table th,
-  .grades-table td {
-    padding: 0.75rem 0.5rem;
-  }
-
-  .chart-card {
-    height: 280px;
-  }
-}
-
-@media (max-width: 600px) {
-  header {
-    padding: 0 0.75rem;
-    height: 56px;
+    padding: 0.5rem 0.75rem;
+    height: auto;
+    min-height: 50px;
   }
 
   main {
     padding: 0.75rem;
-    margin-top: 56px;
+    margin-top: 50px;
   }
 
   .header-left h1 {
@@ -834,23 +913,11 @@ export default {
     gap: 0.5rem;
   }
 
-  .header-right .user-name,
-  .header-right .user-role {
-    display: none;
-  }
-
-  .avatar {
-    width: 36px;
-    height: 36px;
-  }
-
-  .section-header {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .section-header h3 {
-    font-size: 1.1rem;
+  .content-wrapper {
+    gap: 0.75rem;
+    margin-top: -1rem;
+    margin-left: -0.75rem;
+    margin-bottom: 1rem;
   }
 
   .evaluation-card {
@@ -861,21 +928,125 @@ export default {
     margin-bottom: 0.5rem;
   }
 
-  .form-group label {
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 0.6rem;
+    font-size: 0.95rem;
+  }
+
+  .save-btn {
+    padding: 0.6rem 1rem;
     font-size: 0.9rem;
+  }
+
+  .section {
+    padding: 1rem;
+    max-width: 100%;
+  }
+
+  .grades-table {
+    font-size: 0.85rem;
+  }
+
+  .grades-table th,
+  .grades-table td {
+    padding: 0.6rem 0.4rem;
+  }
+
+  .chart-card {
+    height: 250px;
+  }
+}
+
+@media (max-width: 600px) {
+  header {
+    padding: 0 0.5rem;
+    height: auto;
+    min-height: 45px;
+  }
+
+  main {
+    padding: 0.5rem;
+    margin-top: 45px;
+  }
+
+  .header-left h1 {
+    font-size: 1rem;
+  }
+
+  .header-right {
+    gap: 0.25rem;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .user-profile {
+    margin-left: auto;
+  }
+
+  .header-right .user-name,
+  .header-right .user-role {
+    display: none;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.7rem;
+  }
+
+  .dropdown {
+    padding: 0.35rem 0.5rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-header h3 {
+    font-size: 1rem;
+  }
+
+  .content-wrapper {
+    gap: 0.5rem;
+    margin-top: -1rem;
+    margin-left: -0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .evaluation-card {
+    padding: 0.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.4rem;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
   }
 
   .form-group input,
   .form-group select,
   .form-group textarea {
-    padding: 0.65rem;
+    padding: 0.5rem;
     font-size: 1rem;
   }
 
   .save-btn {
     width: 100%;
-    padding: 0.65rem;
-    font-size: 0.9rem;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .section {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    max-width: 100%;
   }
 
   .table-container {
@@ -884,55 +1055,72 @@ export default {
   }
 
   .grades-table {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 
   .grades-table th,
   .grades-table td {
-    padding: 0.5rem;
+    padding: 0.35rem;
   }
 
   .percentage-badge {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
   }
 
   .chart-card {
-    height: 200px;
+    height: 180px;
   }
 }
 
 @media (max-width: 400px) {
   header {
-    padding: 0 0.5rem;
+    padding: 0 0.25rem;
+    height: auto;
+    min-height: 40px;
   }
 
   main {
-    padding: 0.5rem;
+    padding: 0.25rem;
   }
 
   .header-left h1 {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .section-header h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .evaluation-card {
     padding: 0.5rem;
   }
 
+  .form-group {
+    margin-bottom: 0.35rem;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+  }
+
   .form-group input,
   .form-group select,
   .form-group textarea {
-    padding: 0.6rem;
+    padding: 0.5rem;
     font-size: 16px;
   }
 
   .save-btn {
-    padding: 0.6rem;
-    font-size: 0.85rem;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .section {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    max-width: 100%;
   }
 
   .grades-table {
@@ -941,7 +1129,12 @@ export default {
 
   .grades-table th,
   .grades-table td {
-    padding: 0.3rem;
+    padding: 0.25rem 0.15rem;
+  }
+
+  .percentage-badge {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
   }
 
   .chart-card {

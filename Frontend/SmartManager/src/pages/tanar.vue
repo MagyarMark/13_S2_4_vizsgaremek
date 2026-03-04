@@ -28,13 +28,49 @@
           <div class="notifications">
           </div>
             <div class="user-profile">
-                <div class="avatar">{{ userProfile.initials }}</div>
-                <div>
-                    <div class="user-name">{{ userProfile.teljes_nev || userProfile.felhasznalonev }}</div>
-                    <div class="user-role">{{ getRoleLabel(userProfile.szerep_tipus) }}</div>
-                </div>
-                <div class="logout-button">
-                  <button @click="logout" title="Kijelentkezés"><i class="fas fa-sign-out-alt"></i></button>
+                <div class="dropdown" @click="dropdownOpen = !dropdownOpen">
+                    <div class="avatar">{{ userProfile.initials }}</div>
+                    <div>
+                        <div class="user-name">{{ userProfile.teljes_nev || userProfile.felhasznalonev }}</div>
+                        <div class="user-role">{{ getRoleLabel(userProfile.szerep_tipus) }}</div>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                    <div :class="['dropdown-menu', { show: dropdownOpen }]" @click.stop>
+                      <button class="dropdown-item" @click="openProfile" title="Főoldal">
+                        <i class="fas fa-home"></i>
+                        <router-link to="/tanar" style="color: inherit; text-decoration: none;">
+                          <span>Főoldal</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openProfile" title="Feladatok">
+                        <i class="fas fa-tasks"></i> 
+                        <router-link to="/Ttask" style="color: inherit; text-decoration: none;">
+                          <span>Feladatok</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openTasks" title="Értékelés">
+                        <i class="fas fa-check-circle"></i>
+                        <router-link to="/ertekeles" style="color: inherit; text-decoration: none;">
+                          <span>Értékelés</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openChat" title="Üzenetek">
+                        <i class="fas fa-comments"></i>
+                        <router-link to="/chat" style="color: inherit; text-decoration: none;">
+                          <span>Üzenetek</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openSettings" title="Beállítások">
+                        <i class="fas fa-cog"></i>
+                        <router-link to="/settings" style="color: inherit; text-decoration: none;">
+                          <span>Beállítások</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="logout" title="Kijelentkezés">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Kijelentkezés</span>
+                      </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -248,6 +284,7 @@ export default {
   setup() {
     const showModal = ref(false);
     const showSidebar = ref(false);
+    const dropdownOpen = ref(false);
     const performanceChart = ref(null);
     const submissionChart = ref(null);
     const performanceChartInstance = ref(null);
@@ -730,11 +767,18 @@ export default {
     onMounted(() => {
       fetchUserProfile();
       fetchDashboardData();
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.user-profile')) {
+          dropdownOpen.value = false;
+        }
+      });
     });
 
     return {
       showModal,
       showSidebar,
+      dropdownOpen,
       performanceChart,
       submissionChart,
       assignment,
@@ -859,6 +903,86 @@ export default {
             align-items: center;
             justify-content: center;
             font-weight: bold;
+        }
+
+        .dropdown {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+
+        .dropdown:hover {
+            background: #f0f0f0;
+        }
+
+        .dropdown i {
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        .dropdown.show i {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1200;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            color: var(--dark);
+            transition: background 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .dropdown-item:first-child {
+            border-radius: 4px 4px 0 0;
+        }
+
+        .dropdown-item:last-child {
+            border-radius: 0 0 4px 4px;
+        }
+
+        .dropdown-item:hover {
+            background: #f0f2f5;
+            color: var(--primary);
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
         }
 
         .sidebar {
@@ -1256,12 +1380,17 @@ export default {
     display: none !important;
   }
 
+  header {
+    padding: 0 1rem;
+  }
+
   header h1 {
     font-size: 1.2rem;
   }
 
   main {
     padding: 1rem;
+    margin-top: 60px;
   }
 
   .charts-container {
@@ -1281,7 +1410,7 @@ export default {
 @media (max-width: 768px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
-    grid-template-rows: 60px 1fr;
+    grid-template-rows: auto 1fr;
     grid-template-areas:
       "header"
       "main";
@@ -1294,24 +1423,32 @@ export default {
   header {
     left: 0;
     width: 100%;
+    padding: 0.5rem 1rem;
+    height: auto;
+    min-height: 50px;
   }
 
   main {
-    margin-top: 60px;
-    padding: 1rem;
+    margin-top: 50px;
+    padding: 0.75rem;
+  }
+
+  .header-left h1 {
+    font-size: 1.1rem;
   }
 
   .header-right {
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .stats-cards {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .stat-card {
-    padding: 1rem;
+    padding: 0.75rem;
+    gap: 0.75rem;
   }
 
   .assignments-grid {
@@ -1323,32 +1460,47 @@ export default {
   }
 
   .chart-card {
-    height: 280px;
+    height: 250px;
   }
 
   .table-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+
+  table {
+    font-size: 0.9rem;
+  }
+
+  th, td {
+    padding: 0.6rem;
+  }
 }
 
 @media (max-width: 600px) {
   header {
-    padding: 0 1rem;
-    height: 56px;
+    padding: 0 0.5rem;
+    height: auto;
+    min-height: 45px;
   }
 
   main {
-    margin-top: 56px;
-    padding: 0.75rem;
+    margin-top: 45px;
+    padding: 0.5rem;
   }
 
   .header-left h1 {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .header-right {
-    gap: 0.5rem;
+    gap: 0.25rem;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .user-profile {
+    margin-left: auto;
   }
 
   .header-right .user-name,
@@ -1357,9 +1509,13 @@ export default {
   }
 
   .avatar {
-    width: 36px;
-    height: 36px;
-    font-size: 0.9rem;
+    width: 32px;
+    height: 32px;
+    font-size: 0.7rem;
+  }
+
+  .dropdown {
+    padding: 0.35rem 0.5rem;
   }
 
   .page-title {
@@ -1491,26 +1647,32 @@ export default {
 }
 
 @media (max-width: 400px) {
-  header h1 {
-    font-size: 1rem;
+  header {
+    padding: 0 0.25rem;
+    height: auto;
+    min-height: 40px;
   }
 
   main {
-    padding: 0.5rem;
+    padding: 0.25rem;
+  }
+
+  header h1 {
+    font-size: 0.9rem;
   }
 
   .btn {
-    font-size: 0.85rem;
-    padding: 0.5rem 0.8rem;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.6rem;
     width: 100%;
   }
 
   .page-title {
-    gap: 0.5rem;
+    gap: 0.25rem;
   }
 
   .page-title h2 {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
   }
 
   .stats-cards {
@@ -1520,49 +1682,56 @@ export default {
 
   .stat-card {
     flex: 1 1 100%;
-    padding: 0.75rem;
+    padding: 0.5rem;
     align-items: flex-start;
+    gap: 0.5rem;
   }
 
   .stat-icon {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
   }
 
   .stat-info h3 {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
+  }
+
+  .stat-info p {
+    font-size: 0.75rem;
   }
 
   .section {
-    padding: 0.75rem;
-    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
   }
 
   .section-header h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .assignment-card {
-    padding: 0.75rem;
+    padding: 0.5rem;
   }
 
   .assignment-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   table {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   th, td {
-    padding: 0.4rem;
+    padding: 0.3rem;
     white-space: nowrap;
   }
 
   .form-group input,
   .form-group textarea,
   .form-group select {
-    padding: 0.65rem;
+    padding: 0.5rem;
+    font-size: 16px;
   }
 
   .chart-card {
