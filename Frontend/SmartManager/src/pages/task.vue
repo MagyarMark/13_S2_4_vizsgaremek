@@ -22,13 +22,47 @@
       </div>
       <div class="header-right">
         <div class="user-profile">
-          <div class="avatar">{{ userProfile.initials }}</div>
-          <div>
+          <div class="dropdown" @click="dropdownOpen = !dropdownOpen">
+            <div class="avatar">{{ userProfile.initials }}</div>
             <div class="user-name">{{ userProfile.teljes_nev || userProfile.felhasznalonev }}</div>
             <div class="user-role">{{ getRoleLabel(userProfile.szerep_tipus) }}</div>
-          </div>
-          <div class="logout-button">
-            <button @click="logout" title="Kijelentkezés"><i class="fas fa-sign-out-alt"></i></button>
+            <i class="fas fa-chevron-down"></i>
+            <div :class="['dropdown-menu', { show: dropdownOpen }]" @click.stop>
+              <button class="dropdown-item" @click="openProfile" title="Főoldal">
+                <i class="fas fa-home"></i>
+                <router-link to="/diak" style="color: inherit; text-decoration: none;">
+                  <span>Főoldal</span>
+                </router-link>
+              </button>
+              <button class="dropdown-item" @click="openProfile" title="Feladatok">
+                <i class="fas fa-tasks"></i> 
+                <router-link to="/task" style="color: inherit; text-decoration: none;">
+                  <span>Feladatok</span>
+                </router-link>
+              </button>
+              <button class="dropdown-item" @click="openTasks" title="Csapatmunka">
+                <i class="fas fa-users"></i>
+                <router-link to="/teamwork" style="color: inherit; text-decoration: none;">
+                  <span>Csapatmunka</span>
+                </router-link>
+              </button>
+              <button class="dropdown-item" @click="openChat" title="Üzenetek">
+                <i class="fas fa-comments"></i>
+                <router-link to="/chat" style="color: inherit; text-decoration: none;">
+                  <span>Üzenetek</span>
+                </router-link>
+              </button>
+              <button class="dropdown-item" @click="openSettings" title="Beállítások">
+                <i class="fas fa-cog"></i>
+                <router-link to="/settings" style="color: inherit; text-decoration: none;">
+                  <span>Beállítások</span>
+                </router-link>
+              </button>
+              <button class="dropdown-item" @click="logout" title="Kijelentkezés">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Kijelentkezés</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -133,7 +167,7 @@ export default {
   
   setup() {
     const router = useRouter()
-    
+    const dropdownOpen = ref(false)
     const navActive = ref(false)
     const userProfile = ref({
       teljes_nev: '',
@@ -601,6 +635,11 @@ export default {
 
       fetchUserProfile()
       refreshTasksList()
+      document.addEventListener('click', (e) => {
+      if (!e.target.closest('.user-profile')) {
+        this.dropdownOpen = false;
+      }
+    });
     })
 
     onBeforeUnmount(() => {
@@ -615,6 +654,7 @@ export default {
       userProfile,
       tasks,
       stats,
+      dropdownOpen,
       toggleMenu,
       logout,
       getRoleLabel
@@ -623,6 +663,85 @@ export default {
 }
 </script>
 <style>
+.dashboard-wrapper .dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  transition: background 0.3s;
+  cursor: pointer;
+}
+
+.dashboard-wrapper .dropdown:hover {
+  background: #f0f0f0;
+}
+
+.dashboard-wrapper .dropdown i {
+  font-size: 0.8rem;
+  transition: transform 0.3s;
+}
+
+.dashboard-wrapper .dropdown.show i {
+  transform: rotate(180deg);
+}
+
+.dashboard-wrapper .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1200;
+  margin-top: 0.5rem;
+}
+
+.dashboard-wrapper .dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dashboard-wrapper .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--dark);
+  transition: background 0.2s;
+  font-size: 0.95rem;
+}
+
+.dashboard-wrapper .dropdown-item:first-child {
+  border-radius: 4px 4px 0 0;
+}
+
+.dashboard-wrapper .dropdown-item:last-child {
+  border-radius: 0 0 4px 4px;
+}
+
+.dashboard-wrapper .dropdown-item:hover {
+  background: #f0f2f5;
+  color: var(--primary);
+}
+
+.dashboard-wrapper .dropdown-item i {
+  width: 20px;
+  text-align: center;
+}
         .task-dashboard {
             display: grid;
             grid-template-columns: 2fr 2fr;

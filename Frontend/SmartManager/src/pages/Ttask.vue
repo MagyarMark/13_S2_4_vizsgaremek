@@ -22,14 +22,50 @@
       </div>
       <div class="header-right">
         <div class="user-profile">
-          <div class="avatar">{{ userProfile.initials }}</div>
-          <div>
-            <div class="user-name">{{ userProfile.teljes_nev || userProfile.felhasznalonev }}</div>
-            <div class="user-role">{{ getRoleLabel(userProfile.szerep_tipus) }}</div>
-          </div>
-          <div class="logout-button">
-            <button @click="logout" title="Kijelentkezés"><i class="fas fa-sign-out-alt"></i></button>
-          </div>
+          <div class="dropdown" @click="dropdownOpen = !dropdownOpen">
+                    <div class="avatar">{{ userProfile.initials }}</div>
+                    <div>
+                        <div class="user-name">{{ userProfile.teljes_nev || userProfile.felhasznalonev }}</div>
+                        <div class="user-role">{{ getRoleLabel(userProfile.szerep_tipus) }}</div>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                    <div :class="['dropdown-menu', { show: dropdownOpen }]" @click.stop>
+                      <button class="dropdown-item" @click="openProfile" title="Főoldal">
+                        <i class="fas fa-home"></i>
+                        <router-link to="/tanar" style="color: inherit; text-decoration: none;">
+                          <span>Főoldal</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openProfile" title="Feladatok">
+                        <i class="fas fa-tasks"></i> 
+                        <router-link to="/Ttask" style="color: inherit; text-decoration: none;">
+                          <span>Feladatok</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openTasks" title="Értékelés">
+                        <i class="fas fa-check-circle"></i>
+                        <router-link to="/ertekeles" style="color: inherit; text-decoration: none;">
+                          <span>Értékelés</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openChat" title="Üzenetek">
+                        <i class="fas fa-comments"></i>
+                        <router-link to="/chat" style="color: inherit; text-decoration: none;">
+                          <span>Üzenetek</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="openSettings" title="Beállítások">
+                        <i class="fas fa-cog"></i>
+                        <router-link to="/settings" style="color: inherit; text-decoration: none;">
+                          <span>Beállítások</span>
+                        </router-link>
+                      </button>
+                      <button class="dropdown-item" @click="logout" title="Kijelentkezés">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Kijelentkezés</span>
+                      </button>
+                    </div>
+                </div>
         </div>
       </div>
     </header>
@@ -437,6 +473,7 @@ export default {
       },
       activeTab: 'members',
       selectedTeam: null,
+      dropdownOpen: false,
       editingTeam: null,
       showTeamModal: false,
       showMemberModal: false,
@@ -1699,6 +1736,12 @@ export default {
     this.fetchUserProfile();
     this.fetchTeamUsers();
     this.fetchTeamsAndTasks();
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.user-profile')) {
+        this.dropdownOpen = false;
+      }
+    });
   }
 }
 </script>
@@ -1708,6 +1751,86 @@ export default {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+.dashboard-wrapper .dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  transition: background 0.3s;
+  cursor: pointer;
+}
+
+.dashboard-wrapper .dropdown:hover {
+  background: #f0f0f0;
+}
+
+.dashboard-wrapper .dropdown i {
+  font-size: 0.8rem;
+  transition: transform 0.3s;
+}
+
+.dashboard-wrapper .dropdown.show i {
+  transform: rotate(180deg);
+}
+
+.dashboard-wrapper .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1200;
+  margin-top: 0.5rem;
+}
+
+.dashboard-wrapper .dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dashboard-wrapper .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--dark);
+  transition: background 0.2s;
+  font-size: 0.95rem;
+}
+
+.dashboard-wrapper .dropdown-item:first-child {
+  border-radius: 4px 4px 0 0;
+}
+
+.dashboard-wrapper .dropdown-item:last-child {
+  border-radius: 0 0 4px 4px;
+}
+
+.dashboard-wrapper .dropdown-item:hover {
+  background: #f0f2f5;
+  color: var(--primary);
+}
+
+.dashboard-wrapper .dropdown-item i {
+  width: 20px;
+  text-align: center;
 }
 
 .dashboard-wrapper {
@@ -2436,88 +2559,104 @@ textarea.form-control {
   header {
     left: 0;
     width: 100%;
+    padding: 0 1rem;
   }
 
   main {
     margin-left: 0;
+    padding: 1rem;
+    margin-top: 60px;
   }
 
   .teamwork-dashboard {
     grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    margin: 0;
   }
 
   .teamwork-stats {
     width: 100%;
+    grid-column: 1;
   }
 
   .teams-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .header-left h1 {
+    font-size: 1.2rem;
   }
 }
 
 @media (max-width: 768px) {
   header {
-    padding: 0 1rem;
-    height: 60px;
+    padding: 0 0.75rem;
+    height: auto;
+    min-height: 50px;
+    flex-wrap: wrap;
   }
 
   main {
-    padding: 1rem;
-    margin-top: 60px;
+    padding: 0.75rem;
+    margin-top: 50px;
   }
 
   .teamwork-section {
-    padding: 1rem;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
   }
 
   .teams-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .team-card {
-    padding: 1rem;
-  }
-
-  .team-header {
     gap: 0.75rem;
   }
 
+  .team-card {
+    padding: 0.75rem;
+  }
+
+  .team-header {
+    gap: 0.5rem;
+  }
+
   .team-icon {
-    width: 48px;
-    height: 48px;
-    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
   }
 
   .tabs {
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.25rem;
   }
 
   .tab-button {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
+    padding: 0.65rem 0.8rem;
+    font-size: 0.85rem;
   }
 
   .members-grid {
     grid-template-columns: 1fr;
-  }
-
-  .member-card {
-    padding: 0.75rem;
-  }
-
-  .tasks-list {
     gap: 0.75rem;
   }
 
+  .member-card {
+    padding: 0.65rem;
+  }
+
+  .tasks-list {
+    gap: 0.5rem;
+  }
+
   .task-item {
-    padding: 0.75rem;
+    padding: 0.65rem;
   }
 
   .modal-content {
-    max-width: 90%;
-    padding: 1.5rem;
+    max-width: 95%;
+    padding: 1.2rem;
   }
 
   .form-row {
@@ -2525,27 +2664,39 @@ textarea.form-control {
   }
 
   .form-control {
-    padding: 0.75rem;
-  }
-}
-
-@media (max-width: 600px) {
-  header {
-    padding: 0 0.75rem;
-    height: 56px;
-  }
-
-  main {
-    padding: 0.75rem;
-    margin-top: 56px;
+    padding: 0.65rem;
+    font-size: 0.95rem;
   }
 
   .header-left h1 {
     font-size: 1.1rem;
   }
+}
+
+@media (max-width: 600px) {
+  header {
+    padding: 0 0.5rem;
+    height: auto;
+    min-height: 45px;
+  }
+
+  main {
+    padding: 0.5rem;
+    margin-top: 45px;
+  }
+
+  .header-left h1 {
+    font-size: 1rem;
+  }
 
   .header-right {
-    gap: 0.5rem;
+    gap: 0.25rem;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .user-profile {
+    margin-left: auto;
   }
 
   .header-right .user-name,
@@ -2554,8 +2705,13 @@ textarea.form-control {
   }
 
   .avatar {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+    font-size: 0.7rem;
+  }
+
+  .dropdown {
+    padding: 0.35rem 0.5rem;
   }
 
   .section-title {
@@ -2695,24 +2851,27 @@ textarea.form-control {
 
 @media (max-width: 400px) {
   header {
-    padding: 0 0.5rem;
+    padding: 0 0.25rem;
+    height: auto;
+    min-height: 40px;
   }
 
   main {
-    padding: 0.5rem;
+    padding: 0.25rem;
+    margin-top: 40px;
   }
 
   .header-left h1 {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .section-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .btn {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
     width: 100%;
   }
 
@@ -2724,9 +2883,14 @@ textarea.form-control {
     padding: 0.5rem;
   }
 
+  .team-card h3 {
+    font-size: 0.95rem;
+  }
+
   .team-icon {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
   }
 
   .team-header {
@@ -2735,7 +2899,7 @@ textarea.form-control {
 
   .tab-button {
     padding: 0.5rem 0.6rem;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   .member-card,
@@ -2745,19 +2909,20 @@ textarea.form-control {
 
   .member-info h4,
   .task-title-section h4 {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .modal-content {
     max-width: 100%;
+    padding: 0.75rem;
   }
 
   .modal-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .form-control {
-    padding: 0.6rem;
+    padding: 0.5rem;
     font-size: 16px;
   }
 
@@ -2767,7 +2932,12 @@ textarea.form-control {
   }
 
   .stat-value {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
+  }
+
+  .teamwork-dashboard {
+    gap: 0.5rem;
+    padding: 0.25rem;
   }
 }
 
