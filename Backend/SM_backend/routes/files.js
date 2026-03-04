@@ -7,7 +7,7 @@ const {
     felhEngedelyBeadas
 } = require('../utils/filekov');
 const { body, validationResult } = require('express-validator');
-const pool = require('../config/database');
+const pool = require('../config/db');
 
 const router = express.Router();
 
