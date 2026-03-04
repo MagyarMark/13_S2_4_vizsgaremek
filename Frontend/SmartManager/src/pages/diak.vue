@@ -842,7 +842,7 @@ margin: 0;
   }
 
   .dashboard-wrapper .user-profile {
-    margin-left: 0;
+    margin-left: auto;
   }
 
   .dashboard-wrapper .page-title {

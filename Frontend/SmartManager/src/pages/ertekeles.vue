@@ -871,10 +871,13 @@ export default {
   header {
     left: 0;
     width: 100%;
+    padding: 0 1rem;
   }
 
   main {
     margin-left: 0;
+    padding: 1rem;
+    margin-top: 60px;
   }
 
   .content-wrapper {
@@ -892,60 +895,14 @@ export default {
 
 @media (max-width: 768px) {
   header {
-    padding: 0 1rem;
-    height: 60px;
-  }
-
-  main {
-    padding: 1rem;
-    margin-top: 60px;
-  }
-
-  .content-wrapper {
-    gap: 1rem;
-  }
-
-  .evaluation-card {
-    padding: 1rem;
-  }
-
-  .form-group {
-    margin-bottom: 0.75rem;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    padding: 0.75rem;
-  }
-
-  .save-btn {
-    padding: 0.75rem 1rem;
-  }
-
-  .grades-table {
-    font-size: 0.85rem;
-  }
-
-  .grades-table th,
-  .grades-table td {
-    padding: 0.75rem 0.5rem;
-  }
-
-  .chart-card {
-    height: 280px;
-  }
-}
-
-@media (max-width: 600px) {
-  header {
-    padding: 0 0.75rem;
-    height: 56px;
+    padding: 0.5rem 0.75rem;
+    height: auto;
+    min-height: 50px;
   }
 
   main {
     padding: 0.75rem;
-    margin-top: 56px;
+    margin-top: 50px;
   }
 
   .header-left h1 {
@@ -956,23 +913,11 @@ export default {
     gap: 0.5rem;
   }
 
-  .header-right .user-name,
-  .header-right .user-role {
-    display: none;
-  }
-
-  .avatar {
-    width: 36px;
-    height: 36px;
-  }
-
-  .section-header {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .section-header h3 {
-    font-size: 1.1rem;
+  .content-wrapper {
+    gap: 0.75rem;
+    margin-top: -1rem;
+    margin-left: -0.75rem;
+    margin-bottom: 1rem;
   }
 
   .evaluation-card {
@@ -983,21 +928,125 @@ export default {
     margin-bottom: 0.5rem;
   }
 
-  .form-group label {
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 0.6rem;
+    font-size: 0.95rem;
+  }
+
+  .save-btn {
+    padding: 0.6rem 1rem;
     font-size: 0.9rem;
+  }
+
+  .section {
+    padding: 1rem;
+    max-width: 100%;
+  }
+
+  .grades-table {
+    font-size: 0.85rem;
+  }
+
+  .grades-table th,
+  .grades-table td {
+    padding: 0.6rem 0.4rem;
+  }
+
+  .chart-card {
+    height: 250px;
+  }
+}
+
+@media (max-width: 600px) {
+  header {
+    padding: 0 0.5rem;
+    height: auto;
+    min-height: 45px;
+  }
+
+  main {
+    padding: 0.5rem;
+    margin-top: 45px;
+  }
+
+  .header-left h1 {
+    font-size: 1rem;
+  }
+
+  .header-right {
+    gap: 0.25rem;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .user-profile {
+    margin-left: auto;
+  }
+
+  .header-right .user-name,
+  .header-right .user-role {
+    display: none;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.7rem;
+  }
+
+  .dropdown {
+    padding: 0.35rem 0.5rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-header h3 {
+    font-size: 1rem;
+  }
+
+  .content-wrapper {
+    gap: 0.5rem;
+    margin-top: -1rem;
+    margin-left: -0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .evaluation-card {
+    padding: 0.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.4rem;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
   }
 
   .form-group input,
   .form-group select,
   .form-group textarea {
-    padding: 0.65rem;
+    padding: 0.5rem;
     font-size: 1rem;
   }
 
   .save-btn {
     width: 100%;
-    padding: 0.65rem;
-    font-size: 0.9rem;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .section {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    max-width: 100%;
   }
 
   .table-container {
@@ -1006,55 +1055,72 @@ export default {
   }
 
   .grades-table {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 
   .grades-table th,
   .grades-table td {
-    padding: 0.5rem;
+    padding: 0.35rem;
   }
 
   .percentage-badge {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
   }
 
   .chart-card {
-    height: 200px;
+    height: 180px;
   }
 }
 
 @media (max-width: 400px) {
   header {
-    padding: 0 0.5rem;
+    padding: 0 0.25rem;
+    height: auto;
+    min-height: 40px;
   }
 
   main {
-    padding: 0.5rem;
+    padding: 0.25rem;
   }
 
   .header-left h1 {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .section-header h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .evaluation-card {
     padding: 0.5rem;
   }
 
+  .form-group {
+    margin-bottom: 0.35rem;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+  }
+
   .form-group input,
   .form-group select,
   .form-group textarea {
-    padding: 0.6rem;
+    padding: 0.5rem;
     font-size: 16px;
   }
 
   .save-btn {
-    padding: 0.6rem;
-    font-size: 0.85rem;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .section {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    max-width: 100%;
   }
 
   .grades-table {
@@ -1063,7 +1129,12 @@ export default {
 
   .grades-table th,
   .grades-table td {
-    padding: 0.3rem;
+    padding: 0.25rem 0.15rem;
+  }
+
+  .percentage-badge {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
   }
 
   .chart-card {

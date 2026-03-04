@@ -2559,88 +2559,104 @@ textarea.form-control {
   header {
     left: 0;
     width: 100%;
+    padding: 0 1rem;
   }
 
   main {
     margin-left: 0;
+    padding: 1rem;
+    margin-top: 60px;
   }
 
   .teamwork-dashboard {
     grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    margin: 0;
   }
 
   .teamwork-stats {
     width: 100%;
+    grid-column: 1;
   }
 
   .teams-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .header-left h1 {
+    font-size: 1.2rem;
   }
 }
 
 @media (max-width: 768px) {
   header {
-    padding: 0 1rem;
-    height: 60px;
+    padding: 0 0.75rem;
+    height: auto;
+    min-height: 50px;
+    flex-wrap: wrap;
   }
 
   main {
-    padding: 1rem;
-    margin-top: 60px;
+    padding: 0.75rem;
+    margin-top: 50px;
   }
 
   .teamwork-section {
-    padding: 1rem;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
   }
 
   .teams-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .team-card {
-    padding: 1rem;
-  }
-
-  .team-header {
     gap: 0.75rem;
   }
 
+  .team-card {
+    padding: 0.75rem;
+  }
+
+  .team-header {
+    gap: 0.5rem;
+  }
+
   .team-icon {
-    width: 48px;
-    height: 48px;
-    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
   }
 
   .tabs {
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.25rem;
   }
 
   .tab-button {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
+    padding: 0.65rem 0.8rem;
+    font-size: 0.85rem;
   }
 
   .members-grid {
     grid-template-columns: 1fr;
-  }
-
-  .member-card {
-    padding: 0.75rem;
-  }
-
-  .tasks-list {
     gap: 0.75rem;
   }
 
+  .member-card {
+    padding: 0.65rem;
+  }
+
+  .tasks-list {
+    gap: 0.5rem;
+  }
+
   .task-item {
-    padding: 0.75rem;
+    padding: 0.65rem;
   }
 
   .modal-content {
-    max-width: 90%;
-    padding: 1.5rem;
+    max-width: 95%;
+    padding: 1.2rem;
   }
 
   .form-row {
@@ -2648,27 +2664,39 @@ textarea.form-control {
   }
 
   .form-control {
-    padding: 0.75rem;
-  }
-}
-
-@media (max-width: 600px) {
-  header {
-    padding: 0 0.75rem;
-    height: 56px;
-  }
-
-  main {
-    padding: 0.75rem;
-    margin-top: 56px;
+    padding: 0.65rem;
+    font-size: 0.95rem;
   }
 
   .header-left h1 {
     font-size: 1.1rem;
   }
+}
+
+@media (max-width: 600px) {
+  header {
+    padding: 0 0.5rem;
+    height: auto;
+    min-height: 45px;
+  }
+
+  main {
+    padding: 0.5rem;
+    margin-top: 45px;
+  }
+
+  .header-left h1 {
+    font-size: 1rem;
+  }
 
   .header-right {
-    gap: 0.5rem;
+    gap: 0.25rem;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .user-profile {
+    margin-left: auto;
   }
 
   .header-right .user-name,
@@ -2677,8 +2705,13 @@ textarea.form-control {
   }
 
   .avatar {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+    font-size: 0.7rem;
+  }
+
+  .dropdown {
+    padding: 0.35rem 0.5rem;
   }
 
   .section-title {
@@ -2818,24 +2851,27 @@ textarea.form-control {
 
 @media (max-width: 400px) {
   header {
-    padding: 0 0.5rem;
+    padding: 0 0.25rem;
+    height: auto;
+    min-height: 40px;
   }
 
   main {
-    padding: 0.5rem;
+    padding: 0.25rem;
+    margin-top: 40px;
   }
 
   .header-left h1 {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .section-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .btn {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
     width: 100%;
   }
 
@@ -2847,9 +2883,14 @@ textarea.form-control {
     padding: 0.5rem;
   }
 
+  .team-card h3 {
+    font-size: 0.95rem;
+  }
+
   .team-icon {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
   }
 
   .team-header {
@@ -2858,7 +2899,7 @@ textarea.form-control {
 
   .tab-button {
     padding: 0.5rem 0.6rem;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   .member-card,
@@ -2868,19 +2909,20 @@ textarea.form-control {
 
   .member-info h4,
   .task-title-section h4 {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .modal-content {
     max-width: 100%;
+    padding: 0.75rem;
   }
 
   .modal-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .form-control {
-    padding: 0.6rem;
+    padding: 0.5rem;
     font-size: 16px;
   }
 
@@ -2890,7 +2932,12 @@ textarea.form-control {
   }
 
   .stat-value {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
+  }
+
+  .teamwork-dashboard {
+    gap: 0.5rem;
+    padding: 0.25rem;
   }
 }
 
