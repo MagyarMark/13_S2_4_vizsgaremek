@@ -1,0 +1,45 @@
+auth.js
+profile-torles -> profileDelete
+
+file.js
+feltoltesek -> upload
+beadas -> submission
+beadas/beadas_id -> submission/:submission_id
+beadas -> submissionCreate
+beadas/beadas_id -> submissionUpdate/:submission_id
+
+message.js
+osszes -> allMessages
+beszelgetes -> chatHistory
+kuldes -> send
+frissites/:id -> /update/:id
+torles/:id -> delete/:id
+
+project.js
+projektek -> projects
+ujProjekt -> newProject
+projekt/:id -> projectUpdate/:id
+projektDel/:id -> projectDelete/:id
+projektTag -> projectMember
+projektTagok -> projectMembers
+ujProjektTag -> newProjectmember
+ProjektTag -> deleteProjectmember
+ujFeladat -> newTask
+feladat -> task
+feladatok -> tasks
+feladat/:id -> taskUpdate/:id
+feladat/:id -> taskDelete/:id
+ujStat -> newStat
+statisztika -> stats
+statisztika/projekt/:projektId -> statistics/project/:projectId
+statisztika/:id -> statUpdate/:id
+statiszika/:id -> statDelete/:id
+naplo -> log
+ujNaplo -> newLog
+naplo/:id -> logUpdate/:id
+naplo/:id -> logDelete/:id
+ujFeladatKomment -> newTaskcomment
+feladatKommentek/:feladat_id -> taskComments/:task_id
+feladatKomment/:id -> taskCommetUpdate/:id
+feladatKomment/:id -> taskCommentDelete/:id
+
