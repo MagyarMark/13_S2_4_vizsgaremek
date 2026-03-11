@@ -45,7 +45,8 @@ router.get('/submission', verifyToken, async (req, res) => {
                 b.feladat_id, 
                 b.felhasznalo_id, 
                 b.tanar_id, 
-                b.pontszam, 
+                b.pontszam,
+                b.maxpontszam 
                 b.jegy, 
                 b.statusz, 
                 b.visszajelzes, 
@@ -113,6 +114,7 @@ router.post('/submissionCreate', verifyToken, [
     body('felhasznalo_id'),
     body('tanar_id'),
     body('pontszam'),
+    body('maxpontszam'),
     body('jegy'),
     body('statusz'),
     body('visszajelzes'),
@@ -127,13 +129,13 @@ router.post('/submissionCreate', verifyToken, [
           errors: errors.array()
         });
         }
-        const { feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, ertekeles_idopont} = req.body;
+        const { feladat_id, felhasznalo_id, tanar_id, pontszam, maxpontszam, jegy, statusz, visszajelzes, ertekeles_idopont} = req.body;
 
         const beadas = await pool.query(
-            `INSERT INTO "Beadas" (feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, ertekeles_idopont)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-             RETURNING id, feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, bekuldes_idopont, ertekeles_idopont`,
-             [feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, ertekeles_idopont]
+            `INSERT INTO "Beadas" (feladat_id, felhasznalo_id, tanar_id, pontszam, maxpontszam, jegy, statusz, visszajelzes, ertekeles_idopont)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+             RETURNING id, feladat_id, felhasznalo_id, tanar_id, pontszam, maxpontszam, jegy, statusz, visszajelzes, bekuldes_idopont, ertekeles_idopont`,
+             [feladat_id, felhasznalo_id, tanar_id, pontszam, maxpontszam, jegy, statusz, visszajelzes, ertekeles_idopont]
         );
         res.status(201).json({
             success: true,
@@ -156,6 +158,10 @@ router.put('/submissionUpdate/:submission_id', verifyToken, [
         .optional()
         .isNumeric()
         .withMessage('Pontszám számnak kell lennie'),
+    body('maxpontszam')
+        .optional()
+        .isNumeric()
+        .withMessage('Számnak kell lennie'),
     body('jegy')
         .optional()
         .isInt({ min: 1, max: 5 })
@@ -180,7 +186,7 @@ router.put('/submissionUpdate/:submission_id', verifyToken, [
         const { beadas_id } = req.params;
         const userId = req.user.id;
         const userRole = req.user.szerep_tipus;
-        const { pontszam, jegy, statusz, visszajelzes } = req.body;
+        const { pontszam, maxpontszam, jegy, statusz, visszajelzes } = req.body;
 
         const beadasCheck = await pool.query(
             'SELECT id, felhasznalo_id, tanar_id FROM "Beadas" WHERE id = $1',
@@ -215,6 +221,12 @@ router.put('/submissionUpdate/:submission_id', verifyToken, [
             paramCount++;
         }
 
+        if (maxpontszam !== undefined) {
+            updateFields.push(`maxpontszam = $${paramCount}`);
+            updateValues.push(maxpontszam);
+            paramCount++;
+        }
+
         if (jegy !== undefined) {
             updateFields.push(`jegy = $${paramCount}`);
             updateValues.push(jegy);
@@ -240,7 +252,7 @@ router.put('/submissionUpdate/:submission_id', verifyToken, [
             });
         }
 
-        if (pontszam !== undefined || jegy !== undefined || visszajelzes !== undefined) {
+        if (pontszam !== undefined || maxpontszam !== undefined || jegy !== undefined || visszajelzes !== undefined) {
             updateFields.push(`ertekeles_idopont = NOW()`);
         }
 
@@ -250,7 +262,7 @@ router.put('/submissionUpdate/:submission_id', verifyToken, [
             UPDATE "Beadas" 
             SET ${updateFields.join(', ')} 
             WHERE id = $${paramCount}
-            RETURNING id, feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, bekuldes_idopont, ertekeles_idopont
+            RETURNING id, feladat_id, felhasznalo_id, tanar_id, pontszam, maxpontszam, jegy, statusz, visszajelzes, bekuldes_idopont, ertekeles_idopont
         `;
 
         const updatedBeadas = await pool.query(updateQuery, updateValues);

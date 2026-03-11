@@ -1,3 +1,12 @@
+admin.js
+users/:id -> user/:id
+users/:id -> userUpdate/:id
+users/:id -> userDelete/:id
+users/:id/status -> users/:id/statusz
+users/:id/role -> user/:id/role
+projects/:id -> projectDelete/:id
+
+
 auth.js
 profile-torles -> profileDelete
 

@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS public."Beadas"
     felhasznalo_id integer NOT NULL,
     tanar_id integer NOT NULL,
     pontszam integer,
+    maxpontszam integer DEFAULT 100,
     jegy integer,
     statusz text COLLATE pg_catalog."default" DEFAULT 'hiányzik'::text,
     visszajelzes text COLLATE pg_catalog."default",
