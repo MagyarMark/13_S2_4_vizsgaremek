@@ -377,7 +377,7 @@ router.post('/refresh-token', verifyRefreshToken, async (req, res) => {
   }
 });
 
-router.put('/profile-torles', verifyToken, async (req, res) => {
+router.put('/profileDelete', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
 

@@ -6,7 +6,7 @@ const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/projektek', verifyToken, async (req, res) => {
+router.get('/projects', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const projectsResult = await pool.query(
@@ -33,7 +33,7 @@ router.get('/projektek', verifyToken, async (req, res) => {
   }
 });
 
-router.post('/ujProjekt', verifyToken, [
+router.post('/newProject', verifyToken, [
   body('projekt_nev')
     .notEmpty()
     .withMessage('Projekt név kötelező'),
@@ -80,7 +80,7 @@ router.post('/ujProjekt', verifyToken, [
   }
 });
 
-router.put('/projekt/:id', verifyToken, [
+router.put('/projectUpdate/:id', verifyToken, [
   body('projekt_nev')
     .optional()
     .notEmpty()
@@ -190,7 +190,7 @@ router.put('/projekt/:id', verifyToken, [
   }
 });
 
-router.delete('/projektDel/:id', verifyToken, async (req, res) => {
+router.delete('/projectDelete/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
@@ -241,7 +241,7 @@ router.delete('/projektDel/:id', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/projektTag', verifyToken, async (req, res) => {
+router.get('/projectMember', verifyToken, async (req, res) => {
   try {
     const usersResult = await pool.query(
       'SELECT id, felhasznalonev, teljes_nev, email, szerep_tipus FROM "Felhasznalo" WHERE aktiv = true ORDER BY teljes_nev, felhasznalonev'
@@ -258,7 +258,7 @@ router.get('/projektTag', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/projektTagok', verifyToken, async (req, res) => {
+router.get('/projectMembers', verifyToken, async (req, res) => {
   try {
     const { projekt_id } = req.query;
     
@@ -290,7 +290,7 @@ router.get('/projektTagok', verifyToken, async (req, res) => {
 });
 
 
-router.post('/ujProjektTag', verifyToken, [
+router.post('/newProjectmember', verifyToken, [
   body('projekt_id')
     .notEmpty(),
   body('felhasznalo_id')
@@ -363,7 +363,7 @@ router.post('/ujProjektTag', verifyToken, [
     }
 });
 
-router.delete('/ProjektTag', verifyToken, async (req, res) => {
+router.delete('/deleteProjectmember', verifyToken, async (req, res) => {
   try {
     const { projekt_id, felhasznalo_id } = req.body;
     const userId = req.user.id;
@@ -423,7 +423,7 @@ router.delete('/ProjektTag', verifyToken, async (req, res) => {
   }
 })
 
-router.post('/ujFeladat', verifyToken, [
+router.post('/newTask', verifyToken, [
    body('projekt_id')
     .notEmpty()
     .withMessage('Projekt ID kötelező')
@@ -482,7 +482,7 @@ router.post('/ujFeladat', verifyToken, [
     }
 });
 
-router.get('/feladat', verifyToken, async (req, res) => {
+router.get('/task', verifyToken, async (req, res) => {
   try {
     const { projekt_id } = req.query;
     const userId = req.user.id;
@@ -514,7 +514,7 @@ router.get('/feladat', verifyToken, async (req, res) => {
   }
 });
 
-  router.get('/feladatok', verifyToken, async (req, res) => {
+  router.get('/tasks', verifyToken, async (req, res) => {
     try {
       const userId = req.user.id;
       const tasksResult = await pool.query(
@@ -538,7 +538,7 @@ router.get('/feladat', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/feladat/:id', verifyToken, [
+router.put('/taskUpdate/:id', verifyToken, [
   body('feladat_nev')
     .optional()
     .notEmpty()
@@ -668,7 +668,7 @@ router.put('/feladat/:id', verifyToken, [
   }
 });
 
-router.delete('/feladat/:id', verifyToken, async (req, res) => {
+router.delete('/taskDelete/:id', verifyToken, async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -744,7 +744,7 @@ router.delete('/feladat/:id', verifyToken, async (req, res) => {
   }
 });
 
- router.post('/ujStat', verifyToken, [
+ router.post('/newStat', verifyToken, [
   body('projekt_id')
    .notEmpty(),
   body('statisztika_nev')
@@ -788,7 +788,7 @@ router.delete('/feladat/:id', verifyToken, async (req, res) => {
       }
   });
 
-  router.get('/statisztika', verifyToken, async (req, res) => {
+  router.get('/stats', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
@@ -817,7 +817,7 @@ router.delete('/feladat/:id', verifyToken, async (req, res) => {
 });
 
 
-router.get('/statisztika/projekt/:projektId', verifyToken, async (req, res) => {
+router.get('/statistics/project/:projectId', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const { projektId } = req.params;
@@ -846,7 +846,7 @@ router.get('/statisztika/projekt/:projektId', verifyToken, async (req, res) => {
   }
 });
 
-router.put('/statisztika/:id', verifyToken, [
+router.put('/statUpdate/:id', verifyToken, [
   body('statisztika_nev')
     .optional()
     .notEmpty()
@@ -946,7 +946,7 @@ router.put('/statisztika/:id', verifyToken, [
   }
 });
 
-router.delete('/statisztika/:id', verifyToken, async (req, res) => {
+router.delete('/statDelete/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
@@ -992,7 +992,7 @@ router.delete('/statisztika/:id', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/naplo', verifyToken, async (req, res) => {
+router.get('/log', verifyToken, async (req, res) => {
   try {
     const { projekt_id, feladat_id } = req.query;
     let query = `SELECT n.id, n.felhasznalo_id, n.projekt_id, n.feladat_id, n.muvelet, n.leiras, n.idopont,
@@ -1036,7 +1036,7 @@ router.get('/naplo', verifyToken, async (req, res) => {
   }
 });
 
-router.post('/ujNaplo', verifyToken, [
+router.post('/newLog', verifyToken, [
   body('projekt_id')
     .notEmpty(),
   body('muvelet')
@@ -1083,7 +1083,7 @@ router.post('/ujNaplo', verifyToken, [
   }
 });
 
-router.put('/naplo/:id', verifyToken, [
+router.put('/logUpdate/:id', verifyToken, [
   body('muvelet')
     .optional()
     .notEmpty()
@@ -1221,7 +1221,7 @@ router.delete('/naplo/:id', verifyToken, async (req, res) => {
   }
 });
 
-router.post('/ujFeladatKomment', verifyToken, [
+router.post('/newTaskcomment', verifyToken, [
   body('feladat_id')
     .notEmpty()
     .withMessage('Feladat ID kötelező'),
@@ -1265,7 +1265,7 @@ router.post('/ujFeladatKomment', verifyToken, [
   }
 });
 
-router.get('/feladatKommentek/:feladat_id', verifyToken, async (req, res) => {
+router.get('/taskComments/:task_id', verifyToken, async (req, res) => {
   try {
     const { feladat_id } = req.params;
 
@@ -1293,7 +1293,7 @@ router.get('/feladatKommentek/:feladat_id', verifyToken, async (req, res) => {
   }
 });
 
-router.put('/feladatKomment/:id', verifyToken, [
+router.put('/taskCommetUpdate/:id', verifyToken, [
   body('komment_szoveg')
     .notEmpty()
     .withMessage('Komment szövege kötelező')
@@ -1356,7 +1356,7 @@ router.put('/feladatKomment/:id', verifyToken, [
   }
 });
 
-router.delete('/feladatKomment/:id', verifyToken, async (req, res) => {
+router.delete('/taskCommentDelete/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;

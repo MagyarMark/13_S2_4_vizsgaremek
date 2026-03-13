@@ -18,7 +18,7 @@ const isProjectMember = async (userId, projektId) => {
   return membership.rows.length > 0;
 };
 
-router.get('/osszes', verifyToken, async (req, res) => {
+router.get('/allMessages', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const { recipientId, projektId } = req.query;
@@ -86,7 +86,7 @@ router.get('/osszes', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/beszelgetes', verifyToken, [
+router.get('/chatHistory', verifyToken, [
   query('with')
     .notEmpty()
     .withMessage('A másik felhasználó ID-ja kötelező'),
@@ -137,7 +137,7 @@ router.get('/beszelgetes', verifyToken, [
   }
 });
 
-router.post('/kuldes', verifyToken, [
+router.post('/send', verifyToken, [
   body('fogado_id')
     .optional()
     .isInt()
@@ -241,7 +241,7 @@ router.post('/kuldes', verifyToken, [
   }
 });
 
-router.put('/frissites/:id', verifyToken, [
+router.put('/update/:id', verifyToken, [
   body('allapot')
     .optional()
     .isIn(['nem_olvasott', 'olvasott', 'torolt'])
@@ -325,7 +325,7 @@ router.put('/frissites/:id', verifyToken, [
   }
 });
 
-router.delete('/torles/:id', verifyToken, async (req, res) => {
+router.delete('/delete/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const messageId = req.params.id;

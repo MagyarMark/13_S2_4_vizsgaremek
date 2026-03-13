@@ -11,7 +11,7 @@ const pool = require('../config/db');
 
 const router = express.Router();
 
-router.get('/feltoltesek', verifyToken, async (req, res) => {
+router.get('/upload', verifyToken, async (req, res) => {
     try {
         const felhasznalo_id = req.user.id;
         const { beadas_id } = req.query;
@@ -37,7 +37,7 @@ router.get('/feltoltesek', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/beadas', verifyToken, async (req, res) => {
+router.get('/submission', verifyToken, async (req, res) => {
     try {
         const beadasResult = await pool.query(
             `SELECT 
@@ -76,7 +76,7 @@ router.get('/beadas', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/beadas/:beadas_id', verifyToken, async (req, res) => {
+router.get('/submission/:submission_id', verifyToken, async (req, res) => {
     try {
         const { beadas_id } = req.params;
     
@@ -108,7 +108,7 @@ router.get('/beadas/:beadas_id', verifyToken, async (req, res) => {
     }
 });
 
-router.post('/beadas', verifyToken, [
+router.post('/submissionCreate', verifyToken, [
     body('feladat_id'),
     body('felhasznalo_id'),
     body('tanar_id'),
@@ -151,7 +151,7 @@ router.post('/beadas', verifyToken, [
     }
 });
 
-router.put('/beadas/:beadas_id', verifyToken, [
+router.put('/submissionUpdate/:submission_id', verifyToken, [
     body('pontszam')
         .optional()
         .isNumeric()
@@ -267,76 +267,6 @@ router.put('/beadas/:beadas_id', verifyToken, [
         res.status(500).json({
             success: false,
             message: 'Szerver hiba a beadás frissítése során',
-            error: error.message
-        });
-    }
-});
-
-router.patch('/beadas/:beadas_id/statusz', verifyToken, [
-    body('statusz')
-        .notEmpty()
-        .withMessage('Státusz kötelező')
-        .isIn(['beküldve', 'értékelt'])
-        .withMessage('Érvényes státusz: beküldve, értékelt')
-], async (req, res) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Hibás adatok',
-                errors: errors.array()
-            });
-        }
-
-        const { beadas_id } = req.params;
-        const userId = req.user.id;
-        const userRole = req.user.szerep_tipus;
-        const { statusz } = req.body;
-
-        const beadasCheck = await pool.query(
-            'SELECT id, felhasznalo_id, tanar_id FROM "Beadas" WHERE id = $1',
-            [beadas_id]
-        );
-
-        if (beadasCheck.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Beadás nem található'
-            });
-        }
-
-        const beadas = beadasCheck.rows[0];
-        const isOwner = beadas.felhasznalo_id === userId;
-        const isTeacher = beadas.tanar_id === userId || userRole === 'tanar' || userRole === 'admin';
-
-        if (!isOwner && !isTeacher) {
-            return res.status(403).json({
-                success: false,
-                message: 'Nincs jogosultsága a beadás státuszának módosításához'
-            });
-        }
-
-        const updatedBeadas = await pool.query(
-            `UPDATE "Beadas"
-             SET statusz = $1
-             WHERE id = $2
-             RETURNING id, feladat_id, felhasznalo_id, tanar_id, pontszam, jegy, statusz, visszajelzes, bekuldes_idopont, ertekeles_idopont`,
-            [statusz, beadas_id]
-        );
-
-        return res.json({
-            success: true,
-            message: 'Beadás státusza sikeresen frissítve',
-            data: {
-                beadas: updatedBeadas.rows[0]
-            }
-        });
-    } catch (error) {
-        console.error('Szerver hiba a beadás státusz frissítése során:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Szerver hiba a beadás státusz frissítése során',
             error: error.message
         });
     }

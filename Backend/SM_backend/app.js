@@ -127,5 +127,8 @@ app.use('/api/project', projectRoutes);
 const messagesRoutes = require('./routes/messages');
 app.use('/api/messages', messagesRoutes);
 
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
+
 module.exports = app;
 
