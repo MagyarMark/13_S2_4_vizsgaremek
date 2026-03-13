@@ -93,7 +93,7 @@ router.get('/users', [
   }
 });
 
-router.get('/users/:id', async (req, res) => {
+router.get('/user/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -141,7 +141,7 @@ router.get('/users/:id', async (req, res) => {
   }
 });
 
-router.put('/users/:id', [
+router.put('/userUpdate/:id', [
   body('email').optional().isEmail().withMessage('Érvényes email cím szükséges'),
   body('teljes_nev').optional(),
   body('jelszo').optional().isLength({ min: 6 }).withMessage('A jelszónak legalább 6 karakter hosszúnak kell lennie'),
@@ -265,7 +265,7 @@ router.put('/users/:id', [
   }
 });
 
-router.delete('/users/:id', async (req, res) => {
+router.delete('/userDelete/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -314,54 +314,7 @@ router.delete('/users/:id', async (req, res) => {
   }
 });
 
-router.put('/users/:id/status', [
-  body('aktiv').isBoolean().withMessage('Az aktiv értékének boolean-nak kell lennie')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Hibás adatok',
-        errors: errors.array()
-      });
-    }
-
-    const { id } = req.params;
-    const { aktiv } = req.body;
-
-    const result = await pool.query(
-      `UPDATE "Felhasznalo"
-       SET aktiv = $1
-       WHERE id = $2
-       RETURNING id, felhasznalonev, aktiv`,
-      [aktiv, id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Felhasználó nem található'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: `Felhasználó ${aktiv ? 'aktiválva' : 'deaktiválva'}`,
-      data: {
-        user: result.rows[0]
-      }
-    });
-  } catch (error) {
-    console.error('Hiba a felhasználó státuszának frissítése során:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Szerver hiba a felhasználó státuszának frissítése során'
-    });
-  }
-});
-
-router.put('/users/:id/role', [
+router.put('/user/:id/role', [
   body('szerep_tipus').isIn(['tanar', 'diak', 'admin']).withMessage('Érvényes szerep: tanar, diak, admin')
 ], async (req, res) => {
   try {
@@ -488,7 +441,7 @@ router.get('/projects', [
   }
 });
 
-router.delete('/projects/:id', async (req, res) => {
+router.delete('/projectDelete/:id', async (req, res) => {
   try {
     const { id } = req.params;
 

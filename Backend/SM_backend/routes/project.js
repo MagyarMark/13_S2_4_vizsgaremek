@@ -753,6 +753,8 @@ router.delete('/taskDelete/:id', verifyToken, async (req, res) => {
     .optional(),
   body('pontszam')
     .optional(),
+  body('maxpontszam')
+    .optional(),
  ], async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -763,14 +765,14 @@ router.delete('/taskDelete/:id', verifyToken, async (req, res) => {
           errors: errors.array()
         });
       }
-      const { projekt_id, statisztika_nev, ertek, pontszam } = req.body;
+      const { projekt_id, statisztika_nev, ertek, pontszam, maxpontszam } = req.body;
       const felhasznalo_id = req.user.id;
 
       const newStat = await pool.query(
-        `INSERT INTO "Statisztika" (felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam`,
-        [felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam]
+        `INSERT INTO "Statisztika" (felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam, maxpontszam)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam, maxpontszam`,
+        [felhasznalo_id, projekt_id, statisztika_nev, ertek, pontszam, maxpontszam]
       );
     res.status(201).json({
           success: true,
@@ -793,7 +795,7 @@ router.delete('/taskDelete/:id', verifyToken, async (req, res) => {
     const userId = req.user.id;
 
     const statsResult = await pool.query(
-      `SELECT id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam
+      `SELECT id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam, maxpontszam
        FROM "Statisztika"
        WHERE felhasznalo_id = $1
        ORDER BY meresi_idopont DESC`,
@@ -823,7 +825,7 @@ router.get('/statistics/project/:projectId', verifyToken, async (req, res) => {
     const { projektId } = req.params;
 
     const statsResult = await pool.query(
-      `SELECT id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam
+      `SELECT id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam, maxpontszam
        FROM "Statisztika"
        WHERE felhasznalo_id = $1 AND projekt_id = $2
        ORDER BY meresi_idopont DESC`,
@@ -854,7 +856,9 @@ router.put('/statUpdate/:id', verifyToken, [
   body('ertek')
     .optional(),
   body('pontszam')
-    .optional()
+    .optional(),
+  body('maxpontszam')
+    .optional(),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -868,7 +872,7 @@ router.put('/statUpdate/:id', verifyToken, [
 
     const { id } = req.params;
     const userId = req.user.id;
-    const { statisztika_nev, ertek, pontszam } = req.body;
+    const { statisztika_nev, ertek, pontszam, maxpontszam } = req.body;
 
     const statCheck = await pool.query(
       'SELECT id, felhasznalo_id FROM "Statisztika" WHERE id = $1',
@@ -912,6 +916,12 @@ router.put('/statUpdate/:id', verifyToken, [
       paramCount++;
     }
 
+    if (maxpontszam !== undefined) {
+      updateFields.push(`maxpontszam = $${paramCount}`);
+      updateValues.push(maxpontszam);
+      paramCount++;
+    }
+
     if (updateFields.length === 0) {
       return res.status(400).json({
         success: false,
@@ -925,7 +935,7 @@ router.put('/statUpdate/:id', verifyToken, [
       UPDATE "Statisztika" 
       SET ${updateFields.join(', ')} 
       WHERE id = $${paramCount}
-      RETURNING id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam
+      RETURNING id, felhasznalo_id, projekt_id, statisztika_nev, ertek, meresi_idopont, pontszam, maxpontszam
     `;
 
     const updatedStat = await pool.query(updateQuery, updateValues);
