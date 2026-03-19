@@ -1,6 +1,6 @@
 --
--- TOC entry 5008 (class 0 OID 17056)
--- Dependencies: 219
+-- TOC entry 5020 (class 0 OID 17602)
+-- Dependencies: 222
 -- Data for Name: Felhasznalo; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -54,6 +54,7 @@ INSERT INTO public."Felhasznalo" (id, felhasznalonev, jelszo, email, teljes_nev,
 INSERT INTO public."Felhasznalo" (id, felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, letrehozas_idopont, utolso_bejelentkezes, elerheto, aktiv) VALUES (33, 'testuser_1771932505140', NULL, NULL, NULL, 'diak', '2026-02-24 12:28:25.48512', '2026-02-24 12:28:25.905356', false, false);
 INSERT INTO public."Felhasznalo" (id, felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, letrehozas_idopont, utolso_bejelentkezes, elerheto, aktiv) VALUES (36, 'testuser_1772011670196', NULL, NULL, NULL, 'diak', '2026-02-25 10:27:50.487963', '2026-02-25 10:27:50.642232', false, false);
 INSERT INTO public."Felhasznalo" (id, felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, letrehozas_idopont, utolso_bejelentkezes, elerheto, aktiv) VALUES (34, 'testuser_1771932564918', NULL, NULL, NULL, 'diak', '2026-02-24 12:29:25.18181', '2026-02-24 12:29:25.537164', false, false);
+INSERT INTO public."Felhasznalo" (id, felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, letrehozas_idopont, utolso_bejelentkezes, elerheto, aktiv) VALUES (52, 'admin_', '$2b$10$KkUiqjZk.XGALOSbG3ouSuGtXkBIkvfHcVf/fQKMS4b3Ioqy66i12', 'admin@admin.com', 'Admin Isztrátor', 'admin', '2026-03-12 16:41:22.225109', '2026-03-13 14:15:33.42314', true, true);
 
 --
 -- TOC entry 5009 (class 0 OID 17075)
@@ -193,3 +194,92 @@ INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalo
 INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje) VALUES (5, 1, NULL, 1, 'ok.', 'nem_olvasott', '2026-01-30 00:38:55.595141');
 INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje) VALUES (2, 3, NULL, 1, 'Megvan az első verzió, holnap feltöltöm.', 'elküldve', '2025-11-07 11:13:42.407378');
 INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje) VALUES (1, 1, NULL, 1, 'Kérlek küldd el a frontend haladást.', 'olvasott', '2025-11-07 11:13:42.407378');
+
+--
+-- TOC entry 5047 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: Beadas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Beadas_id_seq"', 27, true);
+
+
+--
+-- TOC entry 5048 (class 0 OID 0)
+-- Dependencies: 229
+-- Name: FeladatKomment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."FeladatKomment_id_seq"', 3, true);
+
+
+--
+-- TOC entry 5049 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: Feladat_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Feladat_id_seq"', 27, true);
+
+
+--
+-- TOC entry 5050 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: Felhasznalo_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Felhasznalo_id_seq"', 52, true);
+
+
+--
+-- TOC entry 5051 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: File_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."File_id_seq"', 8, true);
+
+
+--
+-- TOC entry 5052 (class 0 OID 0)
+-- Dependencies: 233
+-- Name: Naplo_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Naplo_id_seq"', 8, true);
+
+
+--
+-- TOC entry 5053 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: ProjektTag_projekt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."ProjektTag_projekt_id_seq"', 1, false);
+
+
+--
+-- TOC entry 5054 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: Projekt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Projekt_id_seq"', 32, true);
+
+
+--
+-- TOC entry 5055 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: Statisztika_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Statisztika_id_seq"', 4, true);
+
+
+--
+-- TOC entry 5056 (class 0 OID 0)
+-- Dependencies: 239
+-- Name: Uzenet_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Uzenet_id_seq"', 5, true);
