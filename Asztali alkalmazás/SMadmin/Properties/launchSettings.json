@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SMadmin (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "SMadmin (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

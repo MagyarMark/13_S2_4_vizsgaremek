@@ -1,0 +1,84 @@
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using SMadmin;
+using SMadmin.Services;
+
+namespace SMadmin.Views;
+
+public sealed partial class LoginPage : Page
+{
+    private readonly AdminApiService _apiService;
+    private bool _isLoading;
+
+    public LoginPage()
+    {
+        this.InitializeComponent();
+        _apiService = App.GetService<AdminApiService>();
+    }
+
+    private async void LoginButton_Click(object sender, RoutedEventArgs e)
+    {
+        await DoLoginAsync();
+    }
+
+    private async void PasswordBox_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == Windows.System.VirtualKey.Enter)
+            await DoLoginAsync();
+    }
+
+    private async System.Threading.Tasks.Task DoLoginAsync()
+    {
+        if (_isLoading) return;
+
+        var username = UsernameBox.Text.Trim();
+        var password = PasswordBox.Password;
+
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            ShowError("Kérem adja meg a felhasználónevet és jelszót");
+            return;
+        }
+
+        SetLoading(true);
+
+        try
+        {
+            var result = await _apiService.LoginAsync(username, password);
+
+            if (result.Success && !string.IsNullOrEmpty(result.Data?.AccessToken))
+            {
+                _apiService.SetAuthToken(result.Data.AccessToken);
+                App.ShowMainWindow();
+            }
+            else
+            {
+                ShowError(result.Message ?? "Sikertelen bejelentkezés");
+            }
+        }
+        catch (System.Exception ex)
+        {
+            ShowError($"Hiba: {ex.Message}");
+        }
+        finally
+        {
+            SetLoading(false);
+        }
+    }
+
+    private void SetLoading(bool loading)
+    {
+        _isLoading = loading;
+        LoadingRing.IsActive = loading;
+        LoadingRing.Visibility = loading ? Visibility.Visible : Visibility.Collapsed;
+        LoginText.Visibility = loading ? Visibility.Collapsed : Visibility.Visible;
+        LoginButton.IsEnabled = !loading;
+    }
+
+    private void ShowError(string message)
+    {
+        ErrorBar.Message = message;
+        ErrorBar.IsOpen = !string.IsNullOrEmpty(message);
+    }
+}
