@@ -49,7 +49,7 @@ public sealed partial class LoginPage : Page
 
             if (result.Success && !string.IsNullOrEmpty(result.Data?.AccessToken))
             {
-                _apiService.SetAuthToken(result.Data.AccessToken);
+                _apiService.SetAuthToken(result.Data.AccessToken, result.Data.User);
                 App.ShowMainWindow();
             }
             else

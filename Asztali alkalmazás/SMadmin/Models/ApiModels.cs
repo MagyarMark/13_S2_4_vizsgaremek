@@ -68,5 +68,5 @@ public class LoginData
     public string? RefreshToken { get; set; }
 
     [JsonPropertyName("user")]
-    public object? User { get; set; }
+    public User? User { get; set; }
 }

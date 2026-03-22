@@ -41,7 +41,14 @@ public sealed partial class UsersPage : Page
 
             if (response.Success && response.Data != null)
             {
+                var currentUserId = _apiService.CurrentUser?.Id;
                 var users = new List<User>(response.Data.Users ?? []);
+
+                foreach (var u in users)
+                {
+                    u.IsNotCurrentUser = currentUserId == null || u.Id != currentUserId;
+                }
+
                 UsersListView.ItemsSource = users;
                 _totalPages = response.Data.Pagination.TotalPages;
                 _totalUsers = response.Data.Pagination.Total;
@@ -85,6 +92,58 @@ public sealed partial class UsersPage : Page
             catch (System.Exception ex)
             {
                 ShowError($"Error: {ex.Message}");
+            }
+            finally
+            {
+                SetLoading(false);
+            }
+        }
+    }
+
+    private async void SaveRole_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is User user)
+        {
+            SetLoading(true);
+            try
+            {
+                var response = await _apiService.UpdateUserRoleAsync(user.Id, user.Role);
+                if (!response.Success)
+                {
+                    ShowError(response.Message ?? "Sikertelen szerepkör módosítás");
+                    await LoadUsersAsync();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                ShowError($"Error: {ex.Message}");
+                await LoadUsersAsync();
+            }
+            finally
+            {
+                SetLoading(false);
+            }
+        }
+    }
+
+    private async void SaveActive_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is User user)
+        {
+            SetLoading(true);
+            try
+            {
+                var response = await _apiService.UpdateUserAsync(user.Id, new { aktiv = user.Active });
+                if (!response.Success)
+                {
+                    ShowError(response.Message ?? "Sikertelen státusz módosítás");
+                    await LoadUsersAsync();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                ShowError($"Error: {ex.Message}");
+                await LoadUsersAsync();
             }
             finally
             {
