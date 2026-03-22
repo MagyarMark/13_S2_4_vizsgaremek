@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const pool = require('../config/db');
 const fileUpload = require('express-fileupload');
@@ -9,8 +10,22 @@ const fileExtLimiter = require('../middleware/fileExtLimiter');
 const fileSizeLimiter = require('../middleware/fileSizeLimiter');
 const { verifyToken, verifyRefreshToken } = require('../middleware/auth');
 const { accessTokenSecret, refreshTokenSecret, accessTokenExpiration, refreshTokenExpiration } = require('../config/jwt');
+const { sendVerificationEmail } = require('../nodemailer/nmapp');
 
 const router = express.Router();
+
+const generateEmailVerificationToken = () => {
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  return { rawToken, hashedToken, expiresAt };
+};
+
+const buildVerificationUrl = (rawToken) => {
+  const verificationBaseUrl = process.env.EMAIL_VERIFICATION_URL_BASE || `${process.env.BASE_URL || 'http://localhost:3000'}/api/auth/verify-email`;
+  return `${verificationBaseUrl}?token=${rawToken}`;
+};
 
 const generateTokens = (user) => {
   const accessToken = jwt.sign(
@@ -77,17 +92,30 @@ router.post('/register', [
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(jelszo, saltRounds);
 
+    const { rawToken, hashedToken, expiresAt } = generateEmailVerificationToken();
+
     const newUser = await pool.query(
       `INSERT INTO "Felhasznalo" (
-        felhasznalonev, jelszo, email, teljes_nev, szerep_tipus
-      ) VALUES ($1, $2, $3, $4, $5) 
-      RETURNING id, felhasznalonev, email, teljes_nev, szerep_tipus, letrehozas_idopont`,
-      [felhasznalonev, hashedPassword, email, teljes_nev, szerep_tipus]
+        felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, email_megerositve, email_megerosito_token, email_megerosites_hatarido
+      ) VALUES ($1, $2, $3, $4, $5, false, $6, $7) 
+      RETURNING id, felhasznalonev, email, teljes_nev, szerep_tipus, letrehozas_idopont, email_megerositve`,
+      [felhasznalonev, hashedPassword, email, teljes_nev, szerep_tipus, hashedToken, expiresAt]
     );
+
+    const verificationUrl = buildVerificationUrl(rawToken);
+    try {
+      await sendVerificationEmail({
+        to: email,
+        felhasznalonev,
+        verificationUrl
+      });
+    } catch (mailError) {
+      console.error('Nem sikerult kikuldeni a megerosito emailt:', mailError);
+    }
 
     res.status(201).json({
       success: true,
-      message: 'Sikeres regisztráció',
+      message: 'Sikeres regisztráció. Ellenorizd az emailedet a fiok aktivalasahoz.',
       data: {
         user: newUser.rows[0]
       }
@@ -123,7 +151,7 @@ router.post('/login', [
     const { felhasznalonev, jelszo } = req.body;
 
     const userResult = await pool.query(
-      `SELECT id, felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, aktiv, elerheto 
+      `SELECT id, felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, aktiv, elerheto, email_megerositve 
        FROM "Felhasznalo" 
        WHERE felhasznalonev = $1`,
       [felhasznalonev]
@@ -142,6 +170,13 @@ router.post('/login', [
       return res.status(401).json({
         success: false,
         message: 'A felhasználói fiók inaktív'
+      });
+    }
+
+    if (!user.email_megerositve) {
+      return res.status(403).json({
+        success: false,
+        message: 'Az email cim meg nincs megerositve. Ellenorizd a postaladadat.'
       });
     }
 
@@ -176,6 +211,123 @@ router.post('/login', [
     res.status(500).json({
       success: false,
       message: 'Szerver hiba a bejelentkezés során'
+    });
+  }
+});
+
+router.get('/verify-email', async (req, res) => {
+  try {
+    const token = req.query.token;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: 'Hianyzik a megerosito token'
+      });
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const verifiedUser = await pool.query(
+      `UPDATE "Felhasznalo"
+       SET email_megerositve = true,
+           email_megerosito_token = NULL,
+           email_megerosites_hatarido = NULL
+       WHERE email_megerosito_token = $1
+         AND email_megerosites_hatarido > NOW()
+       RETURNING id, felhasznalonev, email, email_megerositve`,
+      [hashedToken]
+    );
+
+    if (verifiedUser.rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Érvénytelen vagy lejárt megerősítő link'
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Email cim sikeresen megerősítve',
+      data: {
+        user: verifiedUser.rows[0]
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba az email megerősítése során:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Szerver hiba az email megerősítése során'
+    });
+  }
+});
+
+router.post('/resend-verification-email', [
+  body('email')
+    .isEmail()
+    .withMessage('Ervenyes email cim megadasa kotelezo')
+    .notEmpty()
+    .withMessage('Email cim kotelezo')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Hibas adatok',
+        errors: errors.array()
+      });
+    }
+
+    const { email } = req.body;
+    const userResult = await pool.query(
+      `SELECT id, felhasznalonev, email, email_megerositve
+       FROM "Felhasznalo"
+       WHERE email = $1`,
+      [email]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Felhasznalo nem talalhato ezzel az email cimmel'
+      });
+    }
+
+    const user = userResult.rows[0];
+
+    if (user.email_megerositve) {
+      return res.status(400).json({
+        success: false,
+        message: 'Az email cim mar meg van erosítve'
+      });
+    }
+
+    const { rawToken, hashedToken, expiresAt } = generateEmailVerificationToken();
+    await pool.query(
+      `UPDATE "Felhasznalo"
+       SET email_megerosito_token = $1,
+           email_megerosites_hatarido = $2
+       WHERE id = $3`,
+      [hashedToken, expiresAt, user.id]
+    );
+
+    const verificationUrl = buildVerificationUrl(rawToken);
+    await sendVerificationEmail({
+      to: user.email,
+      felhasznalonev: user.felhasznalonev,
+      verificationUrl
+    });
+
+    return res.json({
+      success: true,
+      message: 'Megerosito email ujra elkuldve'
+    });
+  } catch (error) {
+    console.error('Szerver hiba a megerosito email ujrakuldesekor:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a megerosito email ujrakuldesekor'
     });
   }
 });
