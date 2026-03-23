@@ -75,6 +75,29 @@ components:
           type: boolean
           description: Felhasználó elérhetősége
           example: true
+    ReactivateAccountRequest:
+      type: object
+      required:
+        - token
+        - email
+        - jelszo
+      properties:
+        token:
+          type: string
+          description: A reaktivacios emailben kapott token
+          example: a3e4f9d9a6089e8f495e39180f9ab8f4
+        email:
+          type: string
+          description: Uj email cim a fiokhoz
+          example: uj.email@example.com
+        jelszo:
+          type: string
+          description: Uj jelszo a fiokhoz
+          example: UjJelszo123
+        teljes_nev:
+          type: string
+          description: Opcionális uj teljes nev
+          example: Kiss Peter
     User:
       type: object
       properties:
@@ -513,13 +536,13 @@ paths:
 
   /api/auth/profileDelete:
     put:
-      summary: Profil törlése (deaktiváció)
+      summary: Profil deaktiválása, adatok törlése és reaktivációs email küldése
       tags: [Auth]
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Profil sikeresen törölve (deaktiválva)
+          description: Profil sikeresen deaktiválva és email kiküldve
           content:
             application/json:
               schema:
@@ -530,9 +553,9 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Felhasználói fiók sikeresen törölve (deaktiválva)
+                    example: Felhasználói fiók sikeresen deaktiválva. Reaktivációs email elküldve.
         '400':
-          description: Fiók mar inaktív
+          description: Fiók már inaktív, vagy nincs email cím a reaktiváláshoz
           content:
             application/json:
               schema:
@@ -551,6 +574,48 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Felhasználó nem található
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Szerver hiba
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/reactivate-account:
+    post:
+      summary: Fiók újraaktiválása tokennel és új belépési adatokkal
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReactivateAccountRequest'
+      responses:
+        '200':
+          description: Fiók sikeresen újraaktiválva és új adatok elmentve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: A fiok sikeresen ujraaktiválva
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Hibás adatok, foglalt email vagy lejárt token
           content:
             application/json:
               schema:

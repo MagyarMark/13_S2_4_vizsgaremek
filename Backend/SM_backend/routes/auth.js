@@ -10,7 +10,7 @@ const fileExtLimiter = require('../middleware/fileExtLimiter');
 const fileSizeLimiter = require('../middleware/fileSizeLimiter');
 const { verifyToken, verifyRefreshToken } = require('../middleware/auth');
 const { accessTokenSecret, refreshTokenSecret, accessTokenExpiration, refreshTokenExpiration } = require('../config/jwt');
-const { sendVerificationEmail } = require('../nodemailer/nmapp');
+const { sendVerificationEmail, sendAccountReactivationEmail } = require('../nodemailer/nmapp');
 
 const router = express.Router();
 
@@ -25,6 +25,19 @@ const generateEmailVerificationToken = () => {
 const buildVerificationUrl = (rawToken) => {
   const verificationBaseUrl = process.env.EMAIL_VERIFICATION_URL_BASE || `${process.env.BASE_URL || 'http://localhost:3000'}/api/auth/verify-email`;
   return `${verificationBaseUrl}?token=${rawToken}`;
+};
+
+const generateAccountReactivationToken = () => {
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  return { rawToken, hashedToken, expiresAt };
+};
+
+const buildAccountReactivationUrl = (rawToken) => {
+  const reactivationBaseUrl = process.env.ACCOUNT_REACTIVATION_URL_BASE || `${process.env.BASE_URL || 'http://localhost:3000'}/reactivate-account/setup`;
+  return `${reactivationBaseUrl}?token=${rawToken}`;
 };
 
 const generateTokens = (user) => {
@@ -530,15 +543,20 @@ router.post('/refresh-token', verifyRefreshToken, async (req, res) => {
 });
 
 router.put('/profileDelete', verifyToken, async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const userId = req.user.id;
 
-    const userResult = await pool.query(
-      'SELECT id, aktiv FROM "Felhasznalo" WHERE id = $1',
+    await client.query('BEGIN');
+
+    const userResult = await client.query(
+      'SELECT id, aktiv, email, felhasznalonev FROM "Felhasznalo" WHERE id = $1 FOR UPDATE',
       [userId]
     );
 
     if (userResult.rows.length === 0) {
+      await client.query('ROLLBACK');
       return res.status(404).json({
         success: false,
         message: 'Felhasználó nem található'
@@ -548,32 +566,155 @@ router.put('/profileDelete', verifyToken, async (req, res) => {
     const user = userResult.rows[0];
 
     if (!user.aktiv) {
+      await client.query('ROLLBACK');
       return res.status(400).json({
         success: false,
         message: 'A felhasználói fiók már inaktív'
       });
     }
 
-    await pool.query(
+    if (!user.email) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        success: false,
+        message: 'A fiókhoz nincs email cím társítva, így nem küldhető reaktivációs link'
+      });
+    }
+
+    const { rawToken, hashedToken, expiresAt } = generateAccountReactivationToken();
+    const reactivationUrl = buildAccountReactivationUrl(rawToken);
+
+    await client.query(
       `UPDATE "Felhasznalo" 
        SET aktiv = false,
+           elerheto = false,
            email = NULL,
            jelszo = NULL,
-           teljes_nev = NULL
-       WHERE id = $1`,
-      [userId]
+           teljes_nev = NULL,
+           reaktivacio_token = $1,
+           reaktivacio_hatarido = $2
+       WHERE id = $3`,
+      [hashedToken, expiresAt, userId]
     );
+
+    await sendAccountReactivationEmail({
+      to: user.email,
+      felhasznalonev: user.felhasznalonev,
+      reactivationUrl
+    });
+
+    await client.query('COMMIT');
 
     res.json({
       success: true,
-      message: 'Felhasználói fiók sikeresen törölve (deaktiválva)'
+      message: 'Felhasználói fiók sikeresen deaktiválva. Reaktivációs email elküldve.'
     });
 
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Szerver hiba a felhasználó törlése során:', error);
     res.status(500).json({
       success: false,
       message: 'Szerver hiba a felhasználó törlése során'
+    });
+  } finally {
+    client.release();
+  }
+});
+
+router.post('/reactivate-account', [
+  body('token')
+    .notEmpty()
+    .withMessage('A reaktivacios token kotelezo'),
+  body('email')
+    .isEmail()
+    .withMessage('Ervenyes email cim megadasa kotelezo')
+    .notEmpty()
+    .withMessage('Email cim kotelezo'),
+  body('jelszo')
+    .notEmpty()
+    .withMessage('Jelszo kotelezo'),
+  body('teljes_nev')
+    .optional()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Hibas adatok',
+        errors: errors.array()
+      });
+    }
+
+    const { token, email, jelszo, teljes_nev } = req.body;
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const userByToken = await pool.query(
+      `SELECT id
+       FROM "Felhasznalo"
+       WHERE reaktivacio_token = $1
+         AND reaktivacio_hatarido > NOW()`,
+      [hashedToken]
+    );
+
+    if (userByToken.rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ervenytelen vagy lejart reaktivacios link'
+      });
+    }
+
+    const userId = userByToken.rows[0].id;
+
+    const emailExists = await pool.query(
+      'SELECT id FROM "Felhasznalo" WHERE email = $1 AND id != $2',
+      [email, userId]
+    );
+
+    if (emailExists.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Az email cim mar foglalt'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(jelszo, 10);
+
+    const reactivatedUser = await pool.query(
+      `UPDATE "Felhasznalo"
+       SET aktiv = true,
+           email = $2,
+           jelszo = $3,
+           teljes_nev = COALESCE($4, teljes_nev),
+           email_megerositve = true,
+           reaktivacio_token = NULL,
+           reaktivacio_hatarido = NULL
+       WHERE reaktivacio_token = $1
+         AND reaktivacio_hatarido > NOW()
+       RETURNING id, felhasznalonev, email, aktiv`,
+      [hashedToken, email, hashedPassword, teljes_nev || null]
+    );
+
+    if (reactivatedUser.rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ervenytelen vagy lejart reaktivacios link'
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'A fiok sikeresen ujraaktiválva',
+      data: {
+        user: reactivatedUser.rows[0]
+      }
+    });
+  } catch (error) {
+    console.error('Szerver hiba a fiok ujraaktiválása során:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Szerver hiba a fiok ujraaktiválása során'
     });
   }
 });
