@@ -23,11 +23,21 @@ public class User
     [JsonPropertyName("aktiv")]
     public bool Active { get; set; }
 
+    [JsonIgnore]
+    public int ActiveIndex
+    {
+        get => Active ? 1 : 0;
+        set => Active = value == 1;
+    }
+
     [JsonPropertyName("elerheto")]
     public bool Available { get; set; }
 
     [JsonPropertyName("letrehozas_idopont")]
     public DateTime CreatedAt { get; set; }
+
+    [JsonIgnore]
+    public bool IsNotCurrentUser { get; set; } = true;
 
     [JsonPropertyName("utolso_bejelentkezes")]
     public DateTime? LastLogin { get; set; }

@@ -14,6 +14,8 @@ public class AdminApiService
     private string? _authToken;
     private const string BaseUrl = "http://localhost:3000";
 
+    public User? CurrentUser { get; private set; }
+
     public AdminApiService()
     {
         _httpClient = new HttpClient
@@ -22,10 +24,14 @@ public class AdminApiService
         };
     }
 
-    public void SetAuthToken(string token)
+    public void SetAuthToken(string token, User? user = null)
     {
         _authToken = token;
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        if (user != null)
+        {
+            CurrentUser = user;
+        }
     }
 
     public async Task<LoginResponse> LoginAsync(string username, string password)
