@@ -14,6 +14,11 @@ CREATE TABLE IF NOT EXISTS public."Felhasznalo"
     utolso_bejelentkezes timestamp without time zone,
     elerheto boolean DEFAULT true,
     aktiv boolean DEFAULT true,
+    email_megerositve boolean NOT NULL DEFAULT false,
+    email_megerosito_token text COLLATE pg_catalog."default",
+    email_megerosites_hatarido timestamp without time zone,
+    reaktivacio_token text COLLATE pg_catalog."default",
+    reaktivacio_hatarido timestamp without time zone,
     CONSTRAINT "Felhasznalo_pkey" PRIMARY KEY (id),
     CONSTRAINT "Felhasznalo_email_key" UNIQUE (email),
     CONSTRAINT "Felhasznalo_felhasznalonev_key" UNIQUE (felhasznalonev)
@@ -23,7 +28,15 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public."Felhasznalo"
     OWNER to postgres;
+-- Index: idx_felhasznalo_email_megerosito_token
 
+-- DROP INDEX IF EXISTS public.idx_felhasznalo_email_megerosito_token;
+
+CREATE INDEX IF NOT EXISTS idx_felhasznalo_email_megerosito_token
+    ON public."Felhasznalo" USING btree
+    (email_megerosito_token COLLATE pg_catalog."default" ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
 
 -- Table: public.Projekt
 
