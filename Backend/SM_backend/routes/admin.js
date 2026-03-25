@@ -457,8 +457,15 @@ router.delete('/projectDelete/:id', async (req, res) => {
       });
     }
 
-    await pool.query('DELETE FROM "ProjektTag" WHERE projekt_id = $1', [id]);
+    await pool.query(`DELETE FROM "File" WHERE beadas_id IN (SELECT b.id FROM "Beadas" b INNER JOIN "Feladat" f ON b.feladat_id = f.id WHERE f.projekt_id = $1)`, [id]);
+
+    await pool.query(`
+      DELETE FROM "Beadas" WHERE feladat_id IN (SELECT id FROM "Feladat" WHERE projekt_id = $1)`, [id]);
+
+    await pool.query(`DELETE FROM "FeladatKomment" WHERE feladat_id IN (SELECT id FROM "Feladat" WHERE projekt_id = $1)`, [id]);
+
     await pool.query('DELETE FROM "Feladat" WHERE projekt_id = $1', [id]);
+    await pool.query('DELETE FROM "ProjektTag" WHERE projekt_id = $1', [id]);
     await pool.query('DELETE FROM "Statisztika" WHERE projekt_id = $1', [id]);
     await pool.query('DELETE FROM "Naplo" WHERE projekt_id = $1', [id]);
     await pool.query('DELETE FROM "Uzenet" WHERE projekt_id = $1', [id]);
