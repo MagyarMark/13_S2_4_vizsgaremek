@@ -72,27 +72,6 @@ public sealed partial class ProjectsPage : Page
 
     private async void DeleteProject_Click(object sender, RoutedEventArgs e)
     {
-        /*if (sender is Button btn && btn.Tag is int projectId)
-        {
-            SetLoading(true);
-            try
-            {
-                var response = await _apiService.DeleteProjectAsync(projectId);
-                if (response.Success)
-                    await LoadProjectsAsync();
-                else
-                    ShowError(response.Message ?? "Failed to delete project");
-            }
-            catch (System.Exception ex)
-            {
-                ShowError($"Error: {ex.Message}");
-            }
-            finally
-            {
-                SetLoading(false);
-            }
-        }*/
-
         if(sender is Button btn && btn.Tag is int projectId)
         {
             var dialog = new ContentDialog
