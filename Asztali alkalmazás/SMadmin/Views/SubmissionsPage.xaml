@@ -27,8 +27,11 @@
                      MinWidth="200"
                      SelectionChanged="StatusFilter_Changed">
                 <ComboBoxItem Content="Összes" IsSelected="True"/>
-                <ComboBoxItem Content="Beküldve" Tag="bekuldve"/>
-                <ComboBoxItem Content="Értékelve" Tag="ertekelt"/>
+                <ComboBoxItem Content="Beküldve" Tag="beküldve"/>
+                <ComboBoxItem Content="Elfogadva" Tag="elfogadva"/>
+                <ComboBoxItem Content="Elutasítva" Tag="elutasítva"/>
+                <ComboBoxItem Content="Értékelt" Tag="ertekelt"/>
+                <ComboBoxItem Content="Értékelve" Tag="ertékelt"/>
                 <ComboBoxItem Content="Javítás alatt" Tag="javitas_alatt"/>
             </ComboBox>
         </Grid>
