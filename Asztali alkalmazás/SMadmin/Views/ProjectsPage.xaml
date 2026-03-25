@@ -35,6 +35,9 @@
                      Header="Státusz"
                      HorizontalAlignment="Stretch">
                 <ComboBoxItem Content="Összes" IsSelected="True"/>
+                <ComboBoxItem Content="Folyamatban" Tag="folyamatban"/>
+                <ComboBoxItem Content="Tervezés" Tag="tervezés"/>
+                <ComboBoxItem Content="Inaktiv" Tag="inaktiv"/>
                 <ComboBoxItem Content="Aktív" Tag="aktiv"/>
                 <ComboBoxItem Content="Befejezett" Tag="befejezett"/>
                 <ComboBoxItem Content="Archivált" Tag="archivalt"/>

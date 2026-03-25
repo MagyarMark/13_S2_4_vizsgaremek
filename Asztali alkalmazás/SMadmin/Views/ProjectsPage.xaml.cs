@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Windows.Services.Maps;
 using SMadmin.Models;
 using SMadmin.Services;
+using System;
 
 namespace SMadmin.Views;
 
@@ -71,24 +72,36 @@ public sealed partial class ProjectsPage : Page
 
     private async void DeleteProject_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is int projectId)
+        if(sender is Button btn && btn.Tag is int projectId)
         {
-            SetLoading(true);
-            try
+            var dialog = new ContentDialog
             {
-                var response = await _apiService.DeleteProjectAsync(projectId);
-                if (response.Success)
-                    await LoadProjectsAsync();
-                else
-                    ShowError(response.Message ?? "Failed to delete project");
-            }
-            catch (System.Exception ex)
+                Title = "Megerősítés",
+                Content = "Biztosan törölni szeretnéd a projektet?",
+                PrimaryButtonText = "Igen",
+                CloseButtonText = "Nem",
+                XamlRoot = this.XamlRoot
+            };
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
             {
-                ShowError($"Error: {ex.Message}");
-            }
-            finally
-            {
-                SetLoading(false);
+                SetLoading(true);
+                try
+                {
+                    var response = await _apiService.DeleteProjectAsync(projectId);
+                    if (response.Success)
+                        await LoadProjectsAsync();
+                    else
+                        ShowError(response.Message ?? "Failed to delete project");
+                }
+                catch (System.Exception ex)
+                {
+                    ShowError($"Error: {ex.Message}");
+                }
+                finally
+                {
+                    SetLoading(false);
+                }
             }
         }
     }

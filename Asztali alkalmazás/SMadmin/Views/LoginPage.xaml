@@ -15,8 +15,9 @@
             <Border.Shadow>
                 <ThemeShadow />
             </Border.Shadow>
-
+            
             <StackPanel Spacing="16" MinWidth="300">
+                <Image Source="/Assets/sm_logo.png" NineGrid="3,3,3,3" Height="80" />
                 <TextBlock Text="Login"
                           Style="{StaticResource TitleTextBlockStyle}"
                           HorizontalAlignment="Center"/>
