@@ -320,7 +320,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         if (!token) return;
 
-        const res = await fetch('http://localhost:3000/api/project/projektTag', {
+        const res = await fetch('http://localhost:3000/api/project/projectMember', {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -333,7 +333,7 @@ export default {
     const fetchAllTasks = async () => {
   try {
     const token = localStorage.getItem('accessToken');
-    const res = await fetch('http://localhost:3000/api/project/feladatok', {
+    const res = await fetch('http://localhost:3000/api/project/tasks', {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
@@ -346,7 +346,7 @@ export default {
   if (!evaluation.value.task || !evaluation.value.task.projekt_id) return;
   try {
     const token = localStorage.getItem('accessToken');
-    const res = await fetch(`http://localhost:3000/api/project/projektTagok?projekt_id=${evaluation.value.task.projekt_id}`, {
+    const res = await fetch(`http://localhost:3000/api/project/projectMembers?projekt_id=${evaluation.value.task.projekt_id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
@@ -362,7 +362,7 @@ export default {
     const fetchBeadasEvaluations = async () => {
       try {
         const token = localStorage.getItem('accessToken');
-        const res = await fetch('http://localhost:3000/api/files/beadas', {
+        const res = await fetch('http://localhost:3000/api/files/submission', {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -427,7 +427,7 @@ export default {
 
       try {
         const token = localStorage.getItem('accessToken');
-        const res = await fetch('http://localhost:3000/api/files/beadas', {
+        const res = await fetch('http://localhost:3000/api/files/submissionCreate', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -570,7 +570,7 @@ export default {
       userProfile, showModal, showSidebar, performanceChart, submissionChart,
       students, tasks, studentGrades, evaluation, selectedStudentForStats,
       availableDiakUsers, allDiakUsers, availableTasks, dropdownOpen,
-      getRoleLabel, getPercentageClass, saveEvaluation, logout
+      getRoleLabel, getPercentageClass, saveEvaluation, logout,
     };
   }
 };

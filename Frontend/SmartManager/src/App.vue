@@ -1,5 +1,5 @@
 <script>
-export default {
+/*export default {
   async mounted() {
     try {
       const lastRoute = sessionStorage.getItem("lastRoute");
@@ -25,7 +25,7 @@ export default {
       }));
     }
   }
-};
+};*/
 </script>
 
 <template>
