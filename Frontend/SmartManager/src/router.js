@@ -12,7 +12,8 @@ import Terms from './pages/terms.vue'
 import TeamWork from './pages/teamwork.vue'
 import Ttask from './pages/Ttask.vue'
 import Ertekeles from './pages/ertekeles.vue'
-import Admin from './pages/admin.vue'
+import VerifyEmail from './pages/verifyEmail.vue'
+import reactivateAccount from './pages/reactivateAccount.vue'
 
 const routes = [
   {
@@ -81,9 +82,14 @@ const routes = [
     component: Ertekeles
   },
   {
-    path: '/admin',
-    name: 'Admin',
-    component: Admin
+    path: '/verify-email',
+    name: 'VerifyEmail',
+    component: VerifyEmail
+  },
+  {
+    path: '/reactivate-account',
+    name: 'reactivateAccount',
+    component: reactivateAccount
   }
 ]
 

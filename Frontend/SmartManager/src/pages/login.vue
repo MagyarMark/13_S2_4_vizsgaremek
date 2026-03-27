@@ -39,14 +39,6 @@
           >
         </div>
 
-        <!--<div class="form-options">
-          <label class="checkbox">
-            <input type="checkbox" v-model="form.remember">
-            <span>Emlékezz rám</span>
-          </label>
-          <a href="#" class="forgot-password">Elfelejtette jelszavát?</a>
-        </div>-->
-
         <button type="submit" class="btn primary auth-btn" :disabled="loading">
           {{ loading ? 'Bejelentkezés...' : 'Bejelentkezés' }}
         </button>

@@ -2,6 +2,7 @@
   <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Navigációs sáv -->
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
@@ -140,6 +141,7 @@
               <p><i class="fas fa-users"></i> {{ clientsTotal }} aktív felhasználó</p>
             </div>
 
+            <!-- Chat módváltás: egyéni üzenet vs projekt chat -->
             <div class="chat-mode-toggle">
               <button
                 :class="['mode-button', { active: chatMode === 'direct' }]"
@@ -272,15 +274,16 @@ moment.locale('hu');
 
 export default {
   name: "Chat",
+  // OPTIONS API - komponens alapadatok
   data() {
     return {
-      navActive: false,
-      dropdownOpen: false,
+      navActive: false,  // Menü nyitva/zárva
+      dropdownOpen: false,  // Profil legördülő
       userProfile: {
         teljes_nev: '',
         felhasznalonev: '',
         szerep_tipus: 'diak',
-        initials: ''
+        initials: ''  // Avatar kezdőbetűi
       }
     }
   },
@@ -296,11 +299,13 @@ export default {
       };
       return roleMap[role] || role;
     },
+    // Név kezdőbetűi az avatarhoz
     generateInitials(name) {
       if (!name) return '';
       const parts = name.split(' ');
       return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2);
     },
+    // Bejelentkezett felhasználó profil adatainak lekérése
     async fetchUserProfile() {
       try {
         const storedUser = localStorage.getItem('user');
@@ -314,6 +319,7 @@ export default {
 
         const userData = JSON.parse(storedUser);
         
+        // Profil adatok lekérése API-ról
         const response = await fetch(`http://localhost:3000/api/auth/profileData`, {
           method: 'GET',
           headers: {
@@ -322,12 +328,14 @@ export default {
           }
         });
 
+        // Hibaellenőrzés
         if (!response.ok) {
           throw new Error('Felhasználó adatainak lekérése sikertelen');
         }
 
         const data = await response.json();
         
+        // Profil adatok frissítése
         if (data.success && data.data && data.data.user ) {
           const user = data.data.user;
           this.userProfile = {
@@ -367,24 +375,25 @@ export default {
     const router = useRouter();
     const apiBaseUrl = 'http://localhost:3000/api';
 
-    const userName = ref('anonymous');
-    const currentUserId = ref(null);
-    const newMessage = ref('');
-    const messages = ref([]);
-    const messagesContainer = ref(null);
-    const clientsTotal = ref(0);
-    const chatMode = ref('direct');
-    const isLoadingMessages = ref(false);
+    // REAKTÍV ÁLLAPOTOK
+    const userName = ref('anonymous');  // Jelenlegi felhasználó
+    const currentUserId = ref(null);  // Bejelentkezett felhasználó ID-ja
+    const newMessage = ref('');  // Szerkesztés alatt álló üzenet
+    const messages = ref([]);  // Aktuális beszélgetés üzenetei
+    const messagesContainer = ref(null);  // DOM referencia (görgetéshez)
+    const clientsTotal = ref(0);  // Aktív felhasználók száma
+    const chatMode = ref('direct');  // 'direct' vagy 'project'
+    const isLoadingMessages = ref(false);  // Betöltés státuszok
     const isLoadingConversations = ref(false);
     const isLoadingProjects = ref(false);
     const isLoadingMembers = ref(false);
-    const users = ref([]);
-    const conversations = ref([]);
-    const selectedConversationId = ref(null);
-    const selectedRecipientId = ref('');
-    const projects = ref([]);
-    const selectedProjectId = ref('');
-    const projectMembers = ref([]);
+    const users = ref([]);  // Elérhető felhasználók
+    const conversations = ref([]);  // Egyéni beszélgetések
+    const selectedConversationId = ref(null);  // Kiválasztott beszélgetés
+    const selectedRecipientId = ref('');  // Új hsz. indításhoz
+    const projects = ref([]);  // Elérhető projektek
+    const selectedProjectId = ref('');  // Kiválasztott projekt
+    const projectMembers = ref([]);  // Projekt tagjai
     const selectableUsers = computed(() => users.value.filter((u) => u.id !== currentUserId.value));
     const selectedConversation = computed(() =>
       conversations.value.find((conv) => conv.userId === selectedConversationId.value) || null
@@ -393,8 +402,10 @@ export default {
       projects.value.find((project) => String(project.id) === String(selectedProjectId.value)) || null
     );
 
+    // API token lekérése
     const getToken = () => localStorage.getItem('accessToken');
 
+    // HTTP fejlécek autentikációval
     const buildHeaders = () => {
       const token = getToken();
       return {
@@ -413,6 +424,7 @@ export default {
       return user?.teljes_nev || user?.felhasznalonev || `Felhasználó #${id}`;
     };
 
+    // Görgetés az utolsó üzenetig
     const scrollToBottom = () => {
       nextTick(() => {
         if (messagesContainer.value) {
@@ -421,59 +433,55 @@ export default {
       });
     };
 
+    // Üzenet objektum átalakítása megjelenítésre
     const mapMessage = (msg) => {
-      const isOwn = msg.kuldo_id === currentUserId.value;
+      const isOwn = msg.kuldo_id === currentUserId.value;  // Saját üzenet?
       return {
         id: msg.id,
         sender: resolveUserName(msg.kuldo_id),
         senderId: msg.kuldo_id,
         text: msg.uzenet_tartalom,
-        time: moment(msg.kuldes_ideje).fromNow(),
+        time: moment(msg.kuldes_ideje).fromNow(),  // Relatív idő
         type: isOwn ? 'sent' : 'received',
         isOwn
       };
     };
 
+    // Aktív felhasználók számának frissítése
     const updateClientsTotal = () => {
       clientsTotal.value = chatMode.value === 'project' ? projectMembers.value.length : users.value.length;
     };
 
+    // Felhasználók betöltése
     const loadUsers = async () => {
       const token = getToken();
-      if (!token) {
-        return;
-      }
+      if (!token) return;
 
-      const response = await fetch(`${apiBaseUrl}/project/projektTag`, {
+      const response = await fetch(`${apiBaseUrl}/project/projectMember`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (!response.ok) {
-        throw new Error('Felhasználók lekérése sikertelen');
-      }
+      if (!response.ok) throw new Error('Felhasználók lekérése sikertelen');
 
       const data = await response.json();
       users.value = data.data || [];
       updateClientsTotal();
     };
 
+    // Projektek betöltése
     const loadProjects = async () => {
       const token = getToken();
-      if (!token) {
-        return;
-      }
+      if (!token) return;
 
       isLoadingProjects.value = true;
       try {
-        const response = await fetch(`${apiBaseUrl}/project/projektek`, {
+        const response = await fetch(`${apiBaseUrl}/project/projects`, {
           method: 'GET',
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (!response.ok) {
-          throw new Error('Projektek lekérése sikertelen');
-        }
+        if (!response.ok) throw new Error('Projektek lekérése sikertelen');
 
         const data = await response.json();
         projects.value = data?.data?.projects || [];
@@ -482,6 +490,7 @@ export default {
       }
     };
 
+    // Projekt tagjainak betöltése
     const loadProjectMembers = async () => {
       const token = getToken();
       if (!token || !selectedProjectId.value) {
@@ -493,16 +502,11 @@ export default {
       isLoadingMembers.value = true;
       try {
         const response = await fetch(
-          `${apiBaseUrl}/project/projektTagok?projekt_id=${encodeURIComponent(selectedProjectId.value)}`,
-          {
-            method: 'GET',
-            headers: { Authorization: `Bearer ${token}` }
-          }
+          `${apiBaseUrl}/project/projectMembers?projekt_id=${encodeURIComponent(selectedProjectId.value)}`,
+          { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
         );
 
-        if (!response.ok) {
-          throw new Error('Projekt tagok lekérése sikertelen');
-        }
+        if (!response.ok) throw new Error('Projekt tagok lekérése sikertelen');
 
         const data = await response.json();
         projectMembers.value = data?.data || [];
@@ -512,6 +516,7 @@ export default {
       }
     };
 
+    // Projekt üzenetei betöltése
     const loadMessages = async () => {
       const token = getToken();
       if (!token || !selectedProjectId.value) {
@@ -522,19 +527,15 @@ export default {
       isLoadingMessages.value = true;
       try {
         const response = await fetch(
-          `${apiBaseUrl}/messages/osszes?projektId=${encodeURIComponent(selectedProjectId.value)}`,
-          {
-            method: 'GET',
-            headers: buildHeaders()
-          }
+          `${apiBaseUrl}/messages/allMessages?projektId=${encodeURIComponent(selectedProjectId.value)}`,
+          { method: 'GET', headers: buildHeaders() }
         );
 
-        if (!response.ok) {
-          throw new Error('Üzenetek lekérése sikertelen');
-        }
+        if (!response.ok) throw new Error('Üzenetek lekérése sikertelen');
 
         const data = await response.json();
         const items = data?.data?.messages || [];
+        // Üzenetek időrendi sorrendbe
         items.sort((a, b) => new Date(a.kuldes_ideje).getTime() - new Date(b.kuldes_ideje).getTime());
         messages.value = items.map(mapMessage);
         scrollToBottom();
@@ -555,32 +556,29 @@ export default {
       await loadMessages();
     };
 
+    // Egyéni beszélgetések betöltése
     const loadConversations = async () => {
       const token = getToken();
-      if (!token) {
-        return;
-      }
+      if (!token) return;
 
       isLoadingConversations.value = true;
       try {
-        const response = await fetch(`${apiBaseUrl}/messages/osszes`, {
+        const response = await fetch(`${apiBaseUrl}/messages/allMessages`, {
           method: 'GET',
           headers: buildHeaders()
         });
 
-        if (!response.ok) {
-          throw new Error('Beszélgetések lekérése sikertelen');
-        }
+        if (!response.ok) throw new Error('Beszélgetések lekérése sikertelen');
 
         const data = await response.json();
+        // Csak egyéni üzenetek szűrése
         const items = (data?.data?.messages || []).filter((msg) => msg.projekt_id == null);
-        const byUser = new Map();
+        const byUser = new Map();  // Felhasználónkénti csoportosítás
 
+        // Utolsó üzenet felhasználónként
         items.forEach((msg) => {
           const otherUserId = msg.kuldo_id === currentUserId.value ? msg.fogado_id : msg.kuldo_id;
-          if (!otherUserId) {
-            return;
-          }
+          if (!otherUserId) return;
           const messageTime = new Date(msg.kuldes_ideje).getTime();
           const existing = byUser.get(otherUserId);
 
@@ -595,6 +593,7 @@ export default {
           }
         });
 
+        // Legutóbbi üzenet szerint rendezve
         conversations.value = Array.from(byUser.values()).sort((a, b) => b.lastTime - a.lastTime);
 
         if (!selectedConversationId.value && conversations.value.length > 0) {
@@ -606,6 +605,7 @@ export default {
       }
     };
 
+    // Egy felhasználóval folytatott beszélgetés
     const loadConversation = async (withUserId) => {
       const token = getToken();
       if (!token || !withUserId) {
@@ -616,16 +616,11 @@ export default {
       isLoadingMessages.value = true;
       try {
         const response = await fetch(
-          `${apiBaseUrl}/messages/beszelgetes?with=${encodeURIComponent(withUserId)}`,
-          {
-            method: 'GET',
-            headers: buildHeaders()
-          }
+          `${apiBaseUrl}/messages/chatHistory?with=${encodeURIComponent(withUserId)}`,
+          { method: 'GET', headers: buildHeaders() }
         );
 
-        if (!response.ok) {
-          throw new Error('Beszélgetés lekérése sikertelen');
-        }
+        if (!response.ok) throw new Error('Beszélgetés lekérése sikertelen');
 
         const data = await response.json();
         const items = (data?.data?.messages || []).filter((msg) => msg.projekt_id == null);
@@ -673,11 +668,11 @@ export default {
       await handleProjectChange();
     };
 
+    // Üzenet küldése (egyéni vagy projekt chat)
     const sendMessage = async () => {
-      if (newMessage.value.trim() === '') {
-        return;
-      }
+      if (newMessage.value.trim() === '') return;
 
+      // Payload felépítése a chat módtól függően
       const payload = chatMode.value === 'direct'
         ? {
             fogado_id: Number(selectedConversationId.value),
@@ -688,23 +683,23 @@ export default {
             uzenet_tartalom: newMessage.value.trim()
           };
 
-      const response = await fetch(`${apiBaseUrl}/messages/kuldes`, {
+      const response = await fetch(`${apiBaseUrl}/messages/send`, {
         method: 'POST',
         headers: buildHeaders(),
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) {
-        throw new Error('Üzenet küldése sikertelen');
-      }
+      if (!response.ok) throw new Error('Üzenet küldése sikertelen');
 
+      // Üzenet hozzáadása listához
       const data = await response.json();
       if (data?.data) {
         messages.value.push(mapMessage(data.data));
         scrollToBottom();
       }
 
-      newMessage.value = '';
+      newMessage.value = '';  // Input törlése
+      // Frissítés a chat módtól függően
       if (chatMode.value === 'direct') {
         await loadConversation(selectedConversationId.value);
         await loadConversations();
@@ -713,10 +708,11 @@ export default {
       }
     };
 
+    // Kijelentkezés
     const logout = async () => {
       try {
         const token = localStorage.getItem('accessToken');
-        
+        // Felhasználó állapotát "nem elérhető"-re állítja
         if (token) {
           await fetch('http://localhost:3000/api/auth/profile', {
             method: 'PUT',
@@ -724,15 +720,14 @@ export default {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({
-              elerheto: false
-            })
+            body: JSON.stringify({ elerheto: false })
           });
         }
       } catch (error) {
         console.error('Kijelentkezés hiba:', error);
       }
       
+      // Storage törlése
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -742,7 +737,9 @@ export default {
       router.push('/home');
     };
 
+    // Komponens inicializálása
     onMounted(async () => {
+      // Felhasználó adatainak betöltése
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         try {
@@ -755,11 +752,13 @@ export default {
         }
       }
 
+      // Bejelentkezéshez szükséges token ellenőrzése
       if (!getToken()) {
         router.push('/login');
         return;
       }
 
+      // Kezdeti adatok betöltése
       try {
         await loadUsers();
         await loadProjects();
@@ -802,6 +801,7 @@ export default {
 </script>
 
 <style scoped>
+/* == CHAT OLDAL STÍLUSA == */
 
 .dashboard-wrapper .dropdown {
   position: relative;
@@ -926,12 +926,14 @@ export default {
   transform: translateY(-2px);
 }
 
+/* Chat konténer: oldalsáv + főablak */
 .chat-container {
   display: flex;
   flex: 1;
   height: 500px;
 }
 
+/* OLDALSÁV - beszélgetések/tagok listája */
 .chat-sidebar {
   width: 30%;
   background-color: #f5f7fb;
@@ -1125,12 +1127,14 @@ export default {
   padding: 10px 5px;
 }
 
+/* FŐABLAK - üzenetek & bevitel */
 .chat-main {
   width: 70%;
   display: flex;
   flex-direction: column;
 }
 
+/* Chat fejléc */
 .chat-header {
   padding: 20px 25px;
   border-bottom: 1px solid #e1e5eb;
@@ -1148,6 +1152,7 @@ export default {
   font-size: 0.9rem;
 }
 
+/* Üzenetek görgetésre képes terület */
 .chat-messages {
   flex: 1;
   padding: 20px 25px;
@@ -1155,6 +1160,7 @@ export default {
   background-color: #f8fafc;
 }
 
+/* Üzenet buborékok */
 .message {
   max-width: 75%;
   padding: 12px 18px;
@@ -1183,6 +1189,7 @@ export default {
   font-size: 0.9rem;
 }
 
+/* Kapott üzenet */
 .message.received {
   background-color: white;
   border-top-left-radius: 5px;
@@ -1190,6 +1197,7 @@ export default {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
+/* Saját üzenet (kék) */
 .message.sent {
   background-color: #4a6ee0;
   color: white;
@@ -1250,6 +1258,9 @@ export default {
   transform: scale(1.05);
 }
 
+/* == RESZPONZÍV MEGJELENÍTÉS == */
+
+/* Táblagépek & nagyobb kijelzők */
 @media (max-width: 1024px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
