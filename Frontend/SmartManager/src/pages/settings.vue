@@ -1,7 +1,9 @@
 <template>
+  <!-- Beállítások oldal - profil, fiók, értesítések és megjelenés módosítása -->
   <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Oldalsó menü -->
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
@@ -535,7 +537,8 @@ export default {
 
       const doubleConfirmed = confirm(
         'Ez az utolsó figyelmeztetés!\n\n' +
-        'A fiók deaktiválása után nem lesz lehetőség az helyreállítására.'
+        'A fiók deaktiválása után egy email lesz küldve az akkori email címedre,\n' +
+        'amely segítségével később újra aktiválhatod a fiókodat.'
       )
 
       if (!doubleConfirmed) return
@@ -547,7 +550,7 @@ export default {
           return
         }
 
-        const response = await fetch('http://localhost:3000/api/auth/profile-torles', {
+        const response = await fetch('http://localhost:3000/api/auth/profileDelete', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -558,7 +561,7 @@ export default {
         const data = await response.json()
 
         if (data.success) {
-          message.account = 'Fiók sikeresen deaktiválva. Kijelentkezés...'
+          message.account = 'Fiók sikeresen deaktiválva. Aktiválási email elküldve. Kijelentkezés...'
           
           setTimeout(() => {
             localStorage.removeItem('user')

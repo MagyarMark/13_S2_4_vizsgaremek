@@ -402,7 +402,7 @@ export default {
           return
         }
 
-        const response = await fetch('http://localhost:3000/api/project/feladatok', {
+        const response = await fetch('http://localhost:3000/api/project/tasks', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -486,7 +486,7 @@ export default {
 
         console.log('Sending task data:', taskData)
 
-        const response = await fetch('http://localhost:3000/api/project/ujFeladat', {
+        const response = await fetch('http://localhost:3000/api/project/newTask', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -535,7 +535,7 @@ export default {
           return
         }
 
-        const response = await fetch(`http://localhost:3000/api/project/feladat/${taskId}`, {
+        const response = await fetch(`http://localhost:3000/api/project/task/${taskId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

@@ -331,7 +331,7 @@ export default {
           return;
         }
 
-        const response = await fetch('http://localhost:3000/api/project/ujFeladat', {
+        const response = await fetch('http://localhost:3000/api/project/newTask', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -612,10 +612,10 @@ export default {
         };
 
         const [projectsRes, tasksRes, submissionsRes, statsRes] = await Promise.all([
-          fetch('http://localhost:3000/api/project/projektek', { headers }),
-          fetch('http://localhost:3000/api/project/feladatok', { headers }),
-          fetch('http://localhost:3000/api/files/beadas', { headers }),
-          fetch('http://localhost:3000/api/project/statisztika', { headers })
+          fetch('http://localhost:3000/api/project/projects', { headers }),
+          fetch('http://localhost:3000/api/project/tasks', { headers }),
+          fetch('http://localhost:3000/api/files/submission', { headers }),
+          fetch('http://localhost:3000/api/project/stats', { headers })
         ]);
 
         const [projectsData, tasksData, submissionsData, statsData] = await Promise.all([

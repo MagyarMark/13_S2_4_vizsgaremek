@@ -128,7 +128,7 @@
             </div>
         </div>
         <div class="copyright">
-            &copy; 2025 SmartManager. Minden jog fenntartva.<router-link to="/admin"><button style="visibility:hidden;"></button></router-link>
+            &copy; 2025 SmartManager. Minden jog fenntartva.
         </div>
 
     </footer>

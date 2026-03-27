@@ -188,8 +188,8 @@ export default {
 
         const data = await response.json();
         if (response.ok && data.success) {
-          alert('Sikeres Regisztráció! Kérjük jelentkezzen be.');
-          this.$router.push('/login');
+          alert('Sikeres Regisztráció! Kérjük ellenőrizze email címét a fiók aktiválásához.');
+          this.$router.push('/home');
         } else {
           const msg = data && data.message ? data.message : 'Regisztráció sikertelen';
           alert(msg);
