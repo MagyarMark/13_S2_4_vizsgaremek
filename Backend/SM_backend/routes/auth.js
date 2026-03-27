@@ -23,7 +23,7 @@ const generateEmailVerificationToken = () => {
 };
 
 const buildVerificationUrl = (rawToken) => {
-  const verificationBaseUrl = process.env.EMAIL_VERIFICATION_URL_BASE || `${process.env.BASE_URL || 'http://localhost:3000'}/api/auth/verify-email`;
+  const verificationBaseUrl = process.env.EMAIL_VERIFICATION_URL_BASE || 'http://localhost:5173/verify-email';
   return `${verificationBaseUrl}?token=${rawToken}`;
 };
 
@@ -36,7 +36,7 @@ const generateAccountReactivationToken = () => {
 };
 
 const buildAccountReactivationUrl = (rawToken) => {
-  const reactivationBaseUrl = process.env.ACCOUNT_REACTIVATION_URL_BASE || `${process.env.BASE_URL || 'http://localhost:3000'}/reactivate-account/setup`;
+  const reactivationBaseUrl = process.env.ACCOUNT_REACTIVATION_URL_BASE || 'http://localhost:5173/reactivate-account';
   return `${reactivationBaseUrl}?token=${rawToken}`;
 };
 
