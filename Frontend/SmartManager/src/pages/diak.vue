@@ -1,7 +1,9 @@
 <template>
+  <!-- Diák dashboard főoldal -->
   <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Oldalsáv navigáció -->
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
@@ -16,12 +18,14 @@
       </ul>
     </aside>
 
+    <!-- Féjléc: czím és felhasználó menü -->
     <header>
       <div class="header-left">
         <h1>Diák Dashboard</h1>
       </div>
       <div class="header-right">
         <div class="user-profile">
+          <!-- Profil legördülő menü -->
           <div class="dropdown" @click="dropdownOpen = !dropdownOpen">
             <div class="avatar">{{ userProfile.initials }}</div>
             <div class="user-name">{{ userProfile.teljes_nev || userProfile.felhasznalonev }}</div>
@@ -68,11 +72,13 @@
       </div>
     </header>
 
+    <!-- Fő tartalom terület -->
     <main>
       <div class="page-title">
         <h2>Áttekintés</h2>
       </div>
 
+      <!-- Statisztika kártyák: feladatok összegzése -->
       <div class="stats-cards">
         <div class="stat-card">
           <div class="stat-icon bg-primary">
@@ -135,11 +141,13 @@
         </div>
       </section>
 
+      <!-- Kanban tábla: drag & drop feladatok -->
       <section class="section">
         <div class="section-header">
           <h3><i class="fas fa-columns"></i> Projekt: {{ currentProjectName }}</h3>
           <router-link to="/teamwork">További projektek</router-link>
         </div>
+        <!-- Kanban oszlopok: Kategórizálatlan, Prioritások, Befejezett -->
         <div class="kanban-container">
           <div v-if="kanbanColumns.length === 0" style="padding: 2rem; text-align: center; color: #6c757d; grid-column: 1 / -1;">
             Nincsenek feladatok ehhez a projekthez
@@ -204,10 +212,11 @@ margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* DASHBOARD LAYOUT - grid alapon */
 .dashboard-wrapper {
   display: grid;
-  grid-template-columns: 250px 1fr;
-  grid-template-rows: 60px 1fr;
+  grid-template-columns: 250px 1fr;  /* Oldalsáv + főablak */
+  grid-template-rows: 60px 1fr;  /* Fejléc + főtartalom */
   grid-template-areas: 
     "sidebar header"
     "sidebar main";
@@ -456,6 +465,7 @@ margin: 0;
   color: var(--dark);
 }
 
+/* Statisztika kártyák grid */
 .dashboard-wrapper .stats-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -545,6 +555,7 @@ margin: 0;
   background: var(--secondary);
 }
 
+/* Feladat kártyák - rugalmas rács */
 .dashboard-wrapper .tasks-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -608,6 +619,7 @@ margin: 0;
 .dashboard-wrapper .status-graded { background: #d4edda; color: #155724; }
 .dashboard-wrapper .status-late { background: #f8d7da; color: #721c24; }
 
+/* Kanban - 5 oszlop (droppable zónák) */
 .dashboard-wrapper .kanban-container {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -630,6 +642,7 @@ margin: 0;
   color: var(--dark);
 }
 
+/* Kanban kártyák */
 .dashboard-wrapper .kanban-card {
   background: white;
   border-radius: 5px;
@@ -637,8 +650,7 @@ margin: 0;
   margin-bottom: 0.75rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   cursor: move;
-  transition: all 0.2s;
-}
+  transition: all 0.3s;}
 
 .dashboard-wrapper .kanban-card:hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
@@ -773,9 +785,12 @@ margin: 0;
   cursor: pointer;
 }
 
+/* == RESZPONZÍV MEGJELENéS == */
+
+/* Táblagépek és nagyobb képernyők */
 @media (max-width: 992px) {
   .dashboard-wrapper {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr;  /* Egyoszlopos layout*/
     grid-template-areas:
       "header"
       "main";
@@ -823,6 +838,7 @@ margin: 0;
   }
 }
 
+/* Tablet kijelzők */
 @media (max-width: 768px) {
   .dashboard-wrapper header {
     flex-direction: column;
@@ -899,6 +915,7 @@ margin: 0;
   }
 }
 
+/* Mobilok */
 @media (max-width: 480px) {
   .dashboard-wrapper header {
     padding: 0.5rem;
@@ -939,29 +956,30 @@ import { useRouter } from 'vue-router';
 
 export default {
   name: "Diak",
+  // Komponens adatai
   data() {
     return {
-      navActive: false,
-      dropdownOpen: false,
-      userProfile: {
+      navActive: false,  // Menü nyitva/zárva
+      dropdownOpen: false,  // Profil legördülő
+      userProfile: {  // Bejelentkezett felhasználó
         teljes_nev: '',
         felhasznalonev: '',
         szerep_tipus: 'diak',
         initials: ''
       },
       stats: {
-        total: 0,
-        completed: 0,
-        inProgress: 0,
-        late: 0
+        total: 0,  // Öszes feladat
+        completed: 0,  // Befejezett
+        inProgress: 0,  // Folyamatban
+        late: 0  // Késésben
       },
-      upcomingTasks: [],
-      currentProjectName: 'Projektek',
-      currentProjectId: null,
-      allTasks: [],
-      draggedCard: null,
-      draggedFromColumn: null,
-      kanbanColumns: [
+      upcomingTasks: [],  // Közelő feladatok
+      currentProjectName: 'Projektek',  // Aktuális projekt neve
+      currentProjectId: null,  // Aktuális projekt ID-ja
+      allTasks: [],  // Összes feladat
+      draggedCard: null,  // Szérozótt kártya
+      draggedFromColumn: null,  // Forrás oszlop
+      kanbanColumns: [  // Kanban oszlopok
         {
           id: 'uncategorized',
           title: 'Kategórizálatlan',
@@ -991,9 +1009,11 @@ export default {
     }
   },
   methods: {
+    // Menü nyitás/zárás
     toggleMenu() {
       this.navActive = !this.navActive;
     },
+    // Szerepátkonvertálás megfigyelő formátumra
     getRoleLabel(role) {
       const roleMap = {
         'diak': 'Diák',
@@ -1002,16 +1022,19 @@ export default {
       };
       return roleMap[role] || role;
     },
+    // Avatar kezdőbetűi generálása
     generateInitials(name) {
       if (!name) return '';
       const parts = name.split(' ');
       return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2);
     },
+    // Dátum formázás magyar formátumra
     formatDate(dateString) {
       if (!dateString) return '';
       const date = new Date(dateString);
       return date.toLocaleDateString('hu-HU');
     },
+    // Státusz név megjelenítéshez
     getStatusLabel(status) {
       const statusMap = {
         'folyamatban': 'Folyamatban',
@@ -1020,6 +1043,7 @@ export default {
       };
       return statusMap[status] || status;
     },
+    // Státusz CSS osztály meghatározása
     getStatusBadgeClass(status) {
       const statusClass = {
         'folyamatban': 'status-inprogress',
@@ -1028,6 +1052,7 @@ export default {
       };
       return statusClass[status] || '';
     },
+    // Feladat kártya CSS osztálya (pl. vörös "danger" a késetteknek)
     getTaskStatusClass(status) {
       const statusClass = {
         'folyamatban': '',
@@ -1036,6 +1061,7 @@ export default {
       };
       return statusClass[status] || '';
     },
+    // DRAG & DROP műveletek
     dragStart(card, columnId) {
       this.draggedCard = card;
       this.draggedFromColumn = columnId;
@@ -1055,6 +1081,7 @@ export default {
     },
     drop(columnId) {
       if (this.draggedCard) {
+        // Kártya eltávolítása eredeti oszlopból
         const fromColumn = this.kanbanColumns.find(col => col.id === this.draggedFromColumn);
         const cardIndex = fromColumn.cards.findIndex(card => card.id === this.draggedCard.id);
         
@@ -1062,10 +1089,12 @@ export default {
           fromColumn.cards.splice(cardIndex, 1);
         }
         
+        // Kártya hozzáadása cél oszlophoz
         const toColumn = this.kanbanColumns.find(col => col.id === columnId);
         toColumn.cards.push(this.draggedCard);
       }
     },
+    // Felhasználó profil adatainak lekérése
     async fetchUserProfile() {
       try {
         const storedUser = localStorage.getItem('user');
@@ -1108,13 +1137,15 @@ export default {
         console.error('Felhasználó adatainak lekérése sikertelen:', error);
       }
     },
+    // Projektek betöltése API-ról
     async fetchProjects() {
       try {
         const token = localStorage.getItem('accessToken');
         
         if (!token) return;
 
-        const response = await fetch('http://localhost:3000/api/project/projektek', {
+        // Projektek lekérése
+        const response = await fetch('http://localhost:3000/api/project/projects', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1137,13 +1168,15 @@ export default {
         console.error('Projektek lekérése sikertelen:', error);
       }
     },
+    // Feladatok betöltése
     async fetchTasks() {
       try {
         const token = localStorage.getItem('accessToken');
         
         if (!token) return;
 
-        const response = await fetch('http://localhost:3000/api/project/feladatok', {
+        // Feladatok lekérése
+        const response = await fetch('http://localhost:3000/api/project/tasks', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1167,49 +1200,48 @@ export default {
         console.error('Feladatok lekérése sikertelen:', error);
       }
     },
+    // Statisztika frissítése
     updateStats() {
       this.stats.total = this.allTasks.length;
       this.stats.completed = this.allTasks.filter(t => t.statusz === 'befejezett').length;
       this.stats.inProgress = this.allTasks.filter(t => t.statusz === 'folyamatban').length;
       this.stats.late = this.allTasks.filter(t => t.statusz === 'késett').length;
     },
+    // Közelő feladatok (következő 3) frissítése
     updateUpcomingTasks() {
       this.upcomingTasks = this.allTasks
         .sort((a, b) => new Date(a.hatarido) - new Date(b.hatarido))
         .slice(0, 3);
     },
+    // Kanban tábla frissítése (feladatok prioritások/státusz szerinti osztályozása)
     updateKanban() {
       this.kanbanColumns.forEach(col => col.cards = []);
 
       this.allTasks.forEach(task => {
+        // Befejezett feladatok
         if (task.statusz === 'befejezett') {
           const column = this.kanbanColumns.find(col => col.id === 'befejezett');
-          if (column) {
-            column.cards.push(task);
-          }
+          if (column) column.cards.push(task);
         } else {
+          // Prioritás szerinti osztályozás
           let columnId = 'uncategorized';
-          
-          if (task.prioritas === 'magas') {
-            columnId = 'magas';
-          } else if (task.prioritas === 'közepes') {
-            columnId = 'közepes';
-          } else if (task.prioritas === 'alacsony') {
-            columnId = 'alacsony';
-          }
+          if (task.prioritas === 'magas') columnId = 'magas';
+          else if (task.prioritas === 'közepes') columnId = 'közepes';
+          else if (task.prioritas === 'alacsony') columnId = 'alacsony';
           
           const column = this.kanbanColumns.find(col => col.id === columnId);
-          if (column) {
-            column.cards.push(task);
-          }
+          if (column) column.cards.push(task);
         }
       });
     }
   },
+  // Komponens inicializálása
   mounted() {
+    // Adatok betöltése
     this.fetchUserProfile();
     this.fetchProjects();
 
+    // Legördülő menü bezárása kívülre kattintáskor
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.user-profile')) {
         this.dropdownOpen = false;
@@ -1218,10 +1250,12 @@ export default {
   },
   setup() {
     const router = useRouter();
+    // Kijelentkezés funkció
     const logout = async () => {
       try {
         const token = localStorage.getItem('accessToken');
         
+        // Felhasználó állapotát "nem elérhető"-re állítás
         if (token) {
           await fetch('http://localhost:3000/api/auth/profile', {
             method: 'PUT',
@@ -1238,6 +1272,7 @@ export default {
         console.error('Kijelentkezés hiba:', error);
       }
       
+      // Storage törlése
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
