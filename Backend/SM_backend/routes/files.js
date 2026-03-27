@@ -46,7 +46,7 @@ router.get('/submission', verifyToken, async (req, res) => {
                 b.felhasznalo_id, 
                 b.tanar_id, 
                 b.pontszam,
-                b.maxpontszam 
+                b.maxpontszam, 
                 b.jegy, 
                 b.statusz, 
                 b.visszajelzes, 

@@ -1,0 +1,41 @@
+#videos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.video-player {
+    background-color: #000;
+    width: 100%;
+    min-height: 220px;
+    border-radius: 0.5rem;
+}
+
+#video-wrapper {
+    position: relative;
+}
+
+#waiting {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0.5rem;
+    margin: 0 auto;
+    width: fit-content;
+    z-index: 2;
+}
+
+#answer button {
+    margin-bottom: 0.4rem;
+}
+
+#connection-status {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    #videos {
+        grid-template-columns: 1fr;
+    }
+}
