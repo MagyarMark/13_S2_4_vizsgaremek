@@ -24,6 +24,7 @@
 <script>
 import { useRoute, useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
+import { getApiUrl } from '../utils/api';
 
 export default {
   name: 'VerifyEmail',
@@ -45,7 +46,7 @@ export default {
       }
 
       try {
-        const response = await fetch(`http://localhost:3000/api/auth/verify-email?token=${token}`);
+        const response = await fetch(getApiUrl(`/api/auth/verify-email?token=${token}`));
         const data = await response.json();
 
         loading.value = false;

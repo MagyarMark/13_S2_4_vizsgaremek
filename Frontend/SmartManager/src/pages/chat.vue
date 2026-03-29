@@ -2,7 +2,7 @@
   <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Navigációs sáv -->
+    
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
@@ -121,7 +121,7 @@
       <section class="section">
         <div class="section-header">
           <h3><i class="fas fa-comments"></i> SMchat 💬</h3>
-          <!--<span class="clients-total">Aktív felhasználók: {{ clientsTotal }}</span>-->
+          
         </div>
         <div class="chat-container">
           <div class="chat-sidebar">
@@ -136,12 +136,7 @@
                 disabled
               >
             </div>
-            <h4>Szoba információk</h4>
-            <div class="chat-info">
-              <p><i class="fas fa-users"></i> {{ clientsTotal }} aktív felhasználó</p>
-            </div>
-
-            <!-- Chat módváltás: egyéni üzenet vs projekt chat -->
+            
             <div class="chat-mode-toggle">
               <button
                 :class="['mode-button', { active: chatMode === 'direct' }]"
@@ -160,13 +155,27 @@
             <template v-if="chatMode === 'direct'">
               <div class="new-conversation">
                 <label>Új beszélgetés</label>
-                <select v-model="selectedRecipientId" class="recipient-select">
-                  <option disabled value="">Válassz felhasználót</option>
-                  <option v-for="user in selectableUsers" :key="user.id" :value="user.id">
+                <input
+                  type="text"
+                  v-model="recipientSearch"
+                  class="recipient-search"
+                  placeholder="Keresés név alapján"
+                >
+                <div class="recipient-list">
+                  <button
+                    v-for="user in filteredSelectableUsers"
+                    :key="user.id"
+                    type="button"
+                    :class="['recipient-option', { active: String(user.id) === String(selectedRecipientId) }]"
+                    @click="selectRecipient(user.id)"
+                  >
                     {{ user.teljes_nev || user.felhasznalonev || ('Felhasználó #' + user.id) }}
-                  </option>
-                </select>
-                <button class="start-conversation" @click="startConversation">
+                  </button>
+                  <div v-if="filteredSelectableUsers.length === 0" class="recipient-empty">
+                    Nincs találat.
+                  </div>
+                </div>
+                <button class="start-conversation" :disabled="!selectedRecipientId" @click="startConversation">
                   Indítás
                 </button>
               </div>
@@ -182,7 +191,13 @@
                     :class="['conversation-item', { active: conv.userId === selectedConversationId }]"
                     @click="selectConversation(conv.userId)"
                   >
-                    <div class="conversation-title">{{ conv.userName }}</div>
+                    <div class="conversation-title">
+                      <span
+                        :class="['status-dot', conv.isOnline ? 'online' : 'offline']"
+                        :title="conv.isOnline ? 'Elérhető' : 'Nem elérhető'"
+                      ></span>
+                      {{ conv.userName }}
+                    </div>
                     <div class="conversation-preview">{{ conv.lastMessage }}</div>
                     <div class="conversation-meta">{{ conv.lastTimeLabel }}</div>
                   </button>
@@ -212,6 +227,10 @@
                     class="conversation-item"
                   >
                     <div class="conversation-title">
+                      <span
+                        :class="['status-dot', isOnline(member.elerheto) ? 'online' : 'offline']"
+                        :title="isOnline(member.elerheto) ? 'Elérhető' : 'Nem elérhető'"
+                      ></span>
                       {{ member.teljes_nev || member.felhasznalonev || member.email || ('Felhasználó #' + member.id) }}
                     </div>
                     <div class="conversation-preview">{{ member.szerep_tipus }}</div>
@@ -222,14 +241,31 @@
           </div>
           <div class="chat-main">
             <div class="chat-header">
-              <template v-if="chatMode === 'direct'">
-                <h4 v-if="selectedConversation">Beszélgetés: {{ selectedConversation.userName }}</h4>
-                <h4 v-else>Válassz beszélgetést</h4>
-              </template>
-              <template v-else>
-                <h4 v-if="selectedProject">Projekt: {{ selectedProject.projekt_nev || selectedProject.nev || ('Projekt #' + selectedProject.id) }}</h4>
-                <h4 v-else>Válassz projektet</h4>
-              </template>
+              <div class="chat-header-left">
+                <template v-if="chatMode === 'direct'">
+                  <h4 v-if="selectedConversation">Beszélgetés: {{ selectedConversation.userName }}</h4>
+                  <h4 v-else>Válassz beszélgetést</h4>
+                </template>
+                <template v-else>
+                  <h4 v-if="selectedProject">Projekt: {{ selectedProject.projekt_nev || selectedProject.nev || ('Projekt #' + selectedProject.id) }}</h4>
+                  <h4 v-else>Válassz projektet</h4>
+                </template>
+              </div>
+              <div class="chat-header-actions">
+                <button 
+                  v-if="chatMode === 'direct' && selectedConversationId"
+                  class="video-call-btn"
+                  @click="startVideoCall"
+                  title="Hívás indítása"
+                  aria-label="Hívás indítása"
+                >
+                  <i class="fas fa-phone"></i>
+                </button>
+              </div>
+            </div>
+            <div v-if="callStatusNotice" class="call-status-banner">
+              <i class="fas fa-phone-slash"></i>
+              <span>{{ callStatusNotice }}</span>
             </div>
             <div class="chat-messages" ref="messagesContainer">
               <div v-if="isLoadingMessages" class="conversation-status">Üzenetek betöltése...</div>
@@ -240,10 +276,65 @@
                   :key="message.id"
                   :class="['message', message.type]"
                 >
-                  <p class="message-content">
-                    {{ message.text }}
-                    <span class="message-meta">{{ message.sender }} | {{ message.time }}</span>
-                  </p>
+                  <div class="message-body">
+                    <div class="message-content">
+                      <template v-if="editingMessageId === message.id">
+                        <textarea
+                          v-model="editDraft"
+                          class="message-edit-input"
+                          rows="2"
+                          maxlength="2000"
+                          @keyup.esc="cancelEditingMessage"
+                        ></textarea>
+                        <div class="message-edit-actions">
+                          <button
+                            type="button"
+                            class="message-edit-button"
+                            @click="saveEditedMessage(message)"
+                          >
+                            Mentés
+                          </button>
+                          <button
+                            type="button"
+                            class="message-edit-button secondary"
+                            @click="cancelEditingMessage"
+                          >
+                            Mégse
+                          </button>
+                        </div>
+                      </template>
+                      <template v-else>
+                        <p class="message-text">{{ message.text }}</p>
+                        <span class="message-meta">
+                          {{ message.sender }} | {{ message.time }}
+                          <span v-if="message.isEdited" class="message-edited"> (szerkesztve)</span>
+                        </span>
+                      </template>
+                    </div>
+                    <div v-if="message.isOwn" class="message-actions">
+                      <button
+                        type="button"
+                        class="message-menu-toggle"
+                        @click.stop="toggleMessageMenu(message.id)"
+                        aria-label="Üzenet műveletek"
+                        title="Üzenet műveletek"
+                      >
+                        <i class="fas fa-ellipsis-v"></i>
+                      </button>
+                      <div
+                        v-if="openMessageMenuId === message.id"
+                        class="message-menu"
+                        @click.stop
+                      >
+                        <button type="button" class="message-menu-item" @click="startEditingMessage(message)">
+                          Szerkesztés
+                        </button>
+                        <button type="button" class="message-menu-item danger" @click="deleteMessage(message)">
+                          Törlés
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </template>
             </div>
@@ -255,35 +346,57 @@
                 @keyup.enter="sendMessage"
                 :disabled="chatMode === 'direct' ? !selectedConversationId : !selectedProjectId"
               >
-              <button @click="sendMessage" :disabled="chatMode === 'direct' ? !selectedConversationId : !selectedProjectId"><i class="fas fa-paper-plane"></i> Küldés</button>
+              <button
+                @click="sendMessage"
+                :disabled="chatMode === 'direct' ? !selectedConversationId : !selectedProjectId"
+                aria-label="Üzenet küldése"
+                title="Üzenet küldése"
+              >
+                <i class="fas fa-paper-plane"></i>
+              </button>
             </div>
           </div>
         </div>
       </section>
     </main>
+
+    
+    <VideoCall 
+      ref="videoCallComponent"
+      :recipient-id="selectedConversationId"
+      :recipient-name="selectedConversation?.userName || 'Felhasználó'"
+      :recipient-user-name="selectedConversationSignalUserName"
+      :current-user-id="currentUserId"
+      :access-token="accessToken"
+      room-id="hívás"
+      @close="showVideoCall = false"
+      @call-ended="handleCallEnded"
+      @incoming-call="onIncomingCall"
+    />
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import moment from 'moment';
-import 'moment/locale/hu';
-
-moment.locale('hu');
+import { io } from 'socket.io-client';
+import VideoCall from '../components/VideoCall.vue';
+import { getApiUrl, getSocketUrl } from '../utils/api';
 
 export default {
   name: "Chat",
-  // OPTIONS API - komponens alapadatok
+  components: {
+    VideoCall
+  },
   data() {
     return {
-      navActive: false,  // Menü nyitva/zárva
-      dropdownOpen: false,  // Profil legördülő
+      navActive: false,  
+      dropdownOpen: false,  
       userProfile: {
         teljes_nev: '',
         felhasznalonev: '',
         szerep_tipus: 'diak',
-        initials: ''  // Avatar kezdőbetűi
+        initials: ''  
       }
     }
   },
@@ -299,13 +412,11 @@ export default {
       };
       return roleMap[role] || role;
     },
-    // Név kezdőbetűi az avatarhoz
     generateInitials(name) {
       if (!name) return '';
       const parts = name.split(' ');
       return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2);
     },
-    // Bejelentkezett felhasználó profil adatainak lekérése
     async fetchUserProfile() {
       try {
         const storedUser = localStorage.getItem('user');
@@ -319,8 +430,7 @@ export default {
 
         const userData = JSON.parse(storedUser);
         
-        // Profil adatok lekérése API-ról
-        const response = await fetch(`http://localhost:3000/api/auth/profileData`, {
+        const response = await fetch(getApiUrl(`/api/auth/profileData`), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -328,14 +438,12 @@ export default {
           }
         });
 
-        // Hibaellenőrzés
         if (!response.ok) {
           throw new Error('Felhasználó adatainak lekérése sikertelen');
         }
 
         const data = await response.json();
         
-        // Profil adatok frissítése
         if (data.success && data.data && data.data.user ) {
           const user = data.data.user;
           this.userProfile = {
@@ -373,39 +481,67 @@ export default {
   },
   setup() {
     const router = useRouter();
-    const apiBaseUrl = 'http://localhost:3000/api';
+    const apiBaseUrl = getApiUrl('/api');
 
-    // REAKTÍV ÁLLAPOTOK
-    const userName = ref('anonymous');  // Jelenlegi felhasználó
-    const currentUserId = ref(null);  // Bejelentkezett felhasználó ID-ja
-    const newMessage = ref('');  // Szerkesztés alatt álló üzenet
-    const messages = ref([]);  // Aktuális beszélgetés üzenetei
-    const messagesContainer = ref(null);  // DOM referencia (görgetéshez)
-    const clientsTotal = ref(0);  // Aktív felhasználók száma
-    const chatMode = ref('direct');  // 'direct' vagy 'project'
-    const isLoadingMessages = ref(false);  // Betöltés státuszok
+    const userName = ref('anonymous');  
+    const currentUserId = ref(null);  
+    const newMessage = ref('');  
+    const messages = ref([]);  
+    const messagesContainer = ref(null);  
+    const clientsTotal = ref(0);  
+    const chatMode = ref('direct');  
+    const isLoadingMessages = ref(false);  
     const isLoadingConversations = ref(false);
     const isLoadingProjects = ref(false);
     const isLoadingMembers = ref(false);
-    const users = ref([]);  // Elérhető felhasználók
-    const conversations = ref([]);  // Egyéni beszélgetések
-    const selectedConversationId = ref(null);  // Kiválasztott beszélgetés
-    const selectedRecipientId = ref('');  // Új hsz. indításhoz
-    const projects = ref([]);  // Elérhető projektek
-    const selectedProjectId = ref('');  // Kiválasztott projekt
-    const projectMembers = ref([]);  // Projekt tagjai
+    const users = ref([]);  
+    const conversations = ref([]);  
+    const selectedConversationId = ref(null);  
+    const selectedRecipientId = ref('');  
+    const recipientSearch = ref('');
+    const projects = ref([]);  
+    const selectedProjectId = ref('');  
+    const projectMembers = ref([]);  
+    const openMessageMenuId = ref(null);
+    const editingMessageId = ref(null);
+    const editDraft = ref('');
+    const showVideoCall = ref(false);
+    const accessToken = ref(null);
+    const videoCallComponent = ref(null);
+    const callStatusNotice = ref('');
+    let chatSocket = null;
+    let callStatusNoticeTimer = null;
     const selectableUsers = computed(() => users.value.filter((u) => u.id !== currentUserId.value));
+    const normalizeForSearch = (value) => String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    const filteredSelectableUsers = computed(() => {
+      const query = normalizeForSearch(recipientSearch.value).trim();
+      if (!query) return selectableUsers.value;
+
+      return selectableUsers.value.filter((user) => {
+        const label = user.teljes_nev || user.felhasznalonev || `Felhasználó #${user.id}`;
+        return normalizeForSearch(label).includes(query);
+      });
+    });
     const selectedConversation = computed(() =>
       conversations.value.find((conv) => conv.userId === selectedConversationId.value) || null
     );
+    const selectedConversationSignalUserName = computed(() => {
+      if (!selectedConversationId.value) {
+        return '';
+      }
+
+      const directUser = users.value.find((u) => String(u.id) === String(selectedConversationId.value));
+      return directUser?.felhasznalonev || selectedConversation.value?.userName || '';
+    });
     const selectedProject = computed(() =>
       projects.value.find((project) => String(project.id) === String(selectedProjectId.value)) || null
     );
 
-    // API token lekérése
     const getToken = () => localStorage.getItem('accessToken');
 
-    // HTTP fejlécek autentikációval
     const buildHeaders = () => {
       const token = getToken();
       return {
@@ -416,15 +552,53 @@ export default {
 
     const resolveUserName = (id) => {
       if (chatMode.value === 'project') {
-        const member = projectMembers.value.find((u) => u.id === id);
+        const member = projectMembers.value.find((u) => String(u.id) === String(id));
         return member?.teljes_nev || member?.felhasznalonev || member?.email || `Felhasználó #${id}`;
       }
 
-      const user = users.value.find((u) => u.id === id);
+      const user = users.value.find((u) => String(u.id) === String(id));
       return user?.teljes_nev || user?.felhasznalonev || `Felhasználó #${id}`;
     };
 
-    // Görgetés az utolsó üzenetig
+    const isOnline = (elerheto) => {
+      if (typeof elerheto === 'boolean') return elerheto;
+      if (typeof elerheto === 'number') return elerheto === 1;
+      if (typeof elerheto === 'string') {
+        const normalized = elerheto.trim().toLowerCase();
+        return normalized === '1' || normalized === 'true';
+      }
+      return false;
+    };
+
+    const isUserOnlineById = (id) => {
+      const user = users.value.find((u) => String(u.id) === String(id));
+      return isOnline(user?.elerheto);
+    };
+
+    const huRelativeFormatter = new Intl.RelativeTimeFormat('hu', { numeric: 'auto' });
+    const formatRelativeTimeHu = (input) => {
+      const date = new Date(input);
+      if (Number.isNaN(date.getTime())) return '';
+
+      const diffMs = date.getTime() - Date.now();
+      const absDiff = Math.abs(diffMs);
+      const second = 1000;
+      const minute = 60 * second;
+      const hour = 60 * minute;
+      const day = 24 * hour;
+      const week = 7 * day;
+      const month = 30 * day;
+      const year = 365 * day;
+
+      if (absDiff < minute) return huRelativeFormatter.format(Math.round(diffMs / second), 'second');
+      if (absDiff < hour) return huRelativeFormatter.format(Math.round(diffMs / minute), 'minute');
+      if (absDiff < day) return huRelativeFormatter.format(Math.round(diffMs / hour), 'hour');
+      if (absDiff < week) return huRelativeFormatter.format(Math.round(diffMs / day), 'day');
+      if (absDiff < month) return huRelativeFormatter.format(Math.round(diffMs / week), 'week');
+      if (absDiff < year) return huRelativeFormatter.format(Math.round(diffMs / month), 'month');
+      return huRelativeFormatter.format(Math.round(diffMs / year), 'year');
+    };
+
     const scrollToBottom = () => {
       nextTick(() => {
         if (messagesContainer.value) {
@@ -433,43 +607,53 @@ export default {
       });
     };
 
-    // Üzenet objektum átalakítása megjelenítésre
     const mapMessage = (msg) => {
-      const isOwn = msg.kuldo_id === currentUserId.value;  // Saját üzenet?
+      const isOwn = String(msg.kuldo_id) === String(currentUserId.value);  
       return {
         id: msg.id,
         sender: resolveUserName(msg.kuldo_id),
         senderId: msg.kuldo_id,
+        receiverId: msg.fogado_id,
+        projectId: msg.projekt_id,
         text: msg.uzenet_tartalom,
-        time: moment(msg.kuldes_ideje).fromNow(),  // Relatív idő
+        time: formatRelativeTimeHu(msg.kuldes_ideje),  
         type: isOwn ? 'sent' : 'received',
-        isOwn
+        isOwn,
+        isEdited: Boolean(msg.modositas_idopont && msg.modositas_idopont !== null)
       };
     };
 
-    // Aktív felhasználók számának frissítése
     const updateClientsTotal = () => {
       clientsTotal.value = chatMode.value === 'project' ? projectMembers.value.length : users.value.length;
     };
 
-    // Felhasználók betöltése
     const loadUsers = async () => {
       const token = getToken();
-      if (!token) return;
+      if (!token) {
+        console.warn('Nincs token az users betöltéshez');
+        return;
+      }
 
-      const response = await fetch(`${apiBaseUrl}/project/projectMember`, {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      try {
+        const response = await fetch(`${apiBaseUrl}/project/projectMember`, {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-      if (!response.ok) throw new Error('Felhasználók lekérése sikertelen');
+        if (!response.ok) {
+          console.error(`Felhasználók lekérése sikertelen: ${response.status}`);
+          throw new Error(`Felhasználók lekérése sikertelen: ${response.status}`);
+        }
 
-      const data = await response.json();
-      users.value = data.data || [];
-      updateClientsTotal();
+        const data = await response.json();
+        users.value = data.data || [];
+        console.log('Felhasználók betöltve:', users.value.length);
+        updateClientsTotal();
+      } catch (error) {
+        console.error('Felhasználók betöltésének hibája:', error);
+      }
     };
 
-    // Projektek betöltése
     const loadProjects = async () => {
       const token = getToken();
       if (!token) return;
@@ -490,7 +674,6 @@ export default {
       }
     };
 
-    // Projekt tagjainak betöltése
     const loadProjectMembers = async () => {
       const token = getToken();
       if (!token || !selectedProjectId.value) {
@@ -516,7 +699,6 @@ export default {
       }
     };
 
-    // Projekt üzenetei betöltése
     const loadMessages = async () => {
       const token = getToken();
       if (!token || !selectedProjectId.value) {
@@ -531,16 +713,19 @@ export default {
           { method: 'GET', headers: buildHeaders() }
         );
 
-        if (!response.ok) throw new Error('Üzenetek lekérése sikertelen');
+        if (!response.ok) throw new Error(`Üzenetek lekérése sikertelen: ${response.status}`);
 
         const data = await response.json();
         const items = data?.data?.messages || [];
-        // Üzenetek időrendi sorrendbe
+        console.log('Üzenetek betöltve:', items.length);
         items.sort((a, b) => new Date(a.kuldes_ideje).getTime() - new Date(b.kuldes_ideje).getTime());
         messages.value = items.map(mapMessage);
-        scrollToBottom();
+      } catch (error) {
+        console.error('Üzenetek betöltésének hibája:', error);
+        messages.value = [];
       } finally {
         isLoadingMessages.value = false;
+        scrollToBottom();
       }
     };
 
@@ -556,7 +741,6 @@ export default {
       await loadMessages();
     };
 
-    // Egyéni beszélgetések betöltése
     const loadConversations = async () => {
       const token = getToken();
       if (!token) return;
@@ -568,16 +752,16 @@ export default {
           headers: buildHeaders()
         });
 
-        if (!response.ok) throw new Error('Beszélgetések lekérése sikertelen');
+        if (!response.ok) throw new Error(`Beszélgetések lekérése sikertelen: ${response.status}`);
 
         const data = await response.json();
-        // Csak egyéni üzenetek szűrése
         const items = (data?.data?.messages || []).filter((msg) => msg.projekt_id == null);
-        const byUser = new Map();  // Felhasználónkénti csoportosítás
+        console.log('Beszélgetések üzenetei betöltve:', items.length, 'users.value.length:', users.value.length);
+        const byUser = new Map();  
 
-        // Utolsó üzenet felhasználónként
         items.forEach((msg) => {
-          const otherUserId = msg.kuldo_id === currentUserId.value ? msg.fogado_id : msg.kuldo_id;
+          const isOwnMessage = String(msg.kuldo_id) === String(currentUserId.value);
+          const otherUserId = isOwnMessage ? msg.fogado_id : msg.kuldo_id;
           if (!otherUserId) return;
           const messageTime = new Date(msg.kuldes_ideje).getTime();
           const existing = byUser.get(otherUserId);
@@ -586,26 +770,38 @@ export default {
             byUser.set(otherUserId, {
               userId: otherUserId,
               userName: resolveUserName(otherUserId),
+              isOnline: isUserOnlineById(otherUserId),
               lastMessage: msg.uzenet_tartalom,
               lastTime: messageTime,
-              lastTimeLabel: moment(msg.kuldes_ideje).fromNow()
+              lastTimeLabel: formatRelativeTimeHu(msg.kuldes_ideje)
             });
           }
         });
 
-        // Legutóbbi üzenet szerint rendezve
         conversations.value = Array.from(byUser.values()).sort((a, b) => b.lastTime - a.lastTime);
+        console.log('Beszélgetések feldolgozva:', conversations.value.length);
 
-        if (!selectedConversationId.value && conversations.value.length > 0) {
-          selectedConversationId.value = conversations.value[0].userId;
+        if (conversations.value.length > 0) {
+          const hasSelectedConversation = conversations.value.some(
+            (conv) => String(conv.userId) === String(selectedConversationId.value)
+          );
+
+          if (!hasSelectedConversation) {
+            selectedConversationId.value = conversations.value[0].userId;
+          }
+
           await loadConversation(selectedConversationId.value);
+        } else {
+          selectedConversationId.value = null;
+          messages.value = [];
         }
+      } catch (error) {
+        console.error('Beszélgetések betöltésének hibája:', error);
       } finally {
         isLoadingConversations.value = false;
       }
     };
 
-    // Egy felhasználóval folytatott beszélgetés
     const loadConversation = async (withUserId) => {
       const token = getToken();
       if (!token || !withUserId) {
@@ -625,15 +821,19 @@ export default {
         const data = await response.json();
         const items = (data?.data?.messages || []).filter((msg) => msg.projekt_id == null);
         messages.value = items.map(mapMessage);
-        scrollToBottom();
       } finally {
         isLoadingMessages.value = false;
+        scrollToBottom();
       }
     };
 
     const selectConversation = async (userId) => {
       selectedConversationId.value = userId;
       await loadConversation(userId);
+    };
+
+    const selectRecipient = (userId) => {
+      selectedRecipientId.value = String(userId);
     };
 
     const startConversation = async () => {
@@ -647,6 +847,7 @@ export default {
       }
       selectedConversationId.value = targetId;
       selectedRecipientId.value = '';
+      recipientSearch.value = '';
       await loadConversation(targetId);
       await loadConversations();
     };
@@ -668,11 +869,9 @@ export default {
       await handleProjectChange();
     };
 
-    // Üzenet küldése (egyéni vagy projekt chat)
     const sendMessage = async () => {
       if (newMessage.value.trim() === '') return;
 
-      // Payload felépítése a chat módtól függően
       const payload = chatMode.value === 'direct'
         ? {
             fogado_id: Number(selectedConversationId.value),
@@ -691,15 +890,17 @@ export default {
 
       if (!response.ok) throw new Error('Üzenet küldése sikertelen');
 
-      // Üzenet hozzáadása listához
       const data = await response.json();
       if (data?.data) {
+        if (chatSocket && chatSocket.connected) {
+          chatSocket.emit('message', data.data);
+        }
+
         messages.value.push(mapMessage(data.data));
         scrollToBottom();
       }
 
-      newMessage.value = '';  // Input törlése
-      // Frissítés a chat módtól függően
+      newMessage.value = '';  
       if (chatMode.value === 'direct') {
         await loadConversation(selectedConversationId.value);
         await loadConversations();
@@ -708,13 +909,230 @@ export default {
       }
     };
 
-    // Kijelentkezés
+    const toggleMessageMenu = (messageId) => {
+      if (!messageId) return;
+      openMessageMenuId.value = openMessageMenuId.value === messageId ? null : messageId;
+    };
+
+    const closeMessageMenu = () => {
+      openMessageMenuId.value = null;
+    };
+
+    const startEditingMessage = (message) => {
+      if (!message?.isOwn || !message?.id) {
+        return;
+      }
+
+      editingMessageId.value = message.id;
+      editDraft.value = message.text || '';
+      closeMessageMenu();
+    };
+
+    const cancelEditingMessage = () => {
+      editingMessageId.value = null;
+      editDraft.value = '';
+    };
+
+    const saveEditedMessage = async (message) => {
+      if (!message?.isOwn || !message?.id || editingMessageId.value !== message.id) {
+        return;
+      }
+
+      const updatedText = editDraft.value.trim();
+      if (!updatedText) {
+        alert('Az üzenet nem lehet üres.');
+        return;
+      }
+
+      if (updatedText === message.text) {
+        cancelEditingMessage();
+        return;
+      }
+
+      try {
+        const response = await fetch(`${apiBaseUrl}/messages/update/${message.id}`, {
+          method: 'PUT',
+          headers: buildHeaders(),
+          body: JSON.stringify({ uzenet_tartalom: updatedText })
+        });
+
+        if (!response.ok) {
+          let errorMessage = 'Az üzenet szerkesztése sikertelen';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData?.message || errorMessage;
+          } catch (error) {
+            console.error(error);
+          }
+          throw new Error(errorMessage);
+        }
+
+        const result = await response.json();
+
+        cancelEditingMessage();
+
+        const messageInList = messages.value.find(m => m.id === message.id);
+        if (messageInList) {
+          messageInList.text = updatedText;
+          messageInList.isEdited = true;
+        }
+
+        if (chatSocket && chatSocket.connected && result?.data) {
+          chatSocket.emit('chat-event', {
+            action: 'message-updated',
+            data: result.data
+          });
+        }
+
+        if (chatMode.value === 'direct') {
+          await loadConversation(selectedConversationId.value);
+          await loadConversations();
+        } else {
+          await loadMessages();
+        }
+      } catch (error) {
+        console.error(error);
+        alert(error.message || 'Az üzenet szerkesztése sikertelen.');
+      }
+    };
+
+    const deleteMessage = async (message) => {
+      if (!message?.isOwn || !message?.id) {
+        return;
+      }
+
+      closeMessageMenu();
+
+      const shouldDelete = window.confirm('Biztosan törölni szeretnéd ezt az üzenetet?');
+      if (!shouldDelete) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`${apiBaseUrl}/messages/delete/${message.id}`, {
+          method: 'DELETE',
+          headers: buildHeaders()
+        });
+
+        if (!response.ok) {
+          let errorMessage = 'Az üzenet törlése sikertelen';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData?.message || errorMessage;
+          } catch (error) {
+            console.error(error);
+          }
+          throw new Error(errorMessage);
+        }
+
+        messages.value = messages.value.filter((item) => item.id !== message.id);
+
+        if (chatSocket && chatSocket.connected) {
+          chatSocket.emit('chat-event', {
+            action: 'message-deleted',
+            data: {
+              id: message.id,
+              kuldo_id: currentUserId.value,
+              fogado_id: chatMode.value === 'direct' ? Number(selectedConversationId.value) : null,
+              projekt_id: chatMode.value === 'project' ? Number(selectedProjectId.value) : null
+            }
+          });
+        }
+
+        if (chatMode.value === 'direct') {
+          await loadConversation(selectedConversationId.value);
+          await loadConversations();
+        } else {
+          await loadMessages();
+        }
+      } catch (error) {
+        console.error(error);
+        alert(error.message || 'Az üzenet törlése sikertelen.');
+      }
+    };
+
+    const handleDocumentClick = () => {
+      closeMessageMenu();
+    };
+
+    const triggerOutgoingCall = (attempt = 0) => {
+      const maxAttempts = 10;
+      const component = videoCallComponent.value;
+
+      if (!component) {
+        if (attempt < maxAttempts) {
+          setTimeout(() => triggerOutgoingCall(attempt + 1), 100);
+        } else {
+          console.warn('VideoCall component is not ready after retries');
+        }
+        return;
+      }
+
+      if (typeof component.startOutgoingCall === 'function') {
+        console.log('Starting outgoing call via startOutgoingCall()');
+        component.startOutgoingCall();
+        return;
+      }
+
+      if (typeof component.openCall === 'function') {
+        console.log('VideoCall missing startOutgoingCall(), falling back to openCall()');
+        component.openCall();
+        return;
+      }
+
+      console.warn('VideoCall component methods are unavailable on ref');
+    };
+
+    const startVideoCall = () => {
+      console.log('startVideoCall clicked', {
+        selectedConversationId: selectedConversationId.value,
+        recipientSignalUserName: selectedConversationSignalUserName.value
+      });
+
+      if (!selectedConversationId.value) {
+        console.warn('No selected conversation, cannot start call');
+        return;
+      }
+
+      showVideoCall.value = true;
+
+      const component = videoCallComponent.value;
+      if (component && typeof component.startOutgoingCall === 'function') {
+        console.log('Starting outgoing call immediately from click handler');
+        component.startOutgoingCall();
+        return;
+      }
+
+      nextTick(() => {
+        triggerOutgoingCall();
+      });
+    };
+
+    const onIncomingCall = (callData) => {
+      console.log('Incoming call from:', callData.callerName);
+      showVideoCall.value = true;
+    };
+
+    const handleCallEnded = (payload = {}) => {
+      showVideoCall.value = false;
+
+      const fallbackMessage = 'A hívás befejeződött.';
+      callStatusNotice.value = payload.message || fallbackMessage;
+
+      if (callStatusNoticeTimer) {
+        clearTimeout(callStatusNoticeTimer);
+      }
+
+      callStatusNoticeTimer = setTimeout(() => {
+        callStatusNotice.value = '';
+      }, 4000);
+    };
+
     const logout = async () => {
       try {
         const token = localStorage.getItem('accessToken');
-        // Felhasználó állapotát "nem elérhető"-re állítja
         if (token) {
-          await fetch('http://localhost:3000/api/auth/profile', {
+          await fetch(getApiUrl('/api/auth/profile'), {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -727,7 +1145,6 @@ export default {
         console.error('Kijelentkezés hiba:', error);
       }
       
-      // Storage törlése
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -737,10 +1154,137 @@ export default {
       router.push('/home');
     };
 
-    // Komponens inicializálása
+    const isIncomingDirectMessageRelevant = (messagePayload) => {
+      if (!selectedConversationId.value || messagePayload?.projekt_id != null) {
+        return false;
+      }
+
+      const senderId = String(messagePayload.kuldo_id);
+      const receiverId = String(messagePayload.fogado_id);
+      const currentId = String(currentUserId.value);
+      const selectedId = String(selectedConversationId.value);
+
+      return (
+        (senderId === selectedId && receiverId === currentId) ||
+        (senderId === currentId && receiverId === selectedId)
+      );
+    };
+
+    const isIncomingProjectMessageRelevant = (messagePayload) => {
+      if (!selectedProjectId.value || messagePayload?.projekt_id == null) {
+        return false;
+      }
+
+      return String(messagePayload.projekt_id) === String(selectedProjectId.value);
+    };
+
+    const handleIncomingMessage = async (messagePayload) => {
+      if (!messagePayload?.id) {
+        return;
+      }
+
+      if (String(messagePayload.kuldo_id) === String(currentUserId.value)) {
+        return;
+      }
+
+      if (messagePayload?.projekt_id == null) {
+        await loadConversations();
+
+        if (chatMode.value === 'direct' && isIncomingDirectMessageRelevant(messagePayload)) {
+          await loadConversation(selectedConversationId.value);
+        }
+
+        return;
+      }
+
+      if (chatMode.value === 'project' && isIncomingProjectMessageRelevant(messagePayload)) {
+        await loadMessages();
+      }
+    };
+
+    const isIncomingChatEventRelevant = (eventData) => {
+      if (!eventData || !eventData.id) {
+        return false;
+      }
+
+      if (eventData.projekt_id == null) {
+        return isIncomingDirectMessageRelevant(eventData);
+      }
+
+      return isIncomingProjectMessageRelevant(eventData);
+    };
+
+    const handleIncomingChatEvent = async (eventPayload) => {
+      const action = String(eventPayload?.action || '').trim();
+      const eventData = eventPayload?.data;
+
+      if (!action || !eventData?.id) {
+        return;
+      }
+
+      if (String(eventData.kuldo_id) === String(currentUserId.value)) {
+        return;
+      }
+
+      if (!isIncomingChatEventRelevant(eventData)) {
+        if (eventData.projekt_id == null) {
+          await loadConversations();
+        }
+        return;
+      }
+
+      if (action === 'message-updated' || action === 'message-deleted') {
+        if (eventData.projekt_id == null) {
+          await loadConversations();
+          if (chatMode.value === 'direct') {
+            await loadConversation(selectedConversationId.value);
+          }
+          return;
+        }
+
+        if (chatMode.value === 'project') {
+          await loadMessages();
+        }
+      }
+    };
+
+    const initChatSocket = () => {
+      if (chatSocket) {
+        return;
+      }
+
+      chatSocket = io(getSocketUrl(), {
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: Infinity,
+        transports: ['polling', 'websocket']
+      });
+
+      chatSocket.on('connect_error', (error) => {
+        console.error('Chat socket connection error:', error);
+      });
+
+      chatSocket.on('chat-message', (payload) => {
+        handleIncomingMessage(payload).catch((error) => {
+          console.error('Incoming message handling failed:', error);
+        });
+      });
+
+      chatSocket.on('chat-event', (payload) => {
+        handleIncomingChatEvent(payload).catch((error) => {
+          console.error('Incoming chat event handling failed:', error);
+        });
+      });
+    };
+
     onMounted(async () => {
-      // Felhasználó adatainak betöltése
+      document.addEventListener('click', handleDocumentClick);
+      initChatSocket();
+
       const storedUser = localStorage.getItem('user');
+      const storedToken = localStorage.getItem('accessToken');
+      
       if (storedUser) {
         try {
           const userData = JSON.parse(storedUser);
@@ -752,19 +1296,32 @@ export default {
         }
       }
 
-      // Bejelentkezéshez szükséges token ellenőrzése
+      if (storedToken) {
+        accessToken.value = storedToken;
+      }
+
       if (!getToken()) {
         router.push('/login');
         return;
       }
 
-      // Kezdeti adatok betöltése
       try {
         await loadUsers();
         await loadProjects();
         await handleChatModeChange(chatMode.value);
       } catch (error) {
         console.error(error);
+      }
+    });
+
+    onUnmounted(() => {
+      document.removeEventListener('click', handleDocumentClick);
+      if (chatSocket) {
+        chatSocket.disconnect();
+        chatSocket = null;
+      }
+      if (callStatusNoticeTimer) {
+        clearTimeout(callStatusNoticeTimer);
       }
     });
 
@@ -782,26 +1339,46 @@ export default {
       conversations,
       selectedConversationId,
       selectedConversation,
+      selectedConversationSignalUserName,
       selectedRecipientId,
+      recipientSearch,
       selectableUsers,
+      filteredSelectableUsers,
       projects,
       selectedProjectId,
       selectedProject,
       projectMembers,
+      openMessageMenuId,
+      editingMessageId,
+      editDraft,
+      showVideoCall,
+      accessToken,
+      videoCallComponent,
+      callStatusNotice,
+      isOnline,
       sendMessage,
+      toggleMessageMenu,
+      startEditingMessage,
+      cancelEditingMessage,
+      saveEditedMessage,
+      deleteMessage,
       handleProjectChange,
       handleChatModeChange,
       selectConversation,
+      selectRecipient,
       startConversation,
+      startVideoCall,
+      onIncomingCall,
+      handleCallEnded,
       router,
-      logout
+      logout,
+      currentUserId
     };
   }
 }
 </script>
 
 <style scoped>
-/* == CHAT OLDAL STÍLUSA == */
 
 .dashboard-wrapper .dropdown {
   position: relative;
@@ -885,6 +1462,10 @@ export default {
 
 .section {
   flex: 1;
+  min-height: 0;
+  height: calc(100vh - 150px);
+  max-height: calc(100vh - 150px);
+  padding: 0;
   margin: 0;
   background-color: white;
   border-radius: 15px;
@@ -926,20 +1507,23 @@ export default {
   transform: translateY(-2px);
 }
 
-/* Chat konténer: oldalsáv + főablak */
 .chat-container {
   display: flex;
   flex: 1;
-  height: 500px;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
-/* OLDALSÁV - beszélgetések/tagok listája */
 .chat-sidebar {
   width: 30%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   background-color: #f5f7fb;
   border-right: 1px solid #e1e5eb;
   padding: 20px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .chat-sidebar h4 {
@@ -1061,6 +1645,60 @@ export default {
   margin-bottom: 10px;
 }
 
+.recipient-search {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e1e5eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: 0.9rem;
+  color: #2d3748;
+  margin-bottom: 10px;
+}
+
+.recipient-search:focus {
+  outline: none;
+  border-color: #4a6ee0;
+  box-shadow: 0 0 0 2px rgba(74, 110, 224, 0.15);
+}
+
+.recipient-list {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #e1e5eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 6px;
+  margin-bottom: 10px;
+}
+
+.recipient-option {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #2d3748;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.recipient-option:hover {
+  background: #edf2ff;
+}
+
+.recipient-option.active {
+  background: #4a6ee0;
+  color: white;
+}
+
+.recipient-empty {
+  padding: 8px 10px;
+  color: #718096;
+  font-size: 0.85rem;
+}
+
 .start-conversation {
   width: 100%;
   background-color: #4a6ee0;
@@ -1077,12 +1715,19 @@ export default {
   background-color: #3a5ecf;
 }
 
+.start-conversation:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
 
 .conversation-list {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
   gap: 10px;
   margin-top: 10px;
+  overflow-y: auto;
 }
 
 .conversation-item {
@@ -1105,9 +1750,30 @@ export default {
 }
 
 .conversation-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
   color: #2d3748;
   margin-bottom: 4px;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.status-dot.online {
+  background-color: #2fca63;
+  box-shadow: 0 0 0 2px rgba(47, 202, 99, 0.15);
+}
+
+.status-dot.offline {
+  background-color: #e15050;
+  box-shadow: 0 0 0 2px rgba(225, 80, 80, 0.12);
 }
 
 .conversation-preview {
@@ -1127,40 +1793,94 @@ export default {
   padding: 10px 5px;
 }
 
-/* FŐABLAK - üzenetek & bevitel */
 .chat-main {
   width: 70%;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
-/* Chat fejléc */
 .chat-header {
+  flex-shrink: 0;
   padding: 20px 25px;
   border-bottom: 1px solid #e1e5eb;
   background-color: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.chat-header h4 {
+.chat-header-left {
+  flex: 1;
+}
+
+.chat-header-left h4 {
   font-size: 1.2rem;
   color: #2d3748;
   margin-bottom: 5px;
 }
 
-.chat-header p {
+.chat-header-left p {
   color: #718096;
   font-size: 0.9rem;
 }
 
-/* Üzenetek görgetésre képes terület */
+.chat-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.video-call-btn {
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.video-call-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.video-call-btn:active {
+  transform: translateY(0);
+}
+
+.call-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 25px 0;
+  padding: 10px 12px;
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #9f1239;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
 .chat-messages {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 20px 25px;
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   background-color: #f8fafc;
 }
 
-/* Üzenet buborékok */
 .message {
   max-width: 75%;
   padding: 12px 18px;
@@ -1170,8 +1890,105 @@ export default {
   position: relative;
 }
 
+.message-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
 .message-content {
+  flex: 1;
+}
+
+.message-text {
   margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message-actions {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.message-menu-toggle {
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.75;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.message-menu-toggle:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.message-menu {
+  position: absolute;
+  top: 28px;
+  right: 0;
+  min-width: 130px;
+  background: white;
+  border: 1px solid #e1e5eb;
+  border-radius: 8px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  z-index: 25;
+  overflow: hidden;
+}
+
+.message-menu-item {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: white;
+  color: #2d3748;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.message-menu-item:hover {
+  background: #f5f7fb;
+}
+
+.message-menu-item.danger {
+  color: #c53030;
+}
+
+.message-edit-input {
+  width: 100%;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  resize: vertical;
+  min-height: 54px;
+  font-size: 0.9rem;
+  color: #1a202c;
+}
+
+.message-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.message-edit-button {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: #2b6cb0;
+  color: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.message-edit-button.secondary {
+  background: #718096;
 }
 
 .message-meta {
@@ -1182,6 +1999,11 @@ export default {
   opacity: 0.8;
 }
 
+.message-edited {
+  font-style: normal;
+  font-weight: 600;
+}
+
 .typing-feedback {
   padding: 10px 18px;
   font-style: italic;
@@ -1189,7 +2011,6 @@ export default {
   font-size: 0.9rem;
 }
 
-/* Kapott üzenet */
 .message.received {
   background-color: white;
   border-top-left-radius: 5px;
@@ -1197,7 +2018,6 @@ export default {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* Saját üzenet (kék) */
 .message.sent {
   background-color: #4a6ee0;
   color: white;
@@ -1206,6 +2026,9 @@ export default {
   box-shadow: 0 2px 5px rgba(74, 110, 224, 0.3);
 }
 
+.message.sent .message-menu-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
 
 .message strong {
   display: block;
@@ -1215,6 +2038,7 @@ export default {
 
 .chat-input {
   display: flex;
+  flex-shrink: 0;
   padding: 20px 25px;
   border-top: 1px solid #e1e5eb;
   background-color: white;
@@ -1258,9 +2082,6 @@ export default {
   transform: scale(1.05);
 }
 
-/* == RESZPONZÍV MEGJELENÍTÉS == */
-
-/* Táblagépek & nagyobb kijelzők */
 @media (max-width: 1024px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
@@ -1306,6 +2127,7 @@ export default {
 
   .chat-sidebar {
     width: 100%;
+    min-height: 0;
     max-height: 150px;
     border-right: none;
     border-bottom: 1px solid #e1e5eb;
@@ -1374,10 +2196,6 @@ export default {
     font-size: 1.1rem;
   }
 
-  .chat-container {
-    height: 400px;
-  }
-
   .chat-sidebar {
     max-height: 100px;
   }
@@ -1442,10 +2260,6 @@ export default {
 
   .section-header h3 {
     font-size: 1rem;
-  }
-
-  .chat-container {
-    height: 300px;
   }
 
   .chat-sidebar {

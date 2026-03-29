@@ -38,7 +38,6 @@ body {
   line-height: 1.6;
 }
 
-/* Navigáció */
 header {
   position: fixed;
   top: 0;
@@ -90,7 +89,6 @@ nav a:hover {
   cursor: pointer;
 }
 
-/* Fő tartalom */
 main {
   margin-top: 70px;
 }
@@ -101,7 +99,6 @@ section {
   margin: 0 auto;
 }
 
-/* Landing section */
 #landing {
   min-height: 100vh;
   display: flex;
@@ -135,7 +132,6 @@ section {
   margin-top: 10px;
 }
 
-/* Gombok */
 .btn.primary {
   background: linear-gradient(90deg, var(--accent), var(--accent2));
   color: #042;
@@ -167,7 +163,6 @@ section {
   color: var(--text);
 }
 
-/* Funkciók */
 #features {
   background: var(--panel);
   border-radius: var(--radius);
@@ -224,7 +219,6 @@ section {
   color: var(--muted);
 }
 
-/* Kapcsolat */
 #contact {
   background: var(--panel);
   border-radius: var(--radius);
@@ -293,7 +287,6 @@ section {
   border-color: var(--accent);
 }
 
-/* Lábléc */
 footer {
   background: var(--panel);
   padding: 3rem 2rem;

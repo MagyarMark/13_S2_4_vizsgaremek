@@ -44,7 +44,7 @@
                 <div class="feature-card">
                     <div class="feature-icon">🔒</div>
                     <h3>Biztonságos adattárolás</h3>
-                    <p>Adatai biztonságban vannak titkosított felhőtárolással<!--és biztonsági mentésekkel.-->.</p>
+                    <p>Adatai biztonságban vannak titkosított felhőtárolással.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📱</div>
@@ -72,8 +72,7 @@
                     <ul class="contact-details">
                         <li><i>📍</i> 6100 Kiskunfélegyháza, Kossuth Lajos utca 24.</li>
                         <li><i>✉️</i> smartmanager.help@gmail.com</li>
-                        <!--<li><i>📞</i> +36 1 234 5678</li>
-                        <li><i>🕒</i> Hétfő - Péntek: 9:00 - 17:00</li>-->
+                        
                     </ul>
                 </div>
                 <div class="contact-form">
@@ -106,7 +105,7 @@
                 <p>Modern projektmenedzsment megoldás csapatok számára. Egyszerű, hatékony és biztonságos.</p>
             </div>
             <div class="footer-column">
-                <!----><h4>Megoldások</h4>
+                <h4>Megoldások</h4>
                 <ul class="footer-links">
                     <li><a href="#features">Funkciók</a></li>
                     <li><a href="#">Frissítések</a></li>

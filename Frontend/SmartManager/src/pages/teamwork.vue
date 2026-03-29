@@ -72,9 +72,7 @@
       <section class="teamwork-section">
         <div class="section-header">
           <h2 class="section-title">Projektek</h2>
-          <!--<button class="btn btn-primary" @click="openCreateTeamModal">
-            <i class="fas fa-plus"></i> Új Projekt
-          </button>-->
+          
         </div>
 
         <div class="teams-grid">
@@ -83,10 +81,7 @@
               <div class="team-icon">
                 <i :class="team.icon"></i>
               </div>
-              <!--<div class="team-actions">
-                <button class="btn-icon" @click.stop="editTeam(team)"><i class="fas fa-edit"></i></button>
-                <button class="btn-icon delete" @click.stop="deleteTeam(team.id)"><i class="fas fa-trash"></i></button>
-              </div>-->
+              
             </div>
             <h3>{{ team.name }}</h3>
             <p class="team-description">{{ team.description }}</p>
@@ -121,11 +116,7 @@
 
           <div v-if="activeTab === 'members'" class="tab-content">
             <div class="members-section">
-              <!--<div class="section-actions">
-                <button class="btn btn-primary" @click="openAddMemberModal">
-                  <i class="fas fa-user-plus"></i> Tag hozzáadása
-                </button>
-              </div>-->
+              
 
               <div class="members-grid">
                 <div v-for="member in selectedTeam.members" :key="member.id" class="member-card">
@@ -135,7 +126,7 @@
                       <h4>{{ member.name }}</h4>
                       <span class="member-role">{{ member.role }}</span>
                     </div>
-                    <!--<button class="btn-icon" @click="removeMember(member.id)"><i class="fas fa-times"></i></button>-->
+                    
                   </div>
                   <div class="member-status">
                     <span :class="['status-badge', member.status]">{{ member.status }}</span>
@@ -147,11 +138,7 @@
 
           <div v-if="activeTab === 'tasks'" class="tab-content">
             <div class="tasks-section">
-              <!--<div class="section-actions">
-                <button class="btn btn-primary" @click="openCreateTaskModal">
-                  <i class="fas fa-plus"></i> Új feladat
-                </button>
-              </div>-->
+              
 
               <div class="tasks-list">
                 <div v-for="task in selectedTeam.tasks" :key="task.id" class="task-item">
@@ -172,10 +159,7 @@
                   <div class="task-footer">
                     <span class="assignee"><i class="fas fa-user-circle"></i> {{ task.assignee }}</span>
                     <span class="deadline"><i class="fas fa-calendar"></i> {{ formatDate(task.deadline) }}</span>
-                    <!--<div class="task-actions">
-                      <button class="btn-icon" @click="editTask(task)"><i class="fas fa-edit"></i></button>
-                      <button class="btn-icon delete" @click="deleteTask(task.id)"><i class="fas fa-trash"></i></button>
-                    </div>-->
+                    
                   </div>
                 </div>
               </div>
@@ -202,7 +186,7 @@
         </div>
       </section>
 
-      <!----><aside class="teamwork-stats">
+      <aside class="teamwork-stats">
         <section class="teamwork-section">
           <div class="section-header">
             <h2 class="section-title">Statisztika {{ selectedTeam ? `- ${selectedTeam.name}` : '- Összes' }}</h2>
@@ -458,6 +442,7 @@
 
 <script>
 import { useRouter } from 'vue-router';
+import { getApiUrl } from '../utils/api';
 
 export default {
   name: "Teamwork",
@@ -719,7 +704,7 @@ export default {
 
         console.log('Küldendő adatok:', projectData);
 
-        const response = await fetch('http://localhost:3000/api/project/newProject', {
+        const response = await fetch(getApiUrl('/api/project/newProject'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -773,7 +758,7 @@ export default {
 
         console.log('Projekt törlésének kezdete:', teamId);
 
-        const response = await fetch(`http://localhost:3000/api/project/projekt/${teamId}`, {
+        const response = await fetch(getApiUrl(`/api/project/projekt/${teamId}`), {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -797,15 +782,12 @@ export default {
           const teamToDelete = this.teams.find(t => t.id === teamId);
           const teamName = teamToDelete?.name || 'Ismeretlen projekt';
           
-          // Törlés a teams listáról
           this.teams = this.teams.filter(t => t.id !== teamId);
 
-          // Ha az aktuálisan kiválasztott team volt, nullázzuk
           if (this.selectedTeam?.id === teamId) {
             this.selectedTeam = null;
           }
 
-          // Activity log
           await this.createActivityLog(
             'törölve',
             `"${teamName}" projekt sikeresen törölve`,
@@ -855,7 +837,7 @@ export default {
 
         console.log('Küldendő tag adatok:', memberData);
 
-        const response = await fetch('http://localhost:3000/api/project/newProjectmember', {
+        const response = await fetch(getApiUrl('/api/project/newProjectmember'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -951,7 +933,7 @@ export default {
 
         console.log('Küldendő feladat adatok:', taskData);
 
-        const response = await fetch('http://localhost:3000/api/project/newTask', {
+        const response = await fetch(getApiUrl('/api/project/newTask'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1028,7 +1010,7 @@ export default {
 
         console.log('Feladat törlésének kezdete:', taskId);
 
-        const response = await fetch(`http://localhost:3000/api/project/task/${taskId}`, {
+        const response = await fetch(getApiUrl(`/api/project/task/${taskId}`), {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -1052,12 +1034,10 @@ export default {
           const taskToDelete = this.selectedTeam?.tasks?.find(t => t.id === taskId);
           const taskTitle = taskToDelete?.title || 'Ismeretlen feladat';
           
-          // Törlés az aktuálisan kiválasztott teamből
           if (this.selectedTeam && this.selectedTeam.tasks) {
             this.selectedTeam.tasks = this.selectedTeam.tasks.filter(t => t.id !== taskId);
           }
 
-          // Törlés az összes teamből a listában (szinkronizálás)
           if (this.teams && Array.isArray(this.teams)) {
             this.teams.forEach(team => {
               if (team.tasks && Array.isArray(team.tasks)) {
@@ -1066,7 +1046,6 @@ export default {
             });
           }
           
-          // Activity log
           await this.createActivityLog(
             'törölve',
             `"${taskTitle}" feladat sikeresen törölve`,
@@ -1179,7 +1158,7 @@ export default {
 
         const userData = JSON.parse(storedUser);
         
-        const response = await fetch(`http://localhost:3000/api/auth/profileData`, {
+        const response = await fetch(getApiUrl(`/api/auth/profileData`), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1217,7 +1196,7 @@ export default {
           return;
         }
 
-        const response = await fetch(`http://localhost:3000/api/project/projectMember`, {
+        const response = await fetch(getApiUrl(`/api/project/projectMember`), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1256,7 +1235,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         if (!token) return;
 
-        const response = await fetch(`http://localhost:3000/api/project/log?projekt_id=${this.selectedTeam.id}`, {
+        const response = await fetch(getApiUrl(`/api/project/log?projekt_id=${this.selectedTeam.id}`), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1292,7 +1271,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         if (!token) return;
 
-        const response = await fetch(`http://localhost:3000/api/project/tasks?projekt_id=${this.selectedTeam.id}`, {
+        const response = await fetch(getApiUrl(`/api/project/tasks?projekt_id=${this.selectedTeam.id}`), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1322,7 +1301,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         if (!token || !this.selectedTeam) return;
 
-        const response = await fetch('http://localhost:3000/api/project/newLog', {
+        const response = await fetch(getApiUrl('/api/project/newLog'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1355,7 +1334,7 @@ export default {
 
         for (let task of this.selectedTeam.tasks) {
           try {
-            const response = await fetch(`http://localhost:3000/api/files/task/${task.id}`, {
+            const response = await fetch(getApiUrl(`/api/files/task/${task.id}`), {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -1408,13 +1387,13 @@ export default {
         });
 
         console.log('Feltöltés indítása:', {
-          url: `http://localhost:3000/api/upload?feladat_id=${this.currentTaskId}`,
+          url: getApiUrl(`/api/upload?feladat_id=${this.currentTaskId}`),
           currentTaskId: this.currentTaskId,
           filesCount: this.selectedFiles.length,
           token: token ? 'létezik' : 'nincs'
         });
 
-        const response = await fetch(`http://localhost:3000/api/upload?feladat_id=${this.currentTaskId}`, {
+        const response = await fetch(getApiUrl(`/api/upload?feladat_id=${this.currentTaskId}`), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -1496,7 +1475,7 @@ export default {
 
         console.log('Fájl törlésének kezdete, ID:', fileId);
 
-        const response = await fetch(`http://localhost:3000/api/files/${fileId}`, {
+        const response = await fetch(getApiUrl(`/api/files/${fileId}`), {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -1506,7 +1485,6 @@ export default {
 
         console.log('Törlés válasz status:', response.status);
 
-        // Ellenőrizzük az ok státusz
         if (!response.ok) {
           const data = await response.json();
           console.error('Törlés hiba válasz:', data);
@@ -1517,12 +1495,9 @@ export default {
         const data = await response.json();
         console.log('Törlés válasz adatok:', data);
 
-        // Sikeres törlés
         if (data.success) {
-          // Törlés az uploadedFiles listáról
           this.uploadedFiles = this.uploadedFiles.filter(f => f.id !== fileId);
 
-          // Törlés az összes feladat fájljairól az összes teamből
           if (this.selectedTeam && this.selectedTeam.tasks) {
             this.selectedTeam.tasks.forEach(task => {
               if (task.uploadedFiles && Array.isArray(task.uploadedFiles)) {
@@ -1531,7 +1506,6 @@ export default {
             });
           }
 
-          // Törlés az összes teamból (globális keresés)
           if (this.teams && Array.isArray(this.teams)) {
             this.teams.forEach(team => {
               if (team.tasks && Array.isArray(team.tasks)) {
@@ -1586,7 +1560,7 @@ export default {
           return;
         }
 
-        const projectsResponse = await fetch('http://localhost:3000/api/project/projects', {
+        const projectsResponse = await fetch(getApiUrl('/api/project/projects'), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1629,7 +1603,7 @@ export default {
 
         for (let team of this.teams) {
           try {
-            const tasksResponse = await fetch(`http://localhost:3000/api/project/task?projekt_id=${team.id}`, {
+            const tasksResponse = await fetch(getApiUrl(`/api/project/task?projekt_id=${team.id}`), {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -1664,7 +1638,7 @@ export default {
               team.tasks = [...team.tasks, ...newTasks];
             }
 
-            const membersResponse = await fetch(`http://localhost:3000/api/project/projectMembers?projekt_id=${team.id}`, {
+            const membersResponse = await fetch(getApiUrl(`/api/project/projectMembers?projekt_id=${team.id}`), {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -1715,7 +1689,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         
         if (token) {
-          await fetch('http://localhost:3000/api/auth/profile', {
+          await fetch(getApiUrl('/api/auth/profile'), {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',

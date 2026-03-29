@@ -1,9 +1,9 @@
 <template>
-  <!-- Beállítások oldal - profil, fiók, értesítések és megjelenés módosítása -->
+  
   <div class="dashboard-wrapper">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Oldalsó menü -->
+    
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
@@ -123,7 +123,7 @@
         <nav class="settings-nav">
           <button :class="{active: activeTab==='profile'}" @click="activeTab='profile'"><i class="fas fa-user"></i> Profil</button>
           <button :class="{active: activeTab==='account'}" @click="activeTab='account'"><i class="fas fa-lock"></i> Fiók</button>
-          <!--<button :class="{active: activeTab==='notifications'}" @click="activeTab='notifications'"><i class="fas fa-bell"></i> Értesítések</button>-->
+          
           <button :class="{active: activeTab==='appearance'}" @click="activeTab='appearance'"><i class="fas fa-paint-roller"></i> Megjelenés</button>
         </nav>
 
@@ -238,6 +238,7 @@
 <script>
 import { ref, reactive, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { getApiUrl } from '../utils/api';
 
 export default {
   name: 'Settings',
@@ -353,7 +354,7 @@ export default {
 
         const userData = JSON.parse(storedUser);
         
-        const response = await fetch(`http://localhost:3000/api/auth/profileData`, {
+        const response = await fetch(getApiUrl(`/api/auth/profileData`), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -415,7 +416,7 @@ export default {
       }
 
       try {
-        const response = await fetch('http://localhost:3000/api/auth/profile', {
+        const response = await fetch(getApiUrl('/api/auth/profile'), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
@@ -482,7 +483,7 @@ export default {
           return
         }
 
-        const response = await fetch('http://localhost:3000/api/auth/profile', {
+        const response = await fetch(getApiUrl('/api/auth/profile'), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -550,7 +551,7 @@ export default {
           return
         }
 
-        const response = await fetch('http://localhost:3000/api/auth/profileDelete', {
+        const response = await fetch(getApiUrl('/api/auth/profileDelete'), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -622,7 +623,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         
         if (token) {
-          await fetch('http://localhost:3000/api/auth/profile', {
+          await fetch(getApiUrl('/api/auth/profile'), {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
