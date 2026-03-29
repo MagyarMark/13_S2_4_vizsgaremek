@@ -223,12 +223,11 @@
 </div>
 </template>
 
-
-
 <script>
 import { ref, onMounted, computed, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { Chart, registerables } from "chart.js";
+import { getApiUrl } from "../utils/api";
 
 Chart.register(...registerables);
 
@@ -297,7 +296,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         if (!storedUser || !token) return router.push('/login');
 
-        const res = await fetch('http://localhost:3000/api/auth/profileData', {
+        const res = await fetch(getApiUrl('/api/auth/profileData'), {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -320,7 +319,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         if (!token) return;
 
-        const res = await fetch('http://localhost:3000/api/project/projectMember', {
+        const res = await fetch(getApiUrl('/api/project/projectMember'), {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -333,7 +332,7 @@ export default {
     const fetchAllTasks = async () => {
   try {
     const token = localStorage.getItem('accessToken');
-    const res = await fetch('http://localhost:3000/api/project/tasks', {
+    const res = await fetch(getApiUrl('/api/project/tasks'), {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
@@ -346,7 +345,7 @@ export default {
   if (!evaluation.value.task || !evaluation.value.task.projekt_id) return;
   try {
     const token = localStorage.getItem('accessToken');
-    const res = await fetch(`http://localhost:3000/api/project/projectMembers?projekt_id=${evaluation.value.task.projekt_id}`, {
+    const res = await fetch(getApiUrl(`/api/project/projectMembers?projekt_id=${evaluation.value.task.projekt_id}`), {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
@@ -362,7 +361,7 @@ export default {
     const fetchBeadasEvaluations = async () => {
       try {
         const token = localStorage.getItem('accessToken');
-        const res = await fetch('http://localhost:3000/api/files/submission', {
+        const res = await fetch(getApiUrl('/api/files/submission'), {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -392,7 +391,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         
         if (token) {
-          await fetch('http://localhost:3000/api/auth/profile', {
+          await fetch(getApiUrl('/api/auth/profile'), {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -427,7 +426,7 @@ export default {
 
       try {
         const token = localStorage.getItem('accessToken');
-        const res = await fetch('http://localhost:3000/api/files/submissionCreate', {
+        const res = await fetch(getApiUrl('/api/files/submissionCreate'), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -575,8 +574,6 @@ export default {
   }
 };
 </script>
-
-
 
 <style scoped>
 

@@ -11,8 +11,6 @@
     </nav>
   </header>
 
-
-
     <footer>
         <div class="footer-content">
             <h3>Smart Manager</h3>

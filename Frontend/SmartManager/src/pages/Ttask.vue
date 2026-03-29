@@ -204,7 +204,7 @@
         </div>
       </section>
 
-      <!----><aside class="teamwork-stats">
+      <aside class="teamwork-stats">
         <section class="teamwork-section">
           <div class="section-header">
             <h2 class="section-title">Statisztika {{ selectedTeam ? `- ${selectedTeam.name}` : '- Összes' }}</h2>
@@ -460,6 +460,7 @@
 
 <script>
 import { useRouter } from 'vue-router';
+import { getApiUrl } from '../utils/api';
 
 export default {
   name: "Ttask",
@@ -721,7 +722,7 @@ export default {
 
         console.log('Küldendő adatok:', projectData);
 
-        const response = await fetch('http://localhost:3000/api/project/newProject', {
+        const response = await fetch(getApiUrl('/api/project/newProject'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -775,7 +776,7 @@ export default {
 
         console.log('Projekt törlésének kezdete:', teamId);
 
-        const response = await fetch(`http://localhost:3000/api/project/projekt/${teamId}`, {
+        const response = await fetch(getApiUrl(`/api/project/projekt/${teamId}`), {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -854,7 +855,7 @@ export default {
 
         console.log('Küldendő tag adatok:', memberData);
 
-        const response = await fetch('http://localhost:3000/api/project/newProjectmember', {
+        const response = await fetch(getApiUrl('/api/project/newProjectmember'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -950,7 +951,7 @@ export default {
 
         console.log('Küldendő feladat adatok:', taskData);
 
-        const response = await fetch('http://localhost:3000/api/project/newTask', {
+        const response = await fetch(getApiUrl('/api/project/newTask'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1027,7 +1028,7 @@ export default {
 
         console.log('Feladat törlésének kezdete:', taskId);
 
-        const response = await fetch(`http://localhost:3000/api/project/task/${taskId}`, {
+        const response = await fetch(getApiUrl(`/api/project/task/${taskId}`), {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -1175,7 +1176,7 @@ export default {
 
         const userData = JSON.parse(storedUser);
         
-        const response = await fetch(`http://localhost:3000/api/auth/profileData`, {
+        const response = await fetch(getApiUrl(`/api/auth/profileData`), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1213,7 +1214,7 @@ export default {
           return;
         }
 
-        const response = await fetch(`http://localhost:3000/api/project/projectMember`, {
+        const response = await fetch(getApiUrl(`/api/project/projectMember`), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1252,7 +1253,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         if (!token) return;
 
-        const response = await fetch(`http://localhost:3000/api/project/log?projekt_id=${this.selectedTeam.id}`, {
+        const response = await fetch(getApiUrl(`/api/project/log?projekt_id=${this.selectedTeam.id}`), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1288,7 +1289,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         if (!token) return;
 
-        const response = await fetch(`http://localhost:3000/api/project/tasks?projekt_id=${this.selectedTeam.id}`, {
+        const response = await fetch(getApiUrl(`/api/project/tasks?projekt_id=${this.selectedTeam.id}`), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1318,7 +1319,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         if (!token || !this.selectedTeam) return;
 
-        const response = await fetch('http://localhost:3000/api/project/newLog', {
+        const response = await fetch(getApiUrl('/api/project/newLog'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1351,7 +1352,7 @@ export default {
 
         for (let task of this.selectedTeam.tasks) {
           try {
-            const response = await fetch(`http://localhost:3000/api/files/task/${task.id}`, {
+            const response = await fetch(getApiUrl(`/api/files/task/${task.id}`), {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -1404,13 +1405,13 @@ export default {
         });
 
         console.log('Feltöltés indítása:', {
-          url: `http://localhost:3000/api/upload?feladat_id=${this.currentTaskId}`,
+          url: getApiUrl(`/api/upload?feladat_id=${this.currentTaskId}`),
           currentTaskId: this.currentTaskId,
           filesCount: this.selectedFiles.length,
           token: token ? 'létezik' : 'nincs'
         });
 
-        const response = await fetch(`http://localhost:3000/api/upload?feladat_id=${this.currentTaskId}`, {
+        const response = await fetch(getApiUrl(`/api/upload?feladat_id=${this.currentTaskId}`), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -1492,7 +1493,7 @@ export default {
 
         console.log('Fájl törlésének kezdete, ID:', fileId);
 
-        const response = await fetch(`http://localhost:3000/api/files/${fileId}`, {
+        const response = await fetch(getApiUrl(`/api/files/${fileId}`), {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -1577,7 +1578,7 @@ export default {
           return;
         }
 
-        const projectsResponse = await fetch('http://localhost:3000/api/project/projects', {
+        const projectsResponse = await fetch(getApiUrl('/api/project/projects'), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -1620,7 +1621,7 @@ export default {
 
         for (let team of this.teams) {
           try {
-            const tasksResponse = await fetch(`http://localhost:3000/api/project/task?projekt_id=${team.id}`, {
+            const tasksResponse = await fetch(getApiUrl(`/api/project/task?projekt_id=${team.id}`), {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -1655,7 +1656,7 @@ export default {
               team.tasks = [...team.tasks, ...newTasks];
             }
 
-            const membersResponse = await fetch(`http://localhost:3000/api/project/projectMembers?projekt_id=${team.id}`, {
+            const membersResponse = await fetch(getApiUrl(`/api/project/projectMembers?projekt_id=${team.id}`), {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -1706,7 +1707,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         
         if (token) {
-          await fetch('http://localhost:3000/api/auth/profile', {
+          await fetch(getApiUrl('/api/auth/profile'), {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',

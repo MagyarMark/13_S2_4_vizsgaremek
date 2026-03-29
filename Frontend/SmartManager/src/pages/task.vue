@@ -161,6 +161,7 @@
 <script>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
+import { getApiUrl } from '../utils/api';
 
 export default {
   name: "Task",
@@ -365,7 +366,7 @@ export default {
           return
         }
 
-        const response = await fetch(`http://localhost:3000/api/auth/profileData`, {
+        const response = await fetch(getApiUrl('/api/auth/profileData'), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -402,7 +403,7 @@ export default {
           return
         }
 
-        const response = await fetch('http://localhost:3000/api/project/tasks', {
+        const response = await fetch(getApiUrl('/api/project/tasks'), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -486,7 +487,7 @@ export default {
 
         console.log('Sending task data:', taskData)
 
-        const response = await fetch('http://localhost:3000/api/project/newTask', {
+        const response = await fetch(getApiUrl('/api/project/newTask'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -535,7 +536,7 @@ export default {
           return
         }
 
-        const response = await fetch(`http://localhost:3000/api/project/task/${taskId}`, {
+        const response = await fetch(getApiUrl(`/api/project/task/${taskId}`), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -581,7 +582,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         
         if (token) {
-          await fetch('http://localhost:3000/api/auth/profile', {
+          await fetch(getApiUrl('/api/auth/profile'), {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
