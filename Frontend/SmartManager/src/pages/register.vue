@@ -117,6 +117,8 @@
 </template>
 
 <script>
+import { getApiUrl } from '../utils/api';
+
 export default {
   name: "Register",
   data() {
@@ -174,7 +176,7 @@ export default {
       this.loading = true;
       
       try {
-        const response = await fetch('http://localhost:3000/api/auth/register', {
+        const response = await fetch(getApiUrl('/api/auth/register'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -242,8 +244,6 @@ export default {
 .auth-form {
   margin-bottom: 2rem;
 }
-
-
 
 .form-group {
   margin-bottom: 1.5rem;

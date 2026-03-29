@@ -54,7 +54,6 @@
     </div>
   </main>
 
-
   <footer>
     &copy; 2025 SmartManager. Minden jog fenntartva.
   </footer>
@@ -62,6 +61,8 @@
 </template>
 
 <script>
+import { getApiUrl } from '../utils/api';
+
 export default {
   name: "Login",
   data() {
@@ -107,7 +108,7 @@ export default {
       this.loading = true;
 
       try {
-        const response = await fetch('http://localhost:3000/api/auth/login', {
+        const response = await fetch(getApiUrl('/api/auth/login'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -150,7 +151,6 @@ export default {
   }
 }
 </script>
-
 
 <style scoped>
 .auth-container {

@@ -1,11 +1,11 @@
 <template>
-  <!-- Fiók újraaktiválása - a deaktivált fiók adatainak ismételt megadása -->
+  
   <div class="reactivate-account">
     <h1>Fiók újraaktiválása</h1>
     <div class="reactivation-form">
       <p>Kérem, adja meg az alábbi adatokat a fiók újraaktiválásához:</p>
       
-      <!-- Email cím input -->
+      
       <input 
         v-model="email" 
         type="email" 
@@ -14,7 +14,7 @@
         :disabled="loading"
       />
       
-      <!-- Teljes név input -->
+      
       <input 
         v-model="fullName" 
         type="text" 
@@ -23,7 +23,7 @@
         :disabled="loading"
       />
       
-      <!-- Jelszó input -->
+      
       <input 
         v-model="password" 
         type="password" 
@@ -32,7 +32,7 @@
         :disabled="loading"
       />
       
-      <!-- Jelszó megerősítése input -->
+      
       <input 
         v-model="confirmPassword" 
         type="password" 
@@ -41,19 +41,20 @@
         :disabled="loading"
       />
       
-      <!-- Fiók újraaktiválása gomb -->
+      
       <button @click="reactivateAccount" :disabled="loading">
         {{ loading ? 'Mentés...' : 'Fiók újraaktiválása' }}
       </button>
     </div>
 
-    <!-- Üzenet megjelenítése (siker vagy hiba) -->
+    
     <p v-if="message" :class="messageType">{{ message }}</p>
   </div>
 </template>
 
 <script>
 import { useRoute } from 'vue-router';
+import { getApiUrl } from '../utils/api';
 
 export default {
   setup() {
@@ -69,11 +70,10 @@ export default {
       message: '',
       messageType: 'success',
       loading: false,
-      token: '' // Reaktivációs token az URL-ből
+      token: '' 
     };
   },
   mounted() {
-    // Az URL-ből lekérjük a reaktivációs tokent
     this.token = this.$route.query.token;
     
     if (!this.token) {
@@ -83,28 +83,24 @@ export default {
   },
   methods: {
     async reactivateAccount() {
-      // Ellenőrzés: az összes mező kitöltött-e
       if (!this.email.trim() || !this.fullName.trim() || !this.password.trim()) {
         this.message = 'Kérem, töltse ki az összes mezőt.';
         this.messageType = 'error';
         return;
       }
 
-      // Ellenőrzés: a jelszavak egyeznek-e
       if (this.password !== this.confirmPassword) {
         this.message = 'A jelszavak nem egyeznek meg.';
         this.messageType = 'error';
         return;
       }
 
-      // Ellenőrzés: a jelszó eléggé hosszú-e
       if (this.password.length < 6) {
         this.message = 'A jelszó legalább 6 karakter hosszú kell, hogy legyen.';
         this.messageType = 'error';
         return;
       }
 
-      // Ellenőrzés: van-e token
       if (!this.token) {
         this.message = 'Hiányzik a reaktivációs token.';
         this.messageType = 'error';
@@ -113,8 +109,7 @@ export default {
 
       this.loading = true;
       try {
-        // Küldés a szervernek a reaktivációs adatokkal
-        const response = await fetch('http://localhost:3000/api/auth/reactivate-account', {
+        const response = await fetch(getApiUrl('/api/auth/reactivate-account'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -129,16 +124,13 @@ export default {
 
         const data = await response.json();
 
-        // Hiba-kezelés
         if (!response.ok) {
           throw new Error(data.message || 'Hiba történt az újraaktiválás során.');
         }
         
-        // Sikeres újraaktiválás
         this.message = data.message || 'Fiók sikeresen újraaktiválva!';
         this.messageType = 'success';
         
-        // Átirányítás a bejelentkezés oldalra 2 másodperc múlva
         setTimeout(() => {
           this.$router.push('/login');
         }, 2000);

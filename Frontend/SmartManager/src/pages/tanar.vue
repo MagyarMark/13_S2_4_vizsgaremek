@@ -16,7 +16,6 @@
         </ul>
     </aside>
 
-
     <header>
         <div class="header-left">
             <button class="hamburger" @click="showSidebar = !showSidebar" aria-label="Toggle menu">
@@ -276,6 +275,7 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from 'vue-router';
 import { Chart, registerables } from "chart.js";
+import { getApiUrl } from '../utils/api';
 
 Chart.register(...registerables);
 
@@ -331,7 +331,7 @@ export default {
           return;
         }
 
-        const response = await fetch('http://localhost:3000/api/project/newTask', {
+        const response = await fetch(getApiUrl('/api/project/newTask'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -397,7 +397,7 @@ export default {
 
         const userData = JSON.parse(storedUser);
         
-        const response = await fetch(`http://localhost:3000/api/auth/profileData`, {
+        const response = await fetch(getApiUrl('/api/auth/profileData'), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -612,10 +612,10 @@ export default {
         };
 
         const [projectsRes, tasksRes, submissionsRes, statsRes] = await Promise.all([
-          fetch('http://localhost:3000/api/project/projects', { headers }),
-          fetch('http://localhost:3000/api/project/tasks', { headers }),
-          fetch('http://localhost:3000/api/files/submission', { headers }),
-          fetch('http://localhost:3000/api/project/stats', { headers })
+          fetch(getApiUrl('/api/project/projects'), { headers }),
+          fetch(getApiUrl('/api/project/tasks'), { headers }),
+          fetch(getApiUrl('/api/files/submission'), { headers }),
+          fetch(getApiUrl('/api/project/stats'), { headers })
         ]);
 
         const [projectsData, tasksData, submissionsData, statsData] = await Promise.all([
@@ -740,7 +740,7 @@ export default {
         const token = localStorage.getItem('accessToken');
         
         if (token) {
-          await fetch('http://localhost:3000/api/auth/profile', {
+          await fetch(getApiUrl('/api/auth/profile'), {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
