@@ -5,7 +5,6 @@ const http = require('http');
 const server = http.createServer(app);
 const swaggerDocs = require('./swagger');
 
-
 const initializeChat = require('./chat/application');
 initializeChat(server, app);
 
@@ -39,7 +38,7 @@ app.use((error, req, res, next) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, 'localhost', () => {
   console.log(`A szerver a következő porton fut:${PORT}`);
   console.log(`Környezet: ${process.env.NODE_ENV || 'fejlesztői'}`);
 });

@@ -289,7 +289,6 @@ router.get('/projectMembers', verifyToken, async (req, res) => {
   }
 });
 
-
 router.post('/newProjectmember', verifyToken, [
   body('projekt_id')
     .notEmpty(),
@@ -817,7 +816,6 @@ router.delete('/taskDelete/:id', verifyToken, async (req, res) => {
     });
   }
 });
-
 
 router.get('/statistics/project/:projectId', verifyToken, async (req, res) => {
   try {
