@@ -5,6 +5,45 @@ const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+let hasMessageEditTimestampColumnCache = null;
+
+const hasMessageEditTimestampColumn = async () => {
+  if (hasMessageEditTimestampColumnCache !== null) {
+    return hasMessageEditTimestampColumnCache;
+  }
+
+  const result = await pool.query(
+    `SELECT EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'Uzenet'
+        AND column_name = 'modositas_idopont'
+    ) AS "exists"`
+  );
+
+  hasMessageEditTimestampColumnCache = Boolean(result.rows[0]?.exists);
+  return hasMessageEditTimestampColumnCache;
+};
+
+const getMessageSelectFields = async () => {
+  const hasEditTimestamp = await hasMessageEditTimestampColumn();
+  if (hasEditTimestamp) {
+    return 'id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont';
+  }
+
+  return 'id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, NULL::timestamp without time zone AS modositas_idopont';
+};
+
+const getMessageReturningFields = async () => {
+  const hasEditTimestamp = await hasMessageEditTimestampColumn();
+  if (hasEditTimestamp) {
+    return 'id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont';
+  }
+
+  return 'id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, NULL::timestamp without time zone AS modositas_idopont';
+};
+
 const isProjectMember = async (userId, projektId) => {
   const membership = await pool.query(
     `SELECT 1
@@ -22,6 +61,7 @@ router.get('/allMessages', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const { recipientId, projektId } = req.query;
+    const messageSelectFields = await getMessageSelectFields();
 
     if (projektId) {
       const hasAccess = await isProjectMember(userId, projektId);
@@ -33,7 +73,7 @@ router.get('/allMessages', verifyToken, async (req, res) => {
       }
 
       const result = await pool.query(
-        `SELECT id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje
+        `SELECT ${messageSelectFields}
          FROM "Uzenet"
          WHERE projekt_id = $1
          ORDER BY kuldes_ideje ASC`,
@@ -50,7 +90,7 @@ router.get('/allMessages', verifyToken, async (req, res) => {
     }
 
     let query = `
-      SELECT id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje
+      SELECT ${messageSelectFields}
       FROM "Uzenet"
       WHERE kuldo_id = $1 OR fogado_id = $1
     `;
@@ -97,6 +137,7 @@ router.get('/chatHistory', verifyToken, [
   try {
     const userId = req.user.id;
     const { with: withUserId, projektId } = req.query;
+    const messageSelectFields = await getMessageSelectFields();
 
     if (!withUserId) {
       return res.status(400).json({
@@ -106,7 +147,7 @@ router.get('/chatHistory', verifyToken, [
     }
 
     let query = `
-      SELECT id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje
+      SELECT ${messageSelectFields}
       FROM "Uzenet"
       WHERE (kuldo_id = $1 AND fogado_id = $2) OR (kuldo_id = $2 AND fogado_id = $1)
     `;
@@ -219,11 +260,12 @@ router.post('/send', verifyToken, [
     }
 
     const messageStatus = allapot || 'nem_olvasott';
+    const messageReturningFields = await getMessageReturningFields();
 
     const result = await pool.query(
       `INSERT INTO "Uzenet" (kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje)
        VALUES ($1, $2, $3, $4, $5, NOW())
-       RETURNING id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje`,
+       RETURNING ${messageReturningFields}`,
       [userId, recipientId, projekt_id || null, uzenet_tartalom, messageStatus]
     );
 
@@ -260,9 +302,16 @@ router.put('/update/:id', verifyToken, [
       });
     }
 
-    const userId = req.user.id;
-    const messageId = req.params.id;
+    const userId = Number(req.user.id);
+    const messageId = Number(req.params.id);
     const { allapot, uzenet_tartalom } = req.body;
+
+    if (Number.isNaN(messageId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Érvénytelen üzenet azonosító'
+      });
+    }
 
     const messageCheck = await pool.query(
       'SELECT kuldo_id FROM "Uzenet" WHERE id = $1',
@@ -276,7 +325,7 @@ router.put('/update/:id', verifyToken, [
       });
     }
 
-    if (messageCheck.rows[0].kuldo_id !== userId) {
+    if (Number(messageCheck.rows[0].kuldo_id) !== userId) {
       return res.status(403).json({
         success: false,
         message: 'Nincs engedélyem módosítani ezt az üzenetet'
@@ -286,6 +335,7 @@ router.put('/update/:id', verifyToken, [
     let query = 'UPDATE "Uzenet" SET ';
     const params = [];
     const setClauses = [];
+    const hasEditTimestamp = await hasMessageEditTimestampColumn();
 
     if (allapot) {
       setClauses.push(`allapot = $${setClauses.length + 1}`);
@@ -295,6 +345,9 @@ router.put('/update/:id', verifyToken, [
     if (uzenet_tartalom) {
       setClauses.push(`uzenet_tartalom = $${setClauses.length + 1}`);
       params.push(uzenet_tartalom);
+      if (hasEditTimestamp) {
+        setClauses.push('modositas_idopont = NOW()');
+      }
     }
 
     if (setClauses.length === 0) {
@@ -304,10 +357,11 @@ router.put('/update/:id', verifyToken, [
       });
     }
 
+    const messageReturningFields = await getMessageReturningFields();
     query += setClauses.join(', ');
-    query += ` WHERE id = $${setClauses.length + 1}`;
+    query += ` WHERE id = $${params.length + 1}`;
     params.push(messageId);
-    query += ` RETURNING id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje`;
+    query += ` RETURNING ${messageReturningFields}`;
 
     const result = await pool.query(query, params);
 
@@ -327,8 +381,15 @@ router.put('/update/:id', verifyToken, [
 
 router.delete('/delete/:id', verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id;
-    const messageId = req.params.id;
+    const userId = Number(req.user.id);
+    const messageId = Number(req.params.id);
+
+    if (Number.isNaN(messageId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Érvénytelen üzenet azonosító'
+      });
+    }
 
     const messageCheck = await pool.query(
       'SELECT kuldo_id FROM "Uzenet" WHERE id = $1',
@@ -342,7 +403,7 @@ router.delete('/delete/:id', verifyToken, async (req, res) => {
       });
     }
 
-    if (messageCheck.rows[0].kuldo_id !== userId) {
+    if (Number(messageCheck.rows[0].kuldo_id) !== userId) {
       return res.status(403).json({
         success: false,
         message: 'Nincs engedélyem törölni ezt az üzenetet'
