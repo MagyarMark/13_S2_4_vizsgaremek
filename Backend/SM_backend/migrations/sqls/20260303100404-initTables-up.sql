@@ -299,6 +299,7 @@ CREATE TABLE IF NOT EXISTS public."Uzenet"
     uzenet_tartalom text COLLATE pg_catalog."default" NOT NULL,
     allapot text COLLATE pg_catalog."default" DEFAULT 'elküldve'::text,
     kuldes_ideje timestamp without time zone DEFAULT now(),
+    modositas_idopont timestamp without time zone,
     CONSTRAINT "Uzenet_pkey" PRIMARY KEY (id),
     CONSTRAINT "Uzenet_fogado_id_fkey" FOREIGN KEY (fogado_id)
         REFERENCES public."Felhasznalo" (id) MATCH SIMPLE

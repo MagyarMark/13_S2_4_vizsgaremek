@@ -147,16 +147,22 @@ INSERT INTO public."Statisztika" (id, felhasznalo_id, projekt_id, statisztika_ne
 
 
 --
--- TOC entry 5015 (class 0 OID 17144)
--- Dependencies: 226
+-- TOC entry 5040 (class 0 OID 19541)
+-- Dependencies: 240
 -- Data for Name: Uzenet; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje) VALUES (3, 1, 3, NULL, 'Rendben, köszönöm.', 'nem_olvasott', '2026-01-30 00:12:14.117645');
-INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje) VALUES (4, 1, 4, NULL, 'Üdv!', 'nem_olvasott', '2026-01-30 00:15:55.31073');
-INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje) VALUES (5, 1, NULL, 1, 'ok.', 'nem_olvasott', '2026-01-30 00:38:55.595141');
-INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje) VALUES (2, 3, NULL, 1, 'Megvan az első verzió, holnap feltöltöm.', 'elküldve', '2025-11-07 11:13:42.407378');
-INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje) VALUES (1, 1, NULL, 1, 'Kérlek küldd el a frontend haladást.', 'olvasott', '2025-11-07 11:13:42.407378');
+INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont) VALUES (3, 1, 3, NULL, 'Rendben, köszönöm.', 'nem_olvasott', '2026-01-30 00:12:14.117645', NULL);
+INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont) VALUES (4, 1, 4, NULL, 'Üdv!', 'nem_olvasott', '2026-01-30 00:15:55.31073', NULL);
+INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont) VALUES (2, 3, NULL, 1, 'Megvan az első verzió, holnap feltöltöm.', 'elküldve', '2025-11-07 11:13:42.407378', NULL);
+INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont) VALUES (1, 1, NULL, 1, 'Kérlek küldd el a frontend haladást.', 'olvasott', '2025-11-07 11:13:42.407378', NULL);
+INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont) VALUES (6, 1, 4, NULL, 'a', 'nem_olvasott', '2026-03-29 11:44:40.0279', NULL);
+INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont) VALUES (7, 1, 4, NULL, 'a', 'nem_olvasott', '2026-03-29 11:44:42.152033', NULL);
+INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont) VALUES (8, 1, 4, NULL, 'a', 'nem_olvasott', '2026-03-29 11:44:43.194909', NULL);
+INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont) VALUES (9, 1, 4, NULL, 'a', 'nem_olvasott', '2026-03-29 11:44:44.124669', NULL);
+INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont) VALUES (11, 1, 4, NULL, 'a', 'nem_olvasott', '2026-03-29 11:44:47.566986', NULL);
+INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont) VALUES (10, 1, 4, NULL, 'asd', 'nem_olvasott', '2026-03-29 11:44:45.270515', NULL);
+INSERT INTO public."Uzenet" (id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, modositas_idopont) VALUES (14, 1, NULL, 1, 'ok.', 'nem_olvasott', '2026-03-29 12:25:42.049655', NULL);
 
 --
 -- TOC entry 5047 (class 0 OID 0)
@@ -240,9 +246,9 @@ SELECT pg_catalog.setval('public."Statisztika_id_seq"', 4, true);
 
 
 --
--- TOC entry 5056 (class 0 OID 0)
+-- TOC entry 5058 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: Uzenet_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."Uzenet_id_seq"', 5, true);
+SELECT pg_catalog.setval('public."Uzenet_id_seq"', 14, true);

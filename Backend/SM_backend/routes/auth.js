@@ -345,7 +345,6 @@ router.post('/resend-verification-email', [
   }
 });
 
-
 router.post('/logout', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -502,7 +501,6 @@ router.put('/profile', verifyToken, [
     });
   }
 });
-
 
 router.post('/refresh-token', verifyRefreshToken, async (req, res) => {
   try {
