@@ -14,6 +14,12 @@
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
+      <div class="sidebar-footer">
+        <button class="sidebar-logout" type="button" @click="logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Kijelentkezés</span>
+        </button>
+      </div>
     </aside>
 
 <header>
