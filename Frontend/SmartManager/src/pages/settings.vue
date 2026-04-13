@@ -90,10 +90,10 @@
                           <span>Főoldal</span>
                         </router-link>
                       </button>
-                      <button class="dropdown-item" @click="openProfile" title="Feladatok">
+                      <button class="dropdown-item" @click="openProfile" title="Projektek">
                         <i class="fas fa-tasks"></i> 
                         <router-link to="/Ttask" style="color: inherit; text-decoration: none;">
-                          <span>Feladatok</span>
+                          <span>Projektek</span>
                         </router-link>
                       </button>
                       <button class="dropdown-item" @click="openTasks" title="Értékelés">

@@ -5,7 +5,7 @@
     <aside class="sidebar" :class="{ open: showSidebar }">
         <div class="logo">
             <h2>Smart<span>Manager</span></h2>
-            <p>Tanári Portál</p>
+            <p>Tanári Portál</p><p>Üdvözöljük, {{ userProfile.teljes_nev || userProfile.felhasznalonev }}</p>
         </div>
         <ul class="nav-links">
             <li><a href="#" class="active"><i class="fas fa-home"></i> Áttekintés</a></li>
