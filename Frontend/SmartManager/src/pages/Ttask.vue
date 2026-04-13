@@ -9,7 +9,7 @@
       </div>
       <ul class="nav-links">
         <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-        <router-link to="/Ttask" class="active"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+        <router-link to="/Ttask" class="active"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
         <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
@@ -24,7 +24,7 @@
 
     <header>
       <div class="header-left">
-        <h1>Projektmunka</h1>
+        <h1>Projektek</h1>
       </div>
       <div class="header-right">
         <div class="user-profile">
@@ -42,10 +42,10 @@
                           <span>Főoldal</span>
                         </router-link>
                       </button>
-                      <button class="dropdown-item" @click="openProfile" title="Feladatok">
+                      <button class="dropdown-item" @click="openProfile" title="Projektek">
                         <i class="fas fa-tasks"></i> 
                         <router-link to="/Ttask" style="color: inherit; text-decoration: none;">
-                          <span>Feladatok</span>
+                          <span>Projektek</span>
                         </router-link>
                       </button>
                       <button class="dropdown-item" @click="openTasks" title="Értékelés">
@@ -79,7 +79,6 @@
     <main class="teamwork-dashboard">
       <section class="teamwork-section">
         <div class="section-header">
-          <h2 class="section-title">Projektek</h2>
           <button class="btn btn-primary" @click="openCreateTeamModal">
             <i class="fas fa-plus"></i> Új Projekt
           </button>
