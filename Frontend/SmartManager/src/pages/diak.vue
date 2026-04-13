@@ -257,7 +257,6 @@ margin: 0;
 .dashboard-wrapper .header-right .notifications-button {
   margin-left: 1rem;
   color: var(--dark);
-  margin-left: -450px;
 }
 
 .dashboard-wrapper .user-profile {
@@ -266,7 +265,6 @@ margin: 0;
   gap: 0.5rem;
   cursor: pointer;
   color: var(--dark);
-  margin-left: -450px;
 }
 
 .dashboard-wrapper .avatar {
@@ -448,8 +446,10 @@ margin: 0;
 .dashboard-wrapper main {
   grid-area: main;
   background: var(--bg-light);
-  margin-left: 200px;
+  margin-left: 250px;
   margin-top: 60px;
+  padding: 1.5rem;
+  min-width: 0;
 }
 
 .dashboard-wrapper .page-title {
@@ -780,6 +780,26 @@ margin: 0;
   cursor: pointer;
 }
 
+@media (max-width: 1200px) {
+  .dashboard-wrapper header {
+    padding: 0 1rem;
+  }
+
+  .dashboard-wrapper .header-right,
+  .dashboard-wrapper .user-profile,
+  .dashboard-wrapper .header-right .notifications-button {
+    margin-left: 0;
+  }
+
+  .dashboard-wrapper .user-name,
+  .dashboard-wrapper .user-role {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 992px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;  
@@ -846,6 +866,7 @@ margin: 0;
   .dashboard-wrapper .header-right {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
 
   .dashboard-wrapper .user-profile {
@@ -888,6 +909,12 @@ margin: 0;
     font-size: 0.9rem;
   }
 
+  .dashboard-wrapper .dropdown-menu {
+    right: auto;
+    left: 0;
+    min-width: min(280px, calc(100vw - 2rem));
+  }
+
   .dashboard-wrapper .sidebar.active {
     display: block;
     position: fixed;
@@ -914,6 +941,8 @@ margin: 0;
   .dashboard-wrapper .user-profile {
     flex-direction: row;
     gap: 0.4rem;
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .dashboard-wrapper .avatar {

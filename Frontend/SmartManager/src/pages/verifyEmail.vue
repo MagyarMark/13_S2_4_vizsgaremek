@@ -161,4 +161,42 @@ export default {
     transform: translateY(0);
   }
 }
+
+@media (max-width: 600px) {
+  .verify-email-container {
+    padding: 16px;
+  }
+
+  .card {
+    padding: 24px 20px;
+  }
+
+  .state-message h2 {
+    font-size: 1.35rem;
+  }
+
+  .state-message p,
+  .btn {
+    font-size: 0.95rem;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px 20px;
+  }
+}
+
+@media (max-width: 400px) {
+  .card {
+    padding: 20px 16px;
+  }
+
+  .state-message h2 {
+    font-size: 1.15rem;
+  }
+
+  .state-message p {
+    font-size: 0.9rem;
+  }
+}
 </style>

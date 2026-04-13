@@ -784,6 +784,7 @@ export default {
   background: #f3f4f6;
   padding: 150px;
   box-sizing: border-box;
+  min-width: 0;
 }
 
 .settings-panel { display:flex; gap:20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);}
@@ -811,6 +812,26 @@ export default {
 .settings-content {
   flex:1;
   box-shadow: 0 1px 6px rgba(2,6,23,0.06);
+}
+
+@media (max-width: 1200px) {
+  .main-content {
+    padding: 120px 48px 48px;
+  }
+
+  .settings-panel {
+    flex-direction: column;
+  }
+
+  .settings-nav {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .settings-nav button {
+    flex: 1 1 180px;
+  }
 }
 
 .card {
@@ -882,6 +903,10 @@ export default {
     border-bottom: 1px solid #e5e7eb;
     margin-bottom: 1rem;
     overflow-x: auto;
+  }
+
+  .dashboard-wrapper .dropdown-menu {
+    min-width: min(280px, calc(100vw - 2rem));
   }
 
   .settings-nav button {

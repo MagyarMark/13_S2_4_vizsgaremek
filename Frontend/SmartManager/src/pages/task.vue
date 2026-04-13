@@ -711,6 +711,12 @@ export default {
   transform: translateY(0);
 }
 
+@media (max-width: 1200px) {
+  .dashboard-wrapper .dropdown-menu {
+    min-width: min(280px, calc(100vw - 2rem));
+  }
+}
+
 .dashboard-wrapper .dropdown-item {
   display: flex;
   align-items: center;
@@ -1092,6 +1098,11 @@ export default {
         }
 
         @media (max-width: 768px) {
+            .dashboard-wrapper .dropdown-menu {
+                right: auto;
+                left: 0;
+            }
+
             .dashboard-wrapper {
                 grid-template-columns: 1fr;
                 grid-template-rows: 60px 1fr;
@@ -1131,6 +1142,7 @@ export default {
             .section-header {
                 flex-direction: column;
                 gap: 0.5rem;
+                align-items: flex-start;
             }
 
             .stats-grid {
@@ -1160,6 +1172,7 @@ export default {
 
             .header-right {
                 gap: 0.5rem;
+                flex-wrap: wrap;
             }
 
             .header-right .user-name,
@@ -1176,6 +1189,10 @@ export default {
             .page-title {
                 flex-direction: column;
                 gap: 0.5rem;
+            }
+
+            .section-header .btn {
+                width: 100%;
             }
 
             .page-title h2 {
@@ -1205,6 +1222,11 @@ export default {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 0.25rem;
+            }
+
+            .form-actions {
+                flex-direction: column !important;
+                align-items: stretch !important;
             }
 
             .stats-grid {
