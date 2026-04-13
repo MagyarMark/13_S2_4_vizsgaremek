@@ -184,7 +184,7 @@
             <tr>
               <th>Diák</th>
               <th>Feladat</th>
-              <th>Pontszám</th>
+              <th>Pontszám / Maxpontszám</th>
               <th>Osztályzat</th>
               <th>Százalék</th>
               <th>Szöveges értékelés</th>
@@ -197,7 +197,7 @@
             >
               <td>{{ grade.studentName }}</td>
               <td>{{ grade.taskTitle }}</td>
-              <td>{{ grade.score }}</td>
+              <td>{{ grade.score }} / {{ grade.maxScore }}</td>
               <td>{{ grade.grade || '-' }}</td>
               <td>
                 <span
@@ -372,6 +372,7 @@ export default {
             taskId: b.feladat_id,
             taskTitle: b.task_name || 'Ismeretlen',
             score: b.pontszam,
+            maxScore: b.max_pontszam || 100,
             grade: b.jegy,
             comment: b.visszajelzes,
             evaluatedAt: b.ertekeles_idopont
