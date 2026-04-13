@@ -1106,8 +1106,10 @@ export default {
 
         @media (max-width: 768px) {
             .dashboard-wrapper .dropdown-menu {
-                right: auto;
-                left: 0;
+                right: 0;
+                left: auto;
+                min-width: min(260px, calc(100vw - 1rem));
+                max-width: calc(100vw - 1rem);
             }
 
             .dashboard-wrapper {
@@ -1234,6 +1236,23 @@ export default {
             .form-actions {
                 flex-direction: column !important;
                 align-items: stretch !important;
+            }
+
+            .dashboard-wrapper .dropdown-menu {
+                position: fixed;
+                top: 56px;
+                left: 0.5rem;
+                right: 0.5rem;
+                min-width: auto;
+                max-width: none;
+                border-radius: 10px;
+                margin-top: 0;
+            }
+
+            .dashboard-wrapper .dropdown-item {
+                padding: 0.75rem 0.9rem;
+                font-size: 0.92rem;
+                white-space: nowrap;
             }
 
             .stats-grid {

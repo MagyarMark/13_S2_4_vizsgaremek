@@ -917,9 +917,10 @@ margin: 0;
   }
 
   .dashboard-wrapper .dropdown-menu {
-    right: auto;
-    left: 0;
-    min-width: min(280px, calc(100vw - 2rem));
+    right: 0;
+    left: auto;
+    min-width: min(260px, calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
   }
 
   .dashboard-wrapper .sidebar.active {
@@ -950,6 +951,23 @@ margin: 0;
     gap: 0.4rem;
     width: 100%;
     justify-content: flex-end;
+  }
+
+  .dashboard-wrapper .dropdown-menu {
+    position: fixed;
+    top: 56px;
+    left: 0.5rem;
+    right: 0.5rem;
+    min-width: auto;
+    max-width: none;
+    border-radius: 10px;
+    margin-top: 0;
+  }
+
+  .dashboard-wrapper .dropdown-item {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
   }
 
   .dashboard-wrapper .avatar {

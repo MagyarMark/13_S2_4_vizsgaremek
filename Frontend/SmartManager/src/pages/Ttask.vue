@@ -2677,6 +2677,13 @@ textarea.form-control {
   .header-left h1 {
     font-size: 1.1rem;
   }
+
+  .dashboard-wrapper .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: min(260px, calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
+  }
 }
 
 @media (max-width: 600px) {
@@ -2718,6 +2725,23 @@ textarea.form-control {
 
   .dropdown {
     padding: 0.35rem 0.5rem;
+  }
+
+  .dashboard-wrapper .dropdown-menu {
+    position: fixed;
+    top: 56px;
+    left: 0.5rem;
+    right: 0.5rem;
+    min-width: auto;
+    max-width: none;
+    border-radius: 10px;
+    margin-top: 0;
+  }
+
+  .dashboard-wrapper .dropdown-item {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
   }
 
   .section-title {

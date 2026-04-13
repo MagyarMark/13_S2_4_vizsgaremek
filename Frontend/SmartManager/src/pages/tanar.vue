@@ -1445,6 +1445,14 @@ export default {
 
   .header-right {
     gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: min(260px, calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
   }
 
   .stats-cards {
@@ -1522,6 +1530,23 @@ export default {
 
   .dropdown {
     padding: 0.35rem 0.5rem;
+  }
+
+  .dropdown-menu {
+    position: fixed;
+    top: 56px;
+    left: 0.5rem;
+    right: 0.5rem;
+    min-width: auto;
+    max-width: none;
+    border-radius: 10px;
+    margin-top: 0;
+  }
+
+  .dropdown-item {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
   }
 
   .page-title {
