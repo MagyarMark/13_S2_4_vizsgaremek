@@ -2,6 +2,7 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
 const options = {
+  // swagger alap adatok és yaml források
   definition: {
     openapi: '3.0.0',
     info: {
@@ -20,6 +21,7 @@ const options = {
 
 const swaggerSpec = swaggerJsdoc(options);
 
+// swagger felület és json leírás publikusan elérhetővé tétele
 function swaggerDocs(app, port) {
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.get('/docs.json', (req, res) => {

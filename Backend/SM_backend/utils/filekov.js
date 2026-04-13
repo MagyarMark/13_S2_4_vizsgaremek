@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 
+// userhez tartozó feltöltési előzményt adja vissza
 const felhFeltoltesiElozmeny = async (felhasznalo_id, beadas_id = null) => {
     try {
         let query = `
@@ -31,6 +32,7 @@ const felhFeltoltesiElozmeny = async (felhasznalo_id, beadas_id = null) => {
         throw error;
     }
 };
+// egy beadáshoz tartozó fájlok listázása
 const beadasFileok = async (beadas_id) => {
     try {
         const query = `
@@ -58,6 +60,7 @@ const beadasFileok = async (beadas_id) => {
     }
 };
 
+// ellenőrzi, hogy a beadás létezik-e
 const felhEngedelyBeadas = async (felhasznalo_id, beadas_id) => {
     try {
         const query = `

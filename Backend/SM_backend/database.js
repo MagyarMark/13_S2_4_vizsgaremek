@@ -1,5 +1,6 @@
 require('dotenv').config({ path: './.env' });
 
+// db-migrate környezetenkénti adatbázis beállítások
 module.exports = {
 	dev: {
 		driver: 'pg',

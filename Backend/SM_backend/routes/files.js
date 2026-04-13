@@ -11,6 +11,7 @@ const pool = require('../config/db');
 
 const router = express.Router();
 
+// user feltöltési előzményének lekérése
 router.get('/upload', verifyToken, async (req, res) => {
     try {
         const felhasznalo_id = req.user.id;
@@ -37,6 +38,7 @@ router.get('/upload', verifyToken, async (req, res) => {
     }
 });
 
+// beadások listája a kapcsolódó adatokkal
 router.get('/submission', verifyToken, async (req, res) => {
     try {
         const beadasResult = await pool.query(
@@ -77,9 +79,11 @@ router.get('/submission', verifyToken, async (req, res) => {
     }
 });
 
+// egy konkrét beadáshoz tartozó fájlok lekérése
 router.get('/submission/:submission_id', verifyToken, async (req, res) => {
     try {
-        const { beadas_id } = req.params;
+        const { submission_id } = req.params;
+        const beadas_id = submission_id;
     
         const authorized = await felhEngedelyBeadas(req.user.id, beadas_id);
         if (!authorized) {
@@ -109,6 +113,7 @@ router.get('/submission/:submission_id', verifyToken, async (req, res) => {
     }
 });
 
+// új beadás rekord létrehozása
 router.post('/submissionCreate', verifyToken, [
     body('feladat_id'),
     body('felhasznalo_id'),
@@ -153,6 +158,7 @@ router.post('/submissionCreate', verifyToken, [
     }
 });
 
+// meglévő beadás frissítése jogosultság ellenőrzéssel
 router.put('/submissionUpdate/:submission_id', verifyToken, [
     body('pontszam')
         .optional()
@@ -183,7 +189,8 @@ router.put('/submissionUpdate/:submission_id', verifyToken, [
             });
         }
 
-        const { beadas_id } = req.params;
+        const { submission_id } = req.params;
+        const beadas_id = submission_id;
         const userId = req.user.id;
         const userRole = req.user.szerep_tipus;
         const { pontszam, maxpontszam, jegy, statusz, visszajelzes } = req.body;
@@ -284,6 +291,7 @@ router.put('/submissionUpdate/:submission_id', verifyToken, [
     }
 });
 
+// fájl törlése adatbázisból és fájlrendszerből
 router.delete('/:file_id', verifyToken, async (req, res) => {
     try {
         const { file_id } = req.params;

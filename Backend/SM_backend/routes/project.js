@@ -6,6 +6,7 @@ const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+// userhez tartozó projektek listázása
 router.get('/projects', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -33,6 +34,7 @@ router.get('/projects', verifyToken, async (req, res) => {
   }
 });
 
+// új projekt létrehozása
 router.post('/newProject', verifyToken, [
   body('projekt_nev')
     .notEmpty()
@@ -80,6 +82,7 @@ router.post('/newProject', verifyToken, [
   }
 });
 
+// projekt adatok frissítése létrehozó jogosultsággal
 router.put('/projectUpdate/:id', verifyToken, [
   body('projekt_nev')
     .optional()
@@ -190,6 +193,7 @@ router.put('/projectUpdate/:id', verifyToken, [
   }
 });
 
+// projekt törlése a kapcsolódó adatokkal együtt
 router.delete('/projectDelete/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -241,6 +245,7 @@ router.delete('/projectDelete/:id', verifyToken, async (req, res) => {
   }
 });
 
+// aktív felhasználók listája projekttag választáshoz
 router.get('/projectMember', verifyToken, async (req, res) => {
   try {
     const usersResult = await pool.query(
@@ -258,6 +263,7 @@ router.get('/projectMember', verifyToken, async (req, res) => {
   }
 });
 
+// egy projekt jelenlegi tagjainak listázása
 router.get('/projectMembers', verifyToken, async (req, res) => {
   try {
     const { projekt_id } = req.query;
@@ -289,6 +295,7 @@ router.get('/projectMembers', verifyToken, async (req, res) => {
   }
 });
 
+// új tag hozzáadása projekthez
 router.post('/newProjectmember', verifyToken, [
   body('projekt_id')
     .notEmpty(),
@@ -362,6 +369,7 @@ router.post('/newProjectmember', verifyToken, [
     }
 });
 
+// projekttag eltávolítása
 router.delete('/deleteProjectmember', verifyToken, async (req, res) => {
   try {
     const { projekt_id, felhasznalo_id } = req.body;
@@ -422,6 +430,7 @@ router.delete('/deleteProjectmember', verifyToken, async (req, res) => {
   }
 })
 
+// új feladat létrehozása projekten belül
 router.post('/newTask', verifyToken, [
    body('projekt_id')
     .notEmpty()
@@ -481,6 +490,7 @@ router.post('/newTask', verifyToken, [
     }
 });
 
+// projekt feladatainak lekérése a user szerint szűrve
 router.get('/task', verifyToken, async (req, res) => {
   try {
     const { projekt_id } = req.query;
@@ -513,6 +523,7 @@ router.get('/task', verifyToken, async (req, res) => {
   }
 });
 
+// user összes feladatának listázása
   router.get('/tasks', verifyToken, async (req, res) => {
     try {
       const userId = req.user.id;
@@ -537,6 +548,7 @@ router.get('/task', verifyToken, async (req, res) => {
     }
 });
 
+// feladat adatainak frissítése
 router.put('/taskUpdate/:id', verifyToken, [
   body('feladat_nev')
     .optional()
@@ -667,6 +679,7 @@ router.put('/taskUpdate/:id', verifyToken, [
   }
 });
 
+// feladat és kapcsolódó rekordok törlése tranzakcióban
 router.delete('/taskDelete/:id', verifyToken, async (req, res) => {
   const client = await pool.connect();
 
@@ -743,6 +756,7 @@ router.delete('/taskDelete/:id', verifyToken, async (req, res) => {
   }
 });
 
+// új statisztika bejegyzés létrehozása
  router.post('/newStat', verifyToken, [
   body('projekt_id')
    .notEmpty(),
@@ -789,6 +803,7 @@ router.delete('/taskDelete/:id', verifyToken, async (req, res) => {
       }
   });
 
+// user statisztikáinak listázása
   router.get('/stats', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -817,6 +832,7 @@ router.delete('/taskDelete/:id', verifyToken, async (req, res) => {
   }
 });
 
+// egy projekthez tartozó statisztikák lekérése
 router.get('/statistics/project/:projectId', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -846,6 +862,7 @@ router.get('/statistics/project/:projectId', verifyToken, async (req, res) => {
   }
 });
 
+// statisztika bejegyzés frissítése
 router.put('/statUpdate/:id', verifyToken, [
   body('statisztika_nev')
     .optional()
@@ -954,6 +971,7 @@ router.put('/statUpdate/:id', verifyToken, [
   }
 });
 
+// statisztika bejegyzés törlése
 router.delete('/statDelete/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -1000,6 +1018,7 @@ router.delete('/statDelete/:id', verifyToken, async (req, res) => {
   }
 });
 
+// napló bejegyzések lekérése szűrőkkel
 router.get('/log', verifyToken, async (req, res) => {
   try {
     const { projekt_id, feladat_id } = req.query;
@@ -1044,6 +1063,7 @@ router.get('/log', verifyToken, async (req, res) => {
   }
 });
 
+// új napló bejegyzés létrehozása
 router.post('/newLog', verifyToken, [
   body('projekt_id')
     .notEmpty(),
@@ -1091,6 +1111,7 @@ router.post('/newLog', verifyToken, [
   }
 });
 
+// napló bejegyzés frissítése
 router.put('/logUpdate/:id', verifyToken, [
   body('muvelet')
     .optional()
@@ -1183,6 +1204,7 @@ router.put('/logUpdate/:id', verifyToken, [
   }
 });
 
+// napló bejegyzés törlése
 router.delete('/naplo/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -1229,6 +1251,7 @@ router.delete('/naplo/:id', verifyToken, async (req, res) => {
   }
 });
 
+// új feladat komment létrehozása
 router.post('/newTaskcomment', verifyToken, [
   body('feladat_id')
     .notEmpty()
@@ -1273,6 +1296,7 @@ router.post('/newTaskcomment', verifyToken, [
   }
 });
 
+// egy feladathoz tartozó kommentek listázása
 router.get('/taskComments/:task_id', verifyToken, async (req, res) => {
   try {
     const { feladat_id } = req.params;
@@ -1301,6 +1325,7 @@ router.get('/taskComments/:task_id', verifyToken, async (req, res) => {
   }
 });
 
+// feladat komment frissítése
 router.put('/taskCommetUpdate/:id', verifyToken, [
   body('komment_szoveg')
     .notEmpty()
@@ -1364,6 +1389,7 @@ router.put('/taskCommetUpdate/:id', verifyToken, [
   }
 });
 
+// feladat komment törlése
 router.delete('/taskCommentDelete/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
