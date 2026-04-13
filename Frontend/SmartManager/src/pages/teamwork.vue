@@ -6,6 +6,7 @@
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
         <p>Diák Portál</p>
+        <p>Üdvözöljük, {{ userProfile.teljes_nev || userProfile.felhasznalonev }}</p>
       </div>
       <ul class="nav-links">
         <router-link to="/diak"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
