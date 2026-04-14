@@ -12,7 +12,7 @@
 
       <ul v-if="userProfile.szerep_tipus === 'tanar'" class="nav-links">
         <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
         <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
         <router-link to="/chat" class="active"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" ><li ><i class="fas fa-cog"></i> Beállítások</li></router-link>
@@ -25,6 +25,12 @@
         <router-link to="/chat" class="active"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" ><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
+      <div class="sidebar-footer">
+        <button class="sidebar-logout" type="button" @click="logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Kijelentkezés</span>
+        </button>
+      </div>
     </aside>
 
     <main class="main-content">
@@ -83,10 +89,10 @@
                           <span>Főoldal</span>
                         </router-link>
                       </button>
-                      <button class="dropdown-item" @click="openProfile" title="Feladatok">
+                      <button class="dropdown-item" @click="openProfile" title="Projektek">
                         <i class="fas fa-tasks"></i> 
                         <router-link to="/Ttask" style="color: inherit; text-decoration: none;">
-                          <span>Feladatok</span>
+                          <span>Projektek</span>
                         </router-link>
                       </button>
                       <button class="dropdown-item" @click="openTasks" title="Értékelés">
@@ -2158,6 +2164,13 @@ export default {
     width: 40px;
     height: 40px;
   }
+
+  .dashboard-wrapper .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: min(260px, calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
+  }
 }
 
 @media (max-width: 600px) {
@@ -2175,6 +2188,9 @@ export default {
 
   .header-right {
     gap: 0.5rem;
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
   }
 
   .header-right .user-name,
@@ -2185,6 +2201,23 @@ export default {
   .avatar {
     width: 36px;
     height: 36px;
+  }
+
+  .dashboard-wrapper .dropdown-menu {
+    position: fixed;
+    top: 56px;
+    left: 0.5rem;
+    right: 0.5rem;
+    min-width: auto;
+    max-width: none;
+    border-radius: 10px;
+    margin-top: 0;
+  }
+
+  .dashboard-wrapper .dropdown-item {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
   }
 
   .section-header {

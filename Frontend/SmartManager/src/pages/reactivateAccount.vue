@@ -246,4 +246,37 @@ export default {
   border-radius: 4px;
   margin-top: 20px;
 }
+
+@media (max-width: 600px) {
+  .reactivate-account {
+    margin: 1rem;
+    padding: 20px;
+  }
+
+  .reactivate-account h1 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+  }
+
+  .reactivate-account input,
+  .reactivate-account button {
+    padding: 14px 12px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .reactivate-account {
+    margin: 0.75rem;
+    padding: 16px;
+  }
+
+  .reactivate-account h1 {
+    font-size: 1.25rem;
+  }
+
+  .reactivate-account input {
+    font-size: 16px;
+  }
+}
 </style>

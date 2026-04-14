@@ -5,15 +5,21 @@
   <aside class="sidebar">
     <div class="logo">
       <h2>Smart<span>Manager</span></h2>
-      <p>Tanári Portál</p>
+      <p>Tanári Portál</p><p>Üdvözöljük, {{ userProfile.teljes_nev || userProfile.felhasznalonev }}</p>
     </div>
     <ul class="nav-links">
       <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-      <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+      <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
       <router-link to="/ertekeles" class="active"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
       <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
       <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
     </ul>
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" @click="logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Kijelentkezés</span>
+      </button>
+    </div>
   </aside>
 
   <header>
@@ -39,10 +45,10 @@
                           <span>Főoldal</span>
                         </router-link>
                       </button>
-                      <button class="dropdown-item" @click="openProfile" title="Feladatok">
+                      <button class="dropdown-item" @click="openProfile" title="Projektek">
                         <i class="fas fa-tasks"></i> 
                         <router-link to="/Ttask" style="color: inherit; text-decoration: none;">
-                          <span>Feladatok</span>
+                          <span>Projektek</span>
                         </router-link>
                       </button>
                       <button class="dropdown-item" @click="openTasks" title="Értékelés">
@@ -184,7 +190,7 @@
             <tr>
               <th>Diák</th>
               <th>Feladat</th>
-              <th>Pontszám</th>
+              <th>Pontszám / Maxpontszám</th>
               <th>Osztályzat</th>
               <th>Százalék</th>
               <th>Szöveges értékelés</th>
@@ -197,7 +203,7 @@
             >
               <td>{{ grade.studentName }}</td>
               <td>{{ grade.taskTitle }}</td>
-              <td>{{ grade.score }}</td>
+              <td>{{ grade.score }} / {{ grade.maxScore }}</td>
               <td>{{ grade.grade || '-' }}</td>
               <td>
                 <span
@@ -372,6 +378,7 @@ export default {
             taskId: b.feladat_id,
             taskTitle: b.task_name || 'Ismeretlen',
             score: b.pontszam,
+            maxScore: b.max_pontszam || 100,
             grade: b.jegy,
             comment: b.visszajelzes,
             evaluatedAt: b.ertekeles_idopont
@@ -908,6 +915,14 @@ export default {
 
   .header-right {
     gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .dashboard-wrapper .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: min(260px, calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
   }
 
   .content-wrapper {
@@ -995,6 +1010,23 @@ export default {
 
   .dropdown {
     padding: 0.35rem 0.5rem;
+  }
+
+  .dashboard-wrapper .dropdown-menu {
+    position: fixed;
+    top: 56px;
+    left: 0.5rem;
+    right: 0.5rem;
+    min-width: auto;
+    max-width: none;
+    border-radius: 10px;
+    margin-top: 0;
+  }
+
+  .dashboard-wrapper .dropdown-item {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
   }
 
   .section-header {

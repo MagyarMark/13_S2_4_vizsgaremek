@@ -8,6 +8,7 @@
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
         <p>Diák Portál</p>
+        <p>Üdvözöljük, {{ userProfile.teljes_nev || userProfile.felhasznalonev }}</p>
       </div>
       <ul class="nav-links">
         <router-link to="/diak" class="active"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
@@ -16,6 +17,12 @@
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
+      <div class="sidebar-footer">
+        <button class="sidebar-logout" type="button" @click="logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Kijelentkezés</span>
+        </button>
+      </div>
     </aside>
 
     
@@ -257,7 +264,6 @@ margin: 0;
 .dashboard-wrapper .header-right .notifications-button {
   margin-left: 1rem;
   color: var(--dark);
-  margin-left: -450px;
 }
 
 .dashboard-wrapper .user-profile {
@@ -266,7 +272,6 @@ margin: 0;
   gap: 0.5rem;
   cursor: pointer;
   color: var(--dark);
-  margin-left: -450px;
 }
 
 .dashboard-wrapper .avatar {
@@ -448,8 +453,10 @@ margin: 0;
 .dashboard-wrapper main {
   grid-area: main;
   background: var(--bg-light);
-  margin-left: 200px;
+  margin-left: 250px;
   margin-top: 60px;
+  padding: 1.5rem;
+  min-width: 0;
 }
 
 .dashboard-wrapper .page-title {
@@ -780,6 +787,26 @@ margin: 0;
   cursor: pointer;
 }
 
+@media (max-width: 1200px) {
+  .dashboard-wrapper header {
+    padding: 0 1rem;
+  }
+
+  .dashboard-wrapper .header-right,
+  .dashboard-wrapper .user-profile,
+  .dashboard-wrapper .header-right .notifications-button {
+    margin-left: 0;
+  }
+
+  .dashboard-wrapper .user-name,
+  .dashboard-wrapper .user-role {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 992px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;  
@@ -846,6 +873,7 @@ margin: 0;
   .dashboard-wrapper .header-right {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
 
   .dashboard-wrapper .user-profile {
@@ -888,6 +916,13 @@ margin: 0;
     font-size: 0.9rem;
   }
 
+  .dashboard-wrapper .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: min(260px, calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
+  }
+
   .dashboard-wrapper .sidebar.active {
     display: block;
     position: fixed;
@@ -914,6 +949,25 @@ margin: 0;
   .dashboard-wrapper .user-profile {
     flex-direction: row;
     gap: 0.4rem;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .dashboard-wrapper .dropdown-menu {
+    position: fixed;
+    top: 56px;
+    left: 0.5rem;
+    right: 0.5rem;
+    min-width: auto;
+    max-width: none;
+    border-radius: 10px;
+    margin-top: 0;
+  }
+
+  .dashboard-wrapper .dropdown-item {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
   }
 
   .dashboard-wrapper .avatar {

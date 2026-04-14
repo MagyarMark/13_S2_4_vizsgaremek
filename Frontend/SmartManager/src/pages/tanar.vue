@@ -5,15 +5,21 @@
     <aside class="sidebar" :class="{ open: showSidebar }">
         <div class="logo">
             <h2>Smart<span>Manager</span></h2>
-            <p>Tanári Portál</p>
+            <p>Tanári Portál</p><p>Üdvözöljük, {{ userProfile.teljes_nev || userProfile.felhasznalonev }}</p>
         </div>
         <ul class="nav-links">
             <li><a href="#" class="active"><i class="fas fa-home"></i> Áttekintés</a></li>
-            <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+            <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
             <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
             <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
             <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
         </ul>
+        <div class="sidebar-footer">
+          <button class="sidebar-logout" type="button" @click="logout">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Kijelentkezés</span>
+          </button>
+        </div>
     </aside>
 
     <header>
@@ -1439,6 +1445,14 @@ export default {
 
   .header-right {
     gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: min(260px, calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
   }
 
   .stats-cards {
@@ -1516,6 +1530,23 @@ export default {
 
   .dropdown {
     padding: 0.35rem 0.5rem;
+  }
+
+  .dropdown-menu {
+    position: fixed;
+    top: 56px;
+    left: 0.5rem;
+    right: 0.5rem;
+    min-width: auto;
+    max-width: none;
+    border-radius: 10px;
+    margin-top: 0;
+  }
+
+  .dropdown-item {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
   }
 
   .page-title {
