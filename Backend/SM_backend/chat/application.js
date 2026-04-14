@@ -3,7 +3,9 @@ const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
 const { accessTokenSecret } = require('../config/jwt');
 
+// itt állítjuk be a chat és hívás socket szervert
 function initializeChat(server, app) {
+    // engedélyezett origin lista összeállítása
     const allowedExactOrigins = new Set([
         'http://localhost:5173',
         'http://localhost:5174'
@@ -16,6 +18,7 @@ function initializeChat(server, app) {
 
     envAllowedOrigins.forEach((origin) => allowedExactOrigins.add(origin));
 
+    // csak engedett originről fogadunk socket kapcsolatot
     const corsOrigin = (origin, callback) => {
         if (!origin) {
             callback(null, true);
@@ -50,6 +53,7 @@ function initializeChat(server, app) {
 
     const roomStates = new Map();
 
+    // külön állapotot tartunk minden szobához
     const getRoomState = (roomId) => {
         if (!roomStates.has(roomId)) {
             roomStates.set(roomId, {
@@ -61,6 +65,7 @@ function initializeChat(server, app) {
         return roomStates.get(roomId);
     };
 
+    // bontott kapcsolatnál kitakarítjuk a userhez tartozó adatokat
     const removeDisconnectedUser = (socketId, roomId) => {
         const roomState = roomStates.get(roomId);
 
@@ -91,6 +96,7 @@ function initializeChat(server, app) {
         }
     };
 
+    // alap chat namespace kapcsolódás kezelése
     io.on('connection', (socket) => {
         console.log(socket.id);
         socketsConnected.add(socket.id);
@@ -117,6 +123,7 @@ function initializeChat(server, app) {
         });
     });
 
+    // hívás namespace tokenes védelme
     signalingNsp.use((socket, next) => {
         const token = socket.handshake.auth?.token;
 
@@ -144,6 +151,7 @@ function initializeChat(server, app) {
         }
     });
 
+    // hívásokhoz tartozó signaling események kezelése
     signalingNsp.on('connection', (socket) => {
         const { roomId, userName } = socket.data;
         const roomState = getRoomState(roomId);

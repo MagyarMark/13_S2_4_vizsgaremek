@@ -23,11 +23,13 @@ public sealed partial class ProjectsPage : Page
         this.Loaded += async (s, e) => await LoadProjectsAsync();
     }
 
+    // visszaadja a kiválasztott státusz szűrőt a legördülő listából
     private string? GetStatusFilter()
     {
         return (StatusFilterBox.SelectedItem as ComboBoxItem)?.Tag as string;
     }
 
+    // lekéri a projekteket az api-tól az aktuális szűrők és oldal alapján
     private async System.Threading.Tasks.Task LoadProjectsAsync()
     {
         SetLoading(true);
@@ -64,12 +66,14 @@ public sealed partial class ProjectsPage : Page
         }
     }
 
+    // keresés gombra kattintáskor visszaállítja az első oldalra és újratölti a listát
     private async void SearchButton_Click(object sender, RoutedEventArgs e)
     {
         _currentPage = 1;
         await LoadProjectsAsync();
     }
 
+    // megerősítés után törli a kiválasztott projektet az api-n keresztül
     private async void DeleteProject_Click(object sender, RoutedEventArgs e)
     {
         if(sender is Button btn && btn.Tag is int projectId)
@@ -106,16 +110,19 @@ public sealed partial class ProjectsPage : Page
         }
     }
 
+    // visszalép az előző oldalra és újratölti a listát
     private async void PrevPage_Click(object sender, RoutedEventArgs e)
     {
         if (_currentPage > 1) { _currentPage--; await LoadProjectsAsync(); }
     }
 
+    // lép a következő oldalra és újratölti a listát
     private async void NextPage_Click(object sender, RoutedEventArgs e)
     {
         if (_currentPage < _totalPages) { _currentPage++; await LoadProjectsAsync(); }
     }
 
+    // frissíti az oldalszámozás feliratait és a navigációs gombok állapotát
     private void UpdatePagination()
     {
         PageInfo.Text = $"Oldal: {_currentPage} / {_totalPages}";
@@ -124,6 +131,7 @@ public sealed partial class ProjectsPage : Page
         NextButton.IsEnabled = _currentPage < _totalPages;
     }
 
+    // töltési állapotot kapcsol, elrejti vagy mutatja a listát
     private void SetLoading(bool loading)
     {
         LoadingRing.IsActive = loading;
@@ -131,6 +139,7 @@ public sealed partial class ProjectsPage : Page
         ProjectsListView.Visibility = loading ? Visibility.Collapsed : Visibility.Visible;
     }
 
+    // hibaüzenetet jelenít meg az infobar segítségével
     private void ShowError(string message)
     {
         ErrorBar.Message = message;

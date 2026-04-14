@@ -7,6 +7,7 @@ const router = express.Router();
 
 let hasMessageEditTimestampColumnCache = null;
 
+// ellenőrzi, hogy létezik-e módosítás időpont oszlop
 const hasMessageEditTimestampColumn = async () => {
   if (hasMessageEditTimestampColumnCache !== null) {
     return hasMessageEditTimestampColumnCache;
@@ -26,6 +27,7 @@ const hasMessageEditTimestampColumn = async () => {
   return hasMessageEditTimestampColumnCache;
 };
 
+// a lekérdezéshez használt mezőket adja vissza
 const getMessageSelectFields = async () => {
   const hasEditTimestamp = await hasMessageEditTimestampColumn();
   if (hasEditTimestamp) {
@@ -35,6 +37,7 @@ const getMessageSelectFields = async () => {
   return 'id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, NULL::timestamp without time zone AS modositas_idopont';
 };
 
+// a returning mezőlistát adja vissza insert vagy update után
 const getMessageReturningFields = async () => {
   const hasEditTimestamp = await hasMessageEditTimestampColumn();
   if (hasEditTimestamp) {
@@ -44,6 +47,7 @@ const getMessageReturningFields = async () => {
   return 'id, kuldo_id, fogado_id, projekt_id, uzenet_tartalom, allapot, kuldes_ideje, NULL::timestamp without time zone AS modositas_idopont';
 };
 
+// ellenőrzi, hogy a user tagja-e a projektnek
 const isProjectMember = async (userId, projektId) => {
   const membership = await pool.query(
     `SELECT 1
@@ -57,6 +61,7 @@ const isProjectMember = async (userId, projektId) => {
   return membership.rows.length > 0;
 };
 
+// üzenetek listázása privát vagy projekt beszélgetéshez
 router.get('/allMessages', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -126,6 +131,7 @@ router.get('/allMessages', verifyToken, async (req, res) => {
   }
 });
 
+// két felhasználó közötti chat előzmény lekérése
 router.get('/chatHistory', verifyToken, [
   query('with')
     .notEmpty()
@@ -178,6 +184,7 @@ router.get('/chatHistory', verifyToken, [
   }
 });
 
+// új üzenet küldése privátban vagy projekthez
 router.post('/send', verifyToken, [
   body('fogado_id')
     .optional()
@@ -283,6 +290,7 @@ router.post('/send', verifyToken, [
   }
 });
 
+// saját üzenet frissítése
 router.put('/update/:id', verifyToken, [
   body('allapot')
     .optional()
@@ -379,6 +387,7 @@ router.put('/update/:id', verifyToken, [
   }
 });
 
+// saját üzenet törlése
 router.delete('/delete/:id', verifyToken, async (req, res) => {
   try {
     const userId = Number(req.user.id);

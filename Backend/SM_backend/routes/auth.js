@@ -14,6 +14,7 @@ const { sendVerificationEmail, sendAccountReactivationEmail } = require('../node
 
 const router = express.Router();
 
+// új email megerősítő tokent generál
 const generateEmailVerificationToken = () => {
   const rawToken = crypto.randomBytes(32).toString('hex');
   const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
@@ -22,11 +23,13 @@ const generateEmailVerificationToken = () => {
   return { rawToken, hashedToken, expiresAt };
 };
 
+// összerakja az email megerősítő linket
 const buildVerificationUrl = (rawToken) => {
   const verificationBaseUrl = process.env.EMAIL_VERIFICATION_URL_BASE || 'http://localhost:5173/verify-email';
   return `${verificationBaseUrl}?token=${rawToken}`;
 };
 
+// új fiók reaktivációs tokent generál
 const generateAccountReactivationToken = () => {
   const rawToken = crypto.randomBytes(32).toString('hex');
   const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
@@ -35,11 +38,13 @@ const generateAccountReactivationToken = () => {
   return { rawToken, hashedToken, expiresAt };
 };
 
+// összerakja a reaktivációs linket
 const buildAccountReactivationUrl = (rawToken) => {
   const reactivationBaseUrl = process.env.ACCOUNT_REACTIVATION_URL_BASE || 'http://localhost:5173/reactivate-account';
   return `${reactivationBaseUrl}?token=${rawToken}`;
 };
 
+// access és refresh tokent készít a user adatokból
 const generateTokens = (user) => {
   const accessToken = jwt.sign(
     {
@@ -61,6 +66,7 @@ const generateTokens = (user) => {
   return { accessToken, refreshToken };
 };
 
+// új felhasználó regisztrálása
 router.post('/register', [
   body('felhasznalonev')
     .notEmpty()
@@ -106,13 +112,14 @@ router.post('/register', [
     const hashedPassword = await bcrypt.hash(jelszo, saltRounds);
 
     const { rawToken, hashedToken, expiresAt } = generateEmailVerificationToken();
+    const isInitiallyActive = szerep_tipus !== 'tanar';
 
     const newUser = await pool.query(
       `INSERT INTO "Felhasznalo" (
-        felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, email_megerositve, email_megerosito_token, email_megerosites_hatarido
-      ) VALUES ($1, $2, $3, $4, $5, false, $6, $7) 
+        felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, email_megerositve, email_megerosito_token, email_megerosites_hatarido, aktiv
+      ) VALUES ($1, $2, $3, $4, $5, false, $6, $7, $8) 
       RETURNING id, felhasznalonev, email, teljes_nev, szerep_tipus, letrehozas_idopont, email_megerositve`,
-      [felhasznalonev, hashedPassword, email, teljes_nev, szerep_tipus, hashedToken, expiresAt]
+      [felhasznalonev, hashedPassword, email, teljes_nev, szerep_tipus, hashedToken, expiresAt, isInitiallyActive]
     );
 
     const verificationUrl = buildVerificationUrl(rawToken);
@@ -130,7 +137,8 @@ router.post('/register', [
       success: true,
       message: 'Sikeres regisztráció. Ellenorizd az emailedet a fiok aktivalasahoz.',
       data: {
-        user: newUser.rows[0]
+        user: newUser.rows[0],
+        ...(process.env.NODE_ENV !== 'production' && { verification_token: rawToken })
       }
     });
 
@@ -143,6 +151,7 @@ router.post('/register', [
   }
 });
 
+// bejelentkezés és token kiadás
 router.post('/login', [
   body('felhasznalonev')
     .notEmpty()
@@ -228,6 +237,7 @@ router.post('/login', [
   }
 });
 
+// email cím megerősítése token alapján
 router.get('/verify-email', async (req, res) => {
   try {
     const token = req.query.token;
@@ -275,6 +285,7 @@ router.get('/verify-email', async (req, res) => {
   }
 });
 
+// új megerősítő email küldése
 router.post('/resend-verification-email', [
   body('email')
     .isEmail()
@@ -345,6 +356,7 @@ router.post('/resend-verification-email', [
   }
 });
 
+// kijelentkezésnél a user elérhetőséget kikapcsoljuk
 router.post('/logout', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -367,6 +379,7 @@ router.post('/logout', verifyToken, async (req, res) => {
   }
 });
 
+// aktuális felhasználó profil adatainak lekérése
 router.get('/profileData', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -397,6 +410,7 @@ router.get('/profileData', verifyToken, async (req, res) => {
   }
 });
 
+// profil adatok frissítése
 router.put('/profile', verifyToken, [
   body('email')
     .optional()
@@ -502,6 +516,7 @@ router.put('/profile', verifyToken, [
   }
 });
 
+// refresh token alapján új token pár generálása
 router.post('/refresh-token', verifyRefreshToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -540,6 +555,7 @@ router.post('/refresh-token', verifyRefreshToken, async (req, res) => {
   }
 });
 
+// profil deaktiválása és reaktivációs link küldése
 router.put('/profileDelete', verifyToken, async (req, res) => {
   const client = await pool.connect();
 
@@ -620,6 +636,7 @@ router.put('/profileDelete', verifyToken, async (req, res) => {
   }
 });
 
+// fiók újraaktiválása tokennel és új adatokkal
 router.post('/reactivate-account', [
   body('token')
     .notEmpty()

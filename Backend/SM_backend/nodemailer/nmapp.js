@@ -3,6 +3,7 @@ const nodeMailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
 
+// smtp kapcsolat létrehozása email küldéshez
 function createTransporter() {
     return nodeMailer.createTransport({
         host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -15,6 +16,7 @@ function createTransporter() {
     });
 }
 
+// regisztráció után megerősítő email küldése
 async function sendVerificationEmail({ to, felhasznalonev, verificationUrl }) {
     const transporter = createTransporter();
     const logoPathCandidates = [
@@ -55,6 +57,7 @@ async function sendVerificationEmail({ to, felhasznalonev, verificationUrl }) {
     });
 }
 
+// deaktivált fiók újraaktiváló email küldése
 async function sendAccountReactivationEmail({ to, felhasznalonev, reactivationUrl }) {
     const transporter = createTransporter();
     const logoPathCandidates = [
@@ -95,6 +98,7 @@ async function sendAccountReactivationEmail({ to, felhasznalonev, reactivationUr
     });
 }
 
+// helyi teszt futtatás email küldés ellenőrzéshez
 async function main() {
     const to = process.env.EMAIL_TEST_RECIPIENT || process.env.EMAIL_USER;
     const verificationUrl = process.env.EMAIL_TEST_VERIFICATION_URL || 'http://localhost:3000/api/auth/verify-email?token=teszt-token';

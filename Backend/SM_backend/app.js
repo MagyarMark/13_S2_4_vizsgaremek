@@ -12,14 +12,17 @@ const { verifyToken } = require('./middleware/auth');
 
 const app = express();
 
+// alap middleware-ek, hogy a kliens kéréseit fel tudjuk dolgozni
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// a kezdőoldal html fájlt ad vissza
 app.get("/", (req,res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 })
 
+// ez az egyszerű fájlfeltöltő végpont, tokennel védve
 app.post('/api/upload', 
     verifyToken,
     fileUpload({ createParentPath: true }),
@@ -116,18 +119,23 @@ app.post('/api/upload',
 )
 
 const fileRoutes = require('./routes/files');
+// fájlokhoz tartozó api-k
 app.use('/api/files', fileRoutes);
 
 const authRoutes = require('./routes/auth');
+// bejelentkezés és profil api-k
 app.use('/api/auth', authRoutes);
 
 const projectRoutes = require('./routes/project');
+// projektekhez, feladatokhoz és statokhoz tartozó api-k
 app.use('/api/project', projectRoutes);
 
 const messagesRoutes = require('./routes/messages');
+// üzenetkezelő api-k
 app.use('/api/messages', messagesRoutes);
 
 const adminRoutes = require('./routes/admin');
+// admin jogosultságú api-k
 app.use('/api/admin', adminRoutes);
 
 module.exports = app;
