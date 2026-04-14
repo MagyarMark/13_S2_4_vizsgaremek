@@ -17,6 +17,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// szükséges oszlopok hozzáadása a File táblához, ha még nem léteznek
+pool.query('ALTER TABLE "File" ADD COLUMN IF NOT EXISTS feladat_id integer').catch(err => {
+    console.error('Hiba a feladat_id oszlop hozzáadásakor:', err.message);
+});
+
 // a kezdőoldal html fájlt ad vissza
 app.get("/", (req,res) => {
     res.sendFile(path.join(__dirname, "index.html"));
@@ -58,13 +63,14 @@ app.post('/api/upload',
                     await file.mv(filepath);
 
                     const query = `
-                        INSERT INTO "File" (beadas_id, felhasznalo_id, file_nev, file_meret, file_tipus, feltoltes_idopont, file_eleresiut)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7)
+                        INSERT INTO "File" (beadas_id, feladat_id, felhasznalo_id, file_nev, file_meret, file_tipus, feltoltes_idopont, file_eleresiut)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                         RETURNING id
                     `;
                     
                     const result = await pool.query(query, [
                         null,
+                        feladat_id || null,
                         felhasznalo_id,
                         file.name,
                         fileSizeBytes,
