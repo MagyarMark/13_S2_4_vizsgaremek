@@ -10,6 +10,7 @@
         <Grid Padding="24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -17,14 +18,97 @@
                        Style="{StaticResource TitleTextBlockStyle}"
                        Margin="0,0,0,24"/>
 
+            <!-- Pending Teacher Registrations Section -->
+            <StackPanel x:Name="PendingTeachersSection" Grid.Row="1" Spacing="12" Margin="0,0,0,24" Visibility="Collapsed">
+                <TextBlock Text="Jóváhagyásra váró tanári regisztrációk" 
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
+                        BorderThickness="2" 
+                        CornerRadius="8" 
+                        Padding="16">
+                    <StackPanel Spacing="12">
+                        <InfoBar x:Name="PendingInfoBar" 
+                                 IsOpen="True" 
+                                 Severity="Warning" 
+                                 IsClosable="False"
+                                 Message="Az alábbi tanárok regisztrációja jóváhagyásra vár."/>
+                        
+                        <ListView x:Name="PendingTeachersList" 
+                                  SelectionMode="None"
+                                  ItemsSource="{x:Bind PendingTeachers, Mode=OneWay}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:User" xmlns:models="using:SMadmin.Models">
+                                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="12"
+                                            Margin="0,4">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="{x:Bind FullName}" 
+                                                           FontWeight="SemiBold"/>
+                                                <TextBlock Text="{x:Bind Email}" 
+                                                           FontSize="12" 
+                                                           Opacity="0.7"/>
+                                                <TextBlock FontSize="12" Opacity="0.7">
+                                                    <Run Text="Regisztráció:"/>
+                                                    <Run Text="{x:Bind CreatedAt}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" 
+                                                        Orientation="Horizontal" 
+                                                        Spacing="8"
+                                                        VerticalAlignment="Center">
+                                                <Button Content="Elfogad" 
+                                                        Style="{StaticResource AccentButtonStyle}"
+                                                        Click="ApproveTeacher_Click"
+                                                        Tag="{x:Bind Id}">
+                                                    <Button.Resources>
+                                                        <SolidColorBrush x:Key="ButtonBackground" Color="#107C10"/>
+                                                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#0E6B0E"/>
+                                                        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#0C5A0C"/>
+                                                    </Button.Resources>
+                                                </Button>
+                                                <Button Content="Elutasít" 
+                                                        Click="DeclineTeacher_Click"
+                                                        Tag="{x:Bind Id}">
+                                                    <Button.Resources>
+                                                        <SolidColorBrush x:Key="ButtonBackground" Color="#C42B1C"/>
+                                                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#A52618"/>
+                                                        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#8A2014"/>
+                                                        <SolidColorBrush x:Key="ButtonForeground" Color="White"/>
+                                                        <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
+                                                        <SolidColorBrush x:Key="ButtonForegroundPressed" Color="White"/>
+                                                    </Button.Resources>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
             <ProgressRing x:Name="LoadingRing"
-                         Grid.Row="1"
+                         Grid.Row="2"
                          IsActive="False"
                          Width="50" Height="50"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"/>
 
-            <StackPanel x:Name="ContentPanel" Grid.Row="1" Spacing="16" Visibility="Collapsed">
+            <StackPanel x:Name="ContentPanel" Grid.Row="2" Spacing="16" Visibility="Collapsed">
 
                 <InfoBar x:Name="ErrorBar" IsOpen="False" Severity="Error"/>
 
@@ -126,34 +210,31 @@
                     </Grid>
                 </StackPanel>
 
-                <StackPanel Spacing="8">
-                    <TextBlock Text="Egyéb" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                               BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                               BorderThickness="1" CornerRadius="8" Padding="16">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="Összes üzenet" FontSize="12" Opacity="0.7"/>
-                                <TextBlock x:Name="MessagesTotal" Style="{StaticResource SubheaderTextBlockStyle}"/>
-                            </StackPanel>
-                        </Border>
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                           BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                           BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Üzenetek" FontSize="12" Opacity="0.7"/>
+                            <TextBlock x:Name="MessagesTotal" Style="{StaticResource SubheaderTextBlockStyle}"/>
+                        </StackPanel>
+                    </Border>
 
-                        <Border Grid.Column="1"
-                               Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                               BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                               BorderThickness="1" CornerRadius="8" Padding="16">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="Összes fájl" FontSize="12" Opacity="0.7"/>
-                                <TextBlock x:Name="FilesTotal" Style="{StaticResource SubheaderTextBlockStyle}"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </StackPanel>
+                    <Border Grid.Column="1"
+                           Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                           BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                           BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Fájlok" FontSize="12" Opacity="0.7"/>
+                            <TextBlock x:Name="FilesTotal" Style="{StaticResource SubheaderTextBlockStyle}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
 
             </StackPanel>
         </Grid>

@@ -112,13 +112,14 @@ router.post('/register', [
     const hashedPassword = await bcrypt.hash(jelszo, saltRounds);
 
     const { rawToken, hashedToken, expiresAt } = generateEmailVerificationToken();
+    const isInitiallyActive = szerep_tipus !== 'tanar';
 
     const newUser = await pool.query(
       `INSERT INTO "Felhasznalo" (
-        felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, email_megerositve, email_megerosito_token, email_megerosites_hatarido
-      ) VALUES ($1, $2, $3, $4, $5, false, $6, $7) 
+        felhasznalonev, jelszo, email, teljes_nev, szerep_tipus, email_megerositve, email_megerosito_token, email_megerosites_hatarido, aktiv
+      ) VALUES ($1, $2, $3, $4, $5, false, $6, $7, $8) 
       RETURNING id, felhasznalonev, email, teljes_nev, szerep_tipus, letrehozas_idopont, email_megerositve`,
-      [felhasznalonev, hashedPassword, email, teljes_nev, szerep_tipus, hashedToken, expiresAt]
+      [felhasznalonev, hashedPassword, email, teljes_nev, szerep_tipus, hashedToken, expiresAt, isInitiallyActive]
     );
 
     const verificationUrl = buildVerificationUrl(rawToken);

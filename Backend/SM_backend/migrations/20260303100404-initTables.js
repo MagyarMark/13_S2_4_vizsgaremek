@@ -12,7 +12,6 @@ var Promise;
   * This enables us to not have to rely on NODE_PATH.
   */
 exports.setup = function(options, seedLink) {
-  // itt vesszük át a db-migrate által adott objektumokat
   dbm = options.dbmigrate;
   type = dbm.dataType;
   seed = seedLink;
@@ -20,7 +19,6 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  // beolvassa az up sql fájlt és lefuttatja
   var filePath = path.join(__dirname, 'sqls', '20260303100404-initTables-up.sql');
   return new Promise( function( resolve, reject ) {
     fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){

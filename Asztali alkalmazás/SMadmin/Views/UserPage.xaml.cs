@@ -22,11 +22,13 @@ public sealed partial class UsersPage : Page
         this.Loaded += async (s, e) => await LoadUsersAsync();
     }
 
+    // visszaadja a kiválasztott szerepkör szűrőt a legördülő listából
     private string? GetRoleFilter()
     {
         return (RoleFilterBox.SelectedItem as ComboBoxItem)?.Tag as string;
     }
 
+    // lekéri a felhasználókat az api-tól az aktuális szűrők és oldal alapján
     private async System.Threading.Tasks.Task LoadUsersAsync()
     {
         SetLoading(true);
@@ -44,6 +46,7 @@ public sealed partial class UsersPage : Page
                 var currentUserId = _apiService.CurrentUser?.Id;
                 var users = new List<User>(response.Data.Users ?? []);
 
+                // megjelöli a saját fiókot, hogy ne lehessen véletlenül törölni
                 foreach (var u in users)
                 {
                     u.IsNotCurrentUser = currentUserId == null || u.Id != currentUserId;
@@ -70,12 +73,14 @@ public sealed partial class UsersPage : Page
         }
     }
 
+    // keresés gombra kattintáskor visszaállítja az első oldalra és újratölti a listát
     private async void SearchButton_Click(object sender, RoutedEventArgs e)
     {
         _currentPage = 1;
         await LoadUsersAsync();
     }
 
+    // törli a kiválasztott felhasználót az api-n keresztül
     private async void DeleteUser_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is int userId)
@@ -100,6 +105,7 @@ public sealed partial class UsersPage : Page
         }
     }
 
+    // elmenti a felhasználó módosított szerepkörét az api-n keresztül
     private async void SaveRole_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is User user)
@@ -126,6 +132,7 @@ public sealed partial class UsersPage : Page
         }
     }
 
+    // elmenti a felhasználó aktív/inaktív státuszát az api-n keresztül
     private async void SaveActive_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is User user)
@@ -152,16 +159,19 @@ public sealed partial class UsersPage : Page
         }
     }
 
+    // visszalép az előző oldalra és újratölti a listát
     private async void PrevPage_Click(object sender, RoutedEventArgs e)
     {
         if (_currentPage > 1) { _currentPage--; await LoadUsersAsync(); }
     }
 
+    // lép a következő oldalra és újratölti a listát
     private async void NextPage_Click(object sender, RoutedEventArgs e)
     {
         if (_currentPage < _totalPages) { _currentPage++; await LoadUsersAsync(); }
     }
 
+    // frissíti az oldalszámozás feliratait és a navigációs gombok állapotát
     private void UpdatePagination()
     {
         PageInfo.Text = $"Oldal: {_currentPage} / {_totalPages}";
@@ -170,6 +180,7 @@ public sealed partial class UsersPage : Page
         NextButton.IsEnabled = _currentPage < _totalPages;
     }
 
+    // töltési állapotot kapcsol, elrejti vagy mutatja a listát
     private void SetLoading(bool loading)
     {
         LoadingRing.IsActive = loading;
@@ -177,6 +188,7 @@ public sealed partial class UsersPage : Page
         UsersListView.Visibility = loading ? Visibility.Collapsed : Visibility.Visible;
     }
 
+    // hibaüzenetet jelenít meg az infobar segítségével
     private void ShowError(string message)
     {
         ErrorBar.Message = message;
