@@ -4,7 +4,7 @@
     <h1>Smart Manager</h1>
     <button id="menuToggle" aria-label="Menü megnyitása" @click="toggleMenu">☰</button>
     <nav id="mainNav" :class="{ active: navActive }">
-      <router-link to="/Home">Kezdőlap</router-link>
+      <router-link to="/">Kezdőlap</router-link>
       <router-link to="/rolunk">Rólunk</router-link>
       <router-link to="/kapcsolat">Kapcsolat</router-link>        
       <button class="theme" id="themeToggle" aria-label="Téma váltása" @click="toggleTheme">{{ darkTheme ?  "🌙" : "🌞" }}</button>
@@ -16,7 +16,7 @@
             <h3>Smart Manager</h3>
             <p>&copy; 2025 Smart Manager. Minden jog fenntartva.</p>
                 <div class="footer-links">
-                    <router-link to="/Home">Kezdőlap</router-link>
+                    <router-link to="/">Kezdőlap</router-link>
                     <router-link to="/kapcsolat">Kapcsolat</router-link>
                 </div>
         </div>

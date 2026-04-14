@@ -15,7 +15,7 @@
       <div v-else class="state-message error">
         <h2>Hiba az email megerősítés során</h2>
         <p>{{ message }}</p>
-        <router-link to="/home" class="btn">Vissza a Home oldalra</router-link>
+        <router-link to="/" class="btn">Vissza a Home oldalra</router-link>
       </div>
     </div>
   </div>
@@ -54,7 +54,7 @@ export default {
         if (data.success) {
           success.value = true;
           message.value = 'Az email cím sikeresen megerősítve. Bejelentkezhet az alkalmazásba.';
-          router.push('/home');
+          router.push('/');
         } else {
           success.value = false;
           message.value = data.message || 'Hiba az email megerősítés során.';

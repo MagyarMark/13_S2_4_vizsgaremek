@@ -4,7 +4,7 @@
     <nav>
       <button class="mobile-menu-btn" @click="toggleMenu" :aria-expanded="navActive" aria-label="Menü">☰</button>
       <ul :class="{ show: navActive }">
-        <router-link to="/home"><li><a @click="navActive = false">Kezdőlap</a></li></router-link>
+        <router-link to="/"><li><a @click="navActive = false">Kezdőlap</a></li></router-link>
       </ul>
     </nav>
   </header>
@@ -91,7 +91,7 @@ export default {
         } else if (role === 'tanar') {
           this.$router.push('/tanar');
         } else {
-          this.$router.push('/home');
+          this.$router.push('/');
         }
       }
     } catch (e) {
@@ -134,7 +134,7 @@ export default {
           } else if (role === 'tanar') {
             this.$router.push('/tanar');
           } else {
-            this.$router.push('/home');
+            this.$router.push('/');
           }
 
         } else {

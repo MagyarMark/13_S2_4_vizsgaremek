@@ -17,79 +17,94 @@ import reactivateAccount from './pages/reactivateAccount.vue'
 
 const routes = [
   {
-    path: '/home',
+    path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    meta: { public: true }
   },
   {
     path: '/settings',
     name: 'Settings',
-    component: Settings
+    component: Settings,
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
     name: 'Login',
-    component: Login
+    component: Login,
+    meta: { public: true }
   },
   {
     path: '/register',
     name: 'Register',
-    component: Register
+    component: Register,
+    meta: { public: true }
   },
   {
     path: '/kapcsolat',
     name: 'Kapcsolat',
-    component: Kapcsolat
+    component: Kapcsolat,
+    meta: { public: true }
   },
   {
     path: '/task',
     name: 'Task',
-    component: Task
+    component: Task,
+    meta: { requiresAuth: true, roles: ['diak'] }
   },
   {
     path: '/diak',
     name: 'Diak',
-    component: Diak
+    component: Diak,
+    meta: { requiresAuth: true, roles: ['diak'] }
   },
   {
     path: '/tanar',
     name: 'Tanar',
-    component: Tanar
+    component: Tanar,
+    meta: { requiresAuth: true, roles: ['tanar'] }
   },
   {
     path: '/chat',
     name: 'Chat',
-    component: Chat
+    component: Chat,
+    meta: { requiresAuth: true }
   },
   {
     path: '/terms',
     name: 'Terms',
-    component: Terms
+    component: Terms,
+    meta: { public: true }
   },
   {
     path: '/teamwork',
     name: 'TeamWork',
-    component: TeamWork
+    component: TeamWork,
+    meta: { requiresAuth: true, roles: ['diak'] }
   },
   {
     path: '/Ttask',
     name: 'Ttask',
-    component: Ttask
+    component: Ttask,
+    meta: { requiresAuth: true, roles: ['tanar'] }
   },
   {
     path: '/ertekeles',
     name: 'Ertekeles',
-    component: Ertekeles
+    component: Ertekeles,
+    meta: { requiresAuth: true, roles: ['tanar'] }
   },
   {
     path: '/verify-email',
     name: 'VerifyEmail',
-    component: VerifyEmail
+    component: VerifyEmail,
+    meta: { public: true }
   },
   {
     path: '/reactivate-account',
     name: 'reactivateAccount',
-    component: reactivateAccount
+    component: reactivateAccount,
+    meta: { public: true }
   }
 ]
 
@@ -103,6 +118,35 @@ const router = createRouter({
       return { left: 0, top: 0 }
     }
   }
+})
+
+router.beforeEach((to) => {
+  const isPublicRoute = to.meta.public === true
+  const token = localStorage.getItem('accessToken')
+  const storedUser = localStorage.getItem('user')
+
+  if (isPublicRoute) {
+    return true
+  }
+
+  if (!token || !storedUser) {
+    return { name: 'Login', query: { redirect: to.fullPath } }
+  }
+
+  if (Array.isArray(to.meta.roles) && to.meta.roles.length > 0) {
+    try {
+      const user = JSON.parse(storedUser)
+      const role = user?.szerep_tipus
+
+      if (!to.meta.roles.includes(role)) {
+        return role === 'tanar' ? { name: 'Tanar' } : { name: 'Diak' }
+      }
+    } catch (error) {
+      return { name: 'Login' }
+    }
+  }
+
+  return true
 })
 
 export default router
