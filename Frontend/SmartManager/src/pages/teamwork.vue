@@ -11,7 +11,7 @@
       <ul class="nav-links">
         <router-link to="/diak"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
         <router-link to="/task"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
-        <router-link to="/teamwork" class="active"><li><i class="fas fa-users"></i> Projektmunka</li></router-link>
+        <router-link to="/teamwork" class="active"><li><i class="fas fa-users"></i> Projektek</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
@@ -25,7 +25,7 @@
 
     <header>
       <div class="header-left">
-        <h1>Projektmunka</h1>
+        <h1>Projektek</h1>
       </div>
       <div class="header-right">
         <div class="user-profile">
@@ -47,10 +47,10 @@
                   <span>Feladatok</span>
                 </router-link>
               </button>
-              <button class="dropdown-item" @click="openTasks" title="Csapatmunka">
+              <button class="dropdown-item" @click="openTasks" title="Projektek">
                 <i class="fas fa-users"></i>
                 <router-link to="/teamwork" style="color: inherit; text-decoration: none;">
-                  <span>Csapatmunka</span>
+                  <span>Projektek</span>
                 </router-link>
               </button>
               <button class="dropdown-item" @click="openChat" title="Üzenetek">
@@ -249,9 +249,18 @@
               <div class="file-info">
                 <h4>{{ file.name }}</h4>
                 <span class="file-task">{{ file.taskName }}</span>
+                <span class="file-uploader" style="font-size: 0.75rem; color: #6b7280;">{{ file.uploaderName }}</span>
               </div>
               <span class="file-size" v-if="file.size">{{ file.size }} KB</span> 
               <button 
+                @click="downloadFile(file.id, file.name)"
+                style="background-color: #3b82f6; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; margin-right: 4px;"
+                title="Fájl letöltése"
+              >
+                Letöltés
+              </button>
+              <button 
+                v-if="file.felhasznalo_id === userProfile.id"
                 @click="deleteFile(file.id)"
                 style="background-color: red; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;"
                 title="Fájl törlése"
@@ -472,6 +481,7 @@ export default {
       currentTaskId: null,
       selectedFiles: [],
       uploadedFiles: [],
+      projectFiles: [],
       isUploading: false,
       availableUsers: [],
       formData: {
@@ -639,28 +649,18 @@ export default {
       return this.availableUsers.filter(user => user.szerep_tipus === 'diak');
     },
     teamUploadedFiles() {
-      if (!this.selectedTeam) return [];
-      const allFiles = [];
-      this.selectedTeam.tasks.forEach(task => {
-        if (task.uploadedFiles && Array.isArray(task.uploadedFiles)) {
-          task.uploadedFiles.forEach(file => {
-            allFiles.push({
-              ...file,
-              taskName: task.title
-            });
-          });
-        }
-      });
-      return allFiles;
+      return this.projectFiles;
     }
   },
   methods: {
     selectTeam(teamId) {
       this.selectedTeam = this.teams.find(t => t.id === teamId);
       this.activeTab = 'members';
+      this.projectFiles = [];
       if (this.selectedTeam) {
         this.loadTeamActivity();
         this.loadTeamTasks();
+        this.loadProjectFiles();
       }
     },
     openCreateTeamModal() {
@@ -1332,41 +1332,37 @@ export default {
         console.error('Hiba az aktivitás naplóban történő rögzítéskor:', error);
       }
     },
-    async loadTeamFiles() {
+    async loadProjectFiles() {
       try {
         if (!this.selectedTeam) return;
 
         const token = localStorage.getItem('accessToken');
         if (!token) return;
 
-        for (let task of this.selectedTeam.tasks) {
-          try {
-            const response = await fetch(getApiUrl(`/api/files/task/${task.id}`), {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-              }
-            });
-
-            if (!response.ok) continue;
-
-            const data = await response.json();
-            
-            if (data.success && Array.isArray(data.data.files)) {
-              const filesWithSize = data.data.files.map(file => ({
-                id: file.id,
-                name: file.file_nev,
-                size: file.file_merete ? (file.file_merete / 1024).toFixed(2) : '0'
-              }));
-              task.uploadedFiles = filesWithSize;
-            }
-          } catch (error) {
-            console.error(`Hiba a feladat (${task.id}) fájljainak lekérdezésénél:`, error);
+        const response = await fetch(getApiUrl(`/api/files/project/${this.selectedTeam.id}`), {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
           }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (data.success && Array.isArray(data.data.files)) {
+          this.projectFiles = data.data.files.map(file => ({
+            id: file.id,
+            name: file.file_nev,
+            size: file.file_meret ? (file.file_meret / 1024).toFixed(2) : '0',
+            taskName: file.feladat_nev || 'Ismeretlen feladat',
+            uploaderName: file.feltolto_nev || file.felhasznalonev || 'Ismeretlen',
+            felhasznalo_id: file.felhasznalo_id
+          }));
         }
       } catch (error) {
-        console.error('Csapat fájljainak betöltésének hiba:', error);
+        console.error('Projekt fájljai betöltésének hiba:', error);
       }
     },
     handleFileSelect(event) {
@@ -1450,6 +1446,8 @@ export default {
             `${data.uploadedFiles.length} fájlt feltöltött`,
             this.currentTaskId
           );
+
+          await this.loadProjectFiles();
           
           setTimeout(() => {
             const input = document.getElementById('fileInput');
@@ -1467,6 +1465,37 @@ export default {
       } finally {
         this.isUploading = false;
       }
+    },
+    downloadFile(fileId, fileName) {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('Authentikációs token nem található');
+        return;
+      }
+      fetch(getApiUrl(`/api/files/download/${fileId}`), {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(data => { throw new Error(data.message || 'Letöltési hiba'); });
+          }
+          return response.blob();
+        })
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          a.remove();
+        })
+        .catch(error => {
+          console.error('Letöltési hiba:', error);
+          alert('Hiba a fájl letöltésekor: ' + error.message);
+        });
     },
     async deleteFile(fileId) {
       if (!confirm('Biztosan törlöd ezt a fájlt?')) {
@@ -1504,26 +1533,7 @@ export default {
 
         if (data.success) {
           this.uploadedFiles = this.uploadedFiles.filter(f => f.id !== fileId);
-
-          if (this.selectedTeam && this.selectedTeam.tasks) {
-            this.selectedTeam.tasks.forEach(task => {
-              if (task.uploadedFiles && Array.isArray(task.uploadedFiles)) {
-                task.uploadedFiles = task.uploadedFiles.filter(f => f.id !== fileId);
-              }
-            });
-          }
-
-          if (this.teams && Array.isArray(this.teams)) {
-            this.teams.forEach(team => {
-              if (team.tasks && Array.isArray(team.tasks)) {
-                team.tasks.forEach(task => {
-                  if (task.uploadedFiles && Array.isArray(task.uploadedFiles)) {
-                    task.uploadedFiles = task.uploadedFiles.filter(f => f.id !== fileId);
-                  }
-                });
-              }
-            });
-          }
+          this.projectFiles = this.projectFiles.filter(f => f.id !== fileId);
 
           alert('Fájl sikeresen törölve!');
 

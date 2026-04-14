@@ -21,7 +21,7 @@
       <ul v-else class="nav-links">
         <router-link to="/diak"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
         <router-link to="/task"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
-        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Projektmunka</li></router-link>
+        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Projektek</li></router-link>
         <router-link to="/chat" class="active"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" ><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
@@ -62,7 +62,7 @@
               <button class="dropdown-item" @click="openTasks" title="Feladatok">
                 <i class="fas fa-users"></i>
                 <router-link to="/teamwork" style="color: inherit; text-decoration: none;">
-                  <span>Csapatmunka</span>
+                  <span>Projektek</span>
                 </router-link>
               </button>
               <button class="dropdown-item" @click="openChat" title="Üzenetek">
