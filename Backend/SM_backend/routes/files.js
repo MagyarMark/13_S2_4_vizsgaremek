@@ -291,6 +291,142 @@ router.put('/submissionUpdate/:submission_id', verifyToken, [
     }
 });
 
+// fájlok listázása feladat id alapján
+router.get('/task/:task_id', verifyToken, async (req, res) => {
+    try {
+        const { task_id } = req.params;
+
+        const result = await pool.query(
+            `SELECT f.id, f.file_nev, f.file_meret, f.file_tipus, f.feltoltes_idopont, f.feladat_id, f.felhasznalo_id,
+                    fu.teljes_nev as feltolto_nev, fu.felhasznalonev
+             FROM "File" f
+             LEFT JOIN "Felhasznalo" fu ON f.felhasznalo_id = fu.id
+             WHERE f.feladat_id = $1
+             ORDER BY f.feltoltes_idopont DESC`,
+            [task_id]
+        );
+
+        res.json({
+            success: true,
+            data: {
+                files: result.rows,
+                count: result.rows.length
+            }
+        });
+    } catch (error) {
+        console.error('Hiba a feladat fájljai lekérdezésekor:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Hiba a feladat fájljai lekérdezésekor',
+            error: error.message
+        });
+    }
+});
+
+// fájlok listázása projekt id alapján (az összes feladathoz tartozó fájl)
+router.get('/project/:project_id', verifyToken, async (req, res) => {
+    try {
+        const { project_id } = req.params;
+
+        const result = await pool.query(
+            `SELECT f.id, f.file_nev, f.file_meret, f.file_tipus, f.feltoltes_idopont, f.feladat_id, f.felhasznalo_id,
+                    fu.teljes_nev as feltolto_nev, fu.felhasznalonev,
+                    ft.feladat_nev
+             FROM "File" f
+             LEFT JOIN "Felhasznalo" fu ON f.felhasznalo_id = fu.id
+             LEFT JOIN "Feladat" ft ON f.feladat_id = ft.id
+             WHERE ft.projekt_id = $1
+             ORDER BY f.feltoltes_idopont DESC`,
+            [project_id]
+        );
+
+        res.json({
+            success: true,
+            data: {
+                files: result.rows,
+                count: result.rows.length
+            }
+        });
+    } catch (error) {
+        console.error('Hiba a projekt fájljai lekérdezésekor:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Hiba a projekt fájljai lekérdezésekor',
+            error: error.message
+        });
+    }
+});
+
+// fájl letöltése - projekt tagok és tanárok számára elérhető
+router.get('/download/:file_id', verifyToken, async (req, res) => {
+    try {
+        const { file_id } = req.params;
+
+        const fileResult = await pool.query(
+            `SELECT f.id, f.felhasznalo_id, f.file_eleresiut, f.file_nev, f.feladat_id,
+                    ft.projekt_id
+             FROM "File" f
+             LEFT JOIN "Feladat" ft ON f.feladat_id = ft.id
+             WHERE f.id = $1`,
+            [file_id]
+        );
+
+        if (fileResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'A fájl nem található'
+            });
+        }
+
+        const file = fileResult.rows[0];
+        const userId = req.user.id;
+        const userRole = req.user.szerep_tipus;
+
+        // Tanár és admin mindig letölthet
+        if (userRole !== 'tanar' && userRole !== 'admin') {
+            if (file.projekt_id) {
+                // Diák csak akkor tölthet le, ha tagja a projektnek
+                const memberCheck = await pool.query(
+                    `SELECT 1 FROM "ProjektTag" WHERE projekt_id = $1 AND felhasznalo_id = $2
+                     UNION
+                     SELECT 1 FROM "Projekt" WHERE id = $1 AND letrehozo_id = $2`,
+                    [file.projekt_id, userId]
+                );
+                if (memberCheck.rows.length === 0) {
+                    return res.status(403).json({
+                        success: false,
+                        message: 'Nincs jogosultsága a fájl letöltéséhez'
+                    });
+                }
+            } else {
+                // Ha nincs projekt_id, csak a feltöltő tölthet le
+                if (file.felhasznalo_id !== userId) {
+                    return res.status(403).json({
+                        success: false,
+                        message: 'Nincs jogosultsága a fájl letöltéséhez'
+                    });
+                }
+            }
+        }
+
+        if (!file.file_eleresiut || !fs.existsSync(file.file_eleresiut)) {
+            return res.status(404).json({
+                success: false,
+                message: 'A fájl nem található a szerveren'
+            });
+        }
+
+        res.download(file.file_eleresiut, file.file_nev);
+    } catch (error) {
+        console.error('Szerver hiba a fájl letöltése során:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Szerver hiba a fájl letöltése során',
+            error: error.message
+        });
+    }
+});
+
 // fájl törlése adatbázisból és fájlrendszerből
 router.delete('/:file_id', verifyToken, async (req, res) => {
     try {
@@ -313,8 +449,9 @@ router.delete('/:file_id', verifyToken, async (req, res) => {
         const file = fileResult.rows[0];
         const isOwner = file.felhasznalo_id === req.user.id;
         const isAdmin = req.user.szerep_tipus === 'admin';
+        const isTeacher = req.user.szerep_tipus === 'tanar';
 
-        if (!isOwner && !isAdmin) {
+        if (!isOwner && !isAdmin && !isTeacher) {
             return res.status(403).json({
                 success: false,
                 message: 'Nincs jogosultsága a fájl törléséhez'
