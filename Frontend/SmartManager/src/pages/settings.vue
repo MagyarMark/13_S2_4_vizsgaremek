@@ -576,7 +576,7 @@ export default {
             localStorage.removeItem('refreshToken')
             localStorage.removeItem('sm_settings')
             localStorage.removeItem('sm_appearance')
-            router.push('/home')
+            router.push('/')
           }, 2000)
         } else {
           message.account = data.message || 'Hiba a fiók deaktiválása során'
@@ -650,7 +650,7 @@ export default {
       localStorage.removeItem('sm_settings');
       localStorage.removeItem('sm_appearance');
       
-      router.push('/home');
+      router.push('/');
     };
 
     watch(() => appearance.theme, () => {
