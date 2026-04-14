@@ -160,7 +160,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 export default {
-  name: "Home",
+  name: "",
 }
 </script>
 

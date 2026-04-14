@@ -1157,7 +1157,7 @@ export default {
       localStorage.removeItem('sm_settings');
       localStorage.removeItem('sm_appearance');
       
-      router.push('/home');
+      router.push('/');
     };
 
     const isIncomingDirectMessageRelevant = (messagePayload) => {
