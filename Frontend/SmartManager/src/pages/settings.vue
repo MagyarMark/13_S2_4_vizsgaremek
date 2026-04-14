@@ -13,7 +13,7 @@
 
       <ul v-if="userProfile.szerep_tipus === 'tanar'" class="nav-links">
         <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+        <router-link to="/Ttask"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
         <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" class="active"><li ><i class="fas fa-cog"></i> Beállítások</li></router-link>
@@ -26,6 +26,12 @@
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" class="active"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
+      <div class="sidebar-footer">
+        <button class="sidebar-logout" type="button" @click="logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Kijelentkezés</span>
+        </button>
+      </div>
     </aside>
 
     <main class="main-content">
@@ -84,10 +90,10 @@
                           <span>Főoldal</span>
                         </router-link>
                       </button>
-                      <button class="dropdown-item" @click="openProfile" title="Feladatok">
+                      <button class="dropdown-item" @click="openProfile" title="Projektek">
                         <i class="fas fa-tasks"></i> 
                         <router-link to="/Ttask" style="color: inherit; text-decoration: none;">
-                          <span>Feladatok</span>
+                          <span>Projektek</span>
                         </router-link>
                       </button>
                       <button class="dropdown-item" @click="openTasks" title="Értékelés">
@@ -784,6 +790,7 @@ export default {
   background: #f3f4f6;
   padding: 150px;
   box-sizing: border-box;
+  min-width: 0;
 }
 
 .settings-panel { display:flex; gap:20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);}
@@ -811,6 +818,26 @@ export default {
 .settings-content {
   flex:1;
   box-shadow: 0 1px 6px rgba(2,6,23,0.06);
+}
+
+@media (max-width: 1200px) {
+  .main-content {
+    padding: 120px 48px 48px;
+  }
+
+  .settings-panel {
+    flex-direction: column;
+  }
+
+  .settings-nav {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .settings-nav button {
+    flex: 1 1 180px;
+  }
 }
 
 .card {
@@ -884,6 +911,11 @@ export default {
     overflow-x: auto;
   }
 
+  .dashboard-wrapper .dropdown-menu {
+    min-width: min(280px, calc(100vw - 2rem));
+    max-width: calc(100vw - 1rem);
+  }
+
   .settings-nav button {
     flex: 1;
     box-shadow: none;
@@ -906,6 +938,23 @@ export default {
 @media (max-width: 600px) {
   .main-content {
     padding: 80px 0.75rem 0.75rem;
+  }
+
+  .dashboard-wrapper .dropdown-menu {
+    position: fixed;
+    top: 56px;
+    left: 0.5rem;
+    right: 0.5rem;
+    min-width: auto;
+    max-width: none;
+    border-radius: 10px;
+    margin-top: 0;
+  }
+
+  .dashboard-wrapper .dropdown-item {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
   }
 
   .card {

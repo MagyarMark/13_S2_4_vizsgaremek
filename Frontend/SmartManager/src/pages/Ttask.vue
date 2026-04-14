@@ -5,20 +5,26 @@
     <aside class="sidebar">
       <div class="logo">
         <h2>Smart<span>Manager</span></h2>
-        <p>Tanári Portál</p>
+        <p>Tanári Portál</p><p>Üdvözöljük, {{ userProfile.teljes_nev || userProfile.felhasznalonev }}</p>
       </div>
       <ul class="nav-links">
         <router-link to="/tanar"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
-        <router-link to="/Ttask" class="active"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
+        <router-link to="/Ttask" class="active"><li><i class="fas fa-tasks"></i> Projektek</li></router-link>
         <router-link to="/ertekeles"><li><i class="fas fa-check-circle"></i> Értékelés</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
+      <div class="sidebar-footer">
+        <button class="sidebar-logout" type="button" @click="logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Kijelentkezés</span>
+        </button>
+      </div>
     </aside>
 
     <header>
       <div class="header-left">
-        <h1>Projektmunka</h1>
+        <h1>Projektek</h1>
       </div>
       <div class="header-right">
         <div class="user-profile">
@@ -36,10 +42,10 @@
                           <span>Főoldal</span>
                         </router-link>
                       </button>
-                      <button class="dropdown-item" @click="openProfile" title="Feladatok">
+                      <button class="dropdown-item" @click="openProfile" title="Projektek">
                         <i class="fas fa-tasks"></i> 
                         <router-link to="/Ttask" style="color: inherit; text-decoration: none;">
-                          <span>Feladatok</span>
+                          <span>Projektek</span>
                         </router-link>
                       </button>
                       <button class="dropdown-item" @click="openTasks" title="Értékelés">
@@ -73,7 +79,6 @@
     <main class="teamwork-dashboard">
       <section class="teamwork-section">
         <div class="section-header">
-          <h2 class="section-title">Projektek</h2>
           <button class="btn btn-primary" @click="openCreateTeamModal">
             <i class="fas fa-plus"></i> Új Projekt
           </button>
@@ -2672,6 +2677,13 @@ textarea.form-control {
   .header-left h1 {
     font-size: 1.1rem;
   }
+
+  .dashboard-wrapper .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: min(260px, calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
+  }
 }
 
 @media (max-width: 600px) {
@@ -2713,6 +2725,23 @@ textarea.form-control {
 
   .dropdown {
     padding: 0.35rem 0.5rem;
+  }
+
+  .dashboard-wrapper .dropdown-menu {
+    position: fixed;
+    top: 56px;
+    left: 0.5rem;
+    right: 0.5rem;
+    min-width: auto;
+    max-width: none;
+    border-radius: 10px;
+    margin-top: 0;
+  }
+
+  .dashboard-wrapper .dropdown-item {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
   }
 
   .section-title {
