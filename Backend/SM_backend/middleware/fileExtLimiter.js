@@ -1,9 +1,11 @@
 const path = require("path");
 
+// megadott kiterjesztéseken kívül minden mást tilt
 const fileExtLimiter = (allowedExtArray) => {
     return(req, res, next) => {
         const files = req.files
 
+        // kinyerjük az összes feltöltött fájl kiterjesztését
         const fileExtensions = []
         Object.keys(files).forEach(key => {
             fileExtensions.push(path.extname(files[key].name))

@@ -3,10 +3,12 @@ const fs = require('fs');
 
 require('dotenv').config({ path: './.env' });
 
+// beolvassa a seed sql scriptet
 const seedQuery = fs.readFileSync("seeder/seeding.sql", {
   encoding: "utf-8",
 })
 
+// kapcsolat létrehozása a seed futtatásához
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -24,6 +26,7 @@ pool.on('error', (err) => {
   console.error('Adatbázis csatlaklozási hiba:', err);
 });
 
+// a teljes seed script lefuttatása egyszerre
 pool.query(seedQuery, (err, res) => {
   if (err) {
     throw err

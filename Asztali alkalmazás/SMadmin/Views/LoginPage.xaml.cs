@@ -17,17 +17,20 @@ public sealed partial class LoginPage : Page
         _apiService = App.GetService<AdminApiService>();
     }
 
+    // bejelentkezés gombra kattintáskor elindítja a bejelentkezési folyamatot
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
         await DoLoginAsync();
     }
 
+    // enter billentyű lenyomásakor is elindítja a bejelentkezést
     private async void PasswordBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == Windows.System.VirtualKey.Enter)
             await DoLoginAsync();
     }
 
+    // elvégzi a tényleges bejelentkezést az api segítségével, siker esetén megnyitja a főablakot
     private async System.Threading.Tasks.Task DoLoginAsync()
     {
         if (_isLoading) return;
@@ -67,6 +70,7 @@ public sealed partial class LoginPage : Page
         }
     }
 
+    // betöltési állapotot állít be, tiltja a gombot és mutatja a töltőanimációt
     private void SetLoading(bool loading)
     {
         _isLoading = loading;
@@ -76,6 +80,7 @@ public sealed partial class LoginPage : Page
         LoginButton.IsEnabled = !loading;
     }
 
+    // hibaüzenetet jelenít meg az infobar segítségével
     private void ShowError(string message)
     {
         ErrorBar.Message = message;

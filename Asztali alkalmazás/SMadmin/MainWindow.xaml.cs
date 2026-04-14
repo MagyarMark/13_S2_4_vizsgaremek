@@ -14,9 +14,6 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using SMadmin.Views;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace SMadmin
 {
     /// <summary>
@@ -32,6 +29,7 @@ namespace SMadmin
             SetTitleBar(AppTitleBar);
         }
 
+        // a bal oldali navigációs menü elem kiválasztásakor a megfelelõ oldalra navigál
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             if (args.SelectedItemContainer != null)
@@ -56,6 +54,7 @@ namespace SMadmin
             }
         }
 
+        // az ablak betöltésekor automatikusan a dashboard oldalra navigál
         private void NavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             ContentFrame.Navigate(typeof(DashboardPage));

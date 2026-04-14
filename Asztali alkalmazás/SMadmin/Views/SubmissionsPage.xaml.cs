@@ -24,11 +24,13 @@ public sealed partial class SubmissionsPage : Page
         this.Loaded += async (s, e) => await LoadSubmissionsAsync();
     }
 
+    // visszaadja a kiválasztott státusz szűrőt a legördülő listából
     private string? GetStatusFilter()
     {
         return (StatusFilterBox.SelectedItem as ComboBoxItem)?.Tag as string;
     }
 
+    // lekéri a beadásokat az api-tól az aktuális szűrő és oldal alapján
     private async System.Threading.Tasks.Task LoadSubmissionsAsync()
     {
         SetLoading(true);
@@ -64,6 +66,7 @@ public sealed partial class SubmissionsPage : Page
         }
     }
 
+    // státusz szűrő változásakor visszaállítja az első oldalra és újratölti a listát
     private async void StatusFilter_Changed(object sender, SelectionChangedEventArgs e)
     {
         if (!_isInitialized) return;
@@ -71,16 +74,19 @@ public sealed partial class SubmissionsPage : Page
         await LoadSubmissionsAsync();
     }
 
+    // visszalép az előző oldalra és újratölti a listát
     private async void PrevPage_Click(object sender, RoutedEventArgs e)
     {
         if (_currentPage > 1) { _currentPage--; await LoadSubmissionsAsync(); }
     }
 
+    // lép a következő oldalra és újratölti a listát
     private async void NextPage_Click(object sender, RoutedEventArgs e)
     {
         if (_currentPage < _totalPages) { _currentPage++; await LoadSubmissionsAsync(); }
     }
 
+    // frissíti az oldalszámozás feliratait és a navigációs gombok állapotát
     private void UpdatePagination()
     {
         PageInfo.Text = $"Oldal: {_currentPage} / {_totalPages}";
@@ -89,6 +95,7 @@ public sealed partial class SubmissionsPage : Page
         NextButton.IsEnabled = _currentPage < _totalPages;
     }
 
+    // töltési állapotot kapcsol, elrejti vagy mutatja a listát
     private void SetLoading(bool loading)
     {
         LoadingRing.IsActive = loading;
@@ -96,6 +103,7 @@ public sealed partial class SubmissionsPage : Page
         SubmissionsListView.Visibility = loading ? Visibility.Collapsed : Visibility.Visible;
     }
 
+    // hibaüzenetet jelenít meg az infobar segítségével
     private void ShowError(string message)
     {
         ErrorBar.Message = message;

@@ -14,6 +14,7 @@ public class AdminApiService
     private string? _authToken;
     private const string BaseUrl = "http://localhost:3000";
 
+    // az aktuálisan bejelentkezett admin felhasználó
     public User? CurrentUser { get; private set; }
 
     public AdminApiService()
@@ -24,6 +25,7 @@ public class AdminApiService
         };
     }
 
+    // beállítja a jwt tokent az összes további kéréshez és eltárolja a felhasználót
     public void SetAuthToken(string token, User? user = null)
     {
         _authToken = token;
@@ -34,6 +36,7 @@ public class AdminApiService
         }
     }
 
+    // bejelentkezési kérést küld az api-nak, visszaadja a tokent és a felhasználó adatait
     public async Task<LoginResponse> LoginAsync(string username, string password)
     {
         try
@@ -49,6 +52,7 @@ public class AdminApiService
         }
     }
 
+    // lekéri a felhasználók listáját szűrési és lapozási lehetőséggel
     public async Task<ApiResponse<PaginatedData<User>>> GetUsersAsync(int page = 1, int limit = 50, string? role = null, bool? active = null, string? search = null)
     {
         try
@@ -67,6 +71,7 @@ public class AdminApiService
         }
     }
 
+    // lekéri egy felhasználó részletes adatait id alapján
     public async Task<ApiResponse<UserDetails>> GetUserDetailsAsync(int userId)
     {
         try
@@ -80,6 +85,7 @@ public class AdminApiService
         }
     }
 
+    // frissíti egy felhasználó adatait (pl. aktív státusz) az api-n keresztül
     public async Task<ApiResponse<object>> UpdateUserAsync(int userId, object updateData)
     {
         try
@@ -94,6 +100,7 @@ public class AdminApiService
         }
     }
 
+    // töröl egy felhasználót id alapján
     public async Task<ApiResponse<object>> DeleteUserAsync(int userId)
     {
         try
@@ -108,6 +115,7 @@ public class AdminApiService
         }
     }
 
+    // módosítja egy felhasználó szerepkörét
     public async Task<ApiResponse<object>> UpdateUserRoleAsync(int userId, string role)
     {
         try
@@ -122,6 +130,7 @@ public class AdminApiService
         }
     }
 
+    // lekéri a projektek listáját szűrési és lapozási lehetőséggel
     public async Task<ApiResponse<PaginatedData<Project>>> GetProjectsAsync(int page = 1, int limit = 50, string? status = null, string? search = null)
     {
         try
@@ -139,6 +148,7 @@ public class AdminApiService
         }
     }
 
+    // töröl egy projektet id alapján
     public async Task<ApiResponse<object>> DeleteProjectAsync(int projectId)
     {
         try
@@ -153,6 +163,7 @@ public class AdminApiService
         }
     }
 
+    // lekéri a beadások listáját szűrési és lapozási lehetőséggel
     public async Task<ApiResponse<PaginatedData<Submission>>> GetSubmissionsAsync(int page = 1, int limit = 50, string? status = null, int? studentId = null, int? teacherId = null, int? taskId = null)
     {
         try
@@ -172,6 +183,7 @@ public class AdminApiService
         }
     }
 
+    // lekéri az általános rendszerstatisztikákat az áttekintő oldalhoz
     public async Task<ApiResponse<AdminStats>> GetStatsAsync()
     {
         try

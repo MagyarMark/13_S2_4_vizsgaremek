@@ -7,8 +7,10 @@ const { verifyAdmin } = require('../middleware/adminAuth');
 
 const router = express.Router();
 
+// minden admin végpontnál kötelező token és admin szerep
 router.use(verifyToken, verifyAdmin);
 
+// felhasználók listázása szűrővel és lapozással
 router.get('/users', [
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 }),
@@ -93,6 +95,7 @@ router.get('/users', [
   }
 });
 
+// egy felhasználó részletes adatainak lekérése
 router.get('/user/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -141,6 +144,7 @@ router.get('/user/:id', async (req, res) => {
   }
 });
 
+// felhasználó adatainak admin frissítése
 router.put('/userUpdate/:id', [
   body('email').optional().isEmail().withMessage('Érvényes email cím szükséges'),
   body('teljes_nev').optional(),
@@ -265,6 +269,7 @@ router.put('/userUpdate/:id', [
   }
 });
 
+// felhasználó és kapcsolódó adatai törlése
 router.delete('/userDelete/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -314,6 +319,7 @@ router.delete('/userDelete/:id', async (req, res) => {
   }
 });
 
+// felhasználó szerepkörének átállítása
 router.put('/user/:id/role', [
   body('szerep_tipus').isIn(['tanar', 'diak', 'admin']).withMessage('Érvényes szerep: tanar, diak, admin')
 ], async (req, res) => {
@@ -361,6 +367,7 @@ router.put('/user/:id/role', [
   }
 });
 
+// projektek listázása szűrővel és lapozással
 router.get('/projects', [
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 }),
@@ -440,6 +447,7 @@ router.get('/projects', [
   }
 });
 
+// projekt törlése az összes függőségével
 router.delete('/projectDelete/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -488,6 +496,7 @@ router.delete('/projectDelete/:id', async (req, res) => {
   }
 });
 
+// beadások listázása admin szűrőkkel
 router.get('/submissions', [
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 }),
@@ -586,6 +595,7 @@ router.get('/submissions', [
   }
 });
 
+// rendszer összesített statisztikáinak lekérése
 router.get('/stats/overview', async (req, res) => {
   try {
     const totalUsersResult = await pool.query('SELECT COUNT(*) as count FROM "Felhasznalo"');

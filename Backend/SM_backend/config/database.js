@@ -2,6 +2,7 @@ const { Pool } = require('pg');
 
 require('dotenv').config({ path: './.env' });
 
+// egyszerű postgres pool, ha közvetlenül ezt a configot használjuk
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
