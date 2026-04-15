@@ -242,15 +242,22 @@
 </template>
 
 <script>
+// Vue composablek: reaktív állapotok, watcher és lifecycle
 import { ref, reactive, watch, onMounted } from 'vue';
+// kliens oldali navigáció
 import { useRouter } from 'vue-router';
+// központi API URL helper
 import { getApiUrl } from '../utils/api';
 
 export default {
   name: 'Settings',
   setup() {
+    // aktív beállítási fül
     const activeTab = ref('profile')
+    // profil dropdown állapota
     const dropdownOpen = ref(false)
+
+    // bejelentkezett user adatai fejléchez/oldalsávhoz
     const userProfile = ref({
       id: '',
       teljes_nev: '',
@@ -260,32 +267,38 @@ export default {
       initials: ''
     })
 
+    // profil szerkesztő űrlap modell
     const profile = reactive({
       teljes_nev: '',
       felhasznalonev: '',
       email: ''
     })
 
+    // fiók adatok modellje
     const account = reactive({
       email: '',
       felhasznalonev: ''
     })
 
+    // jelszómódosítás ideiglenes mezők
     const password = reactive({
       new: '',
       confirm: ''
     })
 
+    // értesítési beállítások
     const notifications = reactive({
       email: true,
       push: true
     })
 
+    // megjelenési beállítások
     const appearance = reactive({
       theme: 'light',
       language: 'hu'
     })
 
+    // szekciónkénti visszajelző üzenetek
     const message = reactive({
       profile: '',
       account: '',
@@ -293,9 +306,11 @@ export default {
       appearance: ''
     })
 
+    // localStorage kulcsok
     const STORAGE_KEY = 'sm_settings'
     const APPEARANCE_KEY = 'sm_appearance'
 
+    // profil+értesítés mentése localStorage-ba
     const saveToStorage = () => {
       const payload = {
         profile: { ...profile },
@@ -304,6 +319,7 @@ export default {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
     }
 
+    // profil+értesítés visszatöltése localStorage-ból
     const loadFromStorage = () => {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (!raw) return
@@ -316,10 +332,12 @@ export default {
       }
     }
 
+    // megjelenési beállítás mentése localStorage-ba
     const saveAppearanceToStorage = () => {
       localStorage.setItem(APPEARANCE_KEY, JSON.stringify(appearance))
     }
 
+    // megjelenési beállítások betöltése és téma alkalmazása
     const loadAppearanceFromStorage = () => {
       const raw = localStorage.getItem(APPEARANCE_KEY)
       if (!raw) return
@@ -332,12 +350,14 @@ export default {
       }
     }
 
+    // monogram képzése névből
     const generateInitials = (name) => {
       if (!name) return '';
       const parts = name.split(' ');
       return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2);
     }
 
+    // szerepkód -> megjelenített szerepnév
     const getRoleLabel = (role) => {
       const roleMap = {
         'diak': 'Diák',
@@ -347,6 +367,7 @@ export default {
       return roleMap[role] || role
     }
 
+    // profiladatok lekérése backendről és űrlapok inicializálása
     const fetchUserProfile = async () => {
       try {
         const storedUser = localStorage.getItem('user');
@@ -397,11 +418,13 @@ export default {
       }
     }
 
+    // komponens induláskor lokális beállítások + profil betöltése
     onMounted(() => {
       loadFromStorage()
       loadAppearanceFromStorage()
       fetchUserProfile()
 
+      // user profil dobozon kívüli kattintásra dropdown bezárása
       document.addEventListener('click', (e) => {
       if (!e.target.closest('.user-profile')) {
         this.dropdownOpen = false;
@@ -411,6 +434,7 @@ export default {
 
     
 
+    // profil mentése backendbe és helyi user cache frissítése
     const saveProfile = async () => {
       if (!profile.teljes_nev.trim()) {
         message.profile = 'A teljes név megadása kötelező.'
@@ -458,6 +482,7 @@ export default {
       setTimeout(() => (message.profile = ''), 2500)
     }
 
+    // profil űrlap visszaállítása backendről betöltött értékekre
     const resetProfile = () => {
       profile.teljes_nev = userProfile.value.teljes_nev
       profile.email = userProfile.value.email
@@ -465,6 +490,7 @@ export default {
       setTimeout(() => (message.profile = ''), 2000)
     }
 
+    // fiók adatok/jelszó mentése backendbe
     const saveAccount = async () => {
       if (!account.email.includes('@')) {
         message.account = 'Érvényes e-mail szükséges.'
@@ -525,6 +551,7 @@ export default {
       setTimeout(() => (message.account = ''), 2500)
     }
 
+    // fiók űrlap és jelszó mezők visszaállítása
     const resetAccount = () => {
       account.email = userProfile.value.email
       password.new = ''
@@ -533,6 +560,7 @@ export default {
       setTimeout(() => (message.account = ''), 2000)
     }
 
+    // fiók deaktiválás kétlépcsős megerősítéssel
     const deactivateAccount = async () => {
       const confirmed = confirm(
         'Biztosan deaktiválni szeretnéd a fiókodat?\n\n' +
@@ -588,24 +616,28 @@ export default {
       setTimeout(() => (message.account = ''), 5000)
     }
 
+    // értesítési beállítások mentése lokálisan
     const saveNotifications = () => {
       message.notifications = 'Értesítési beállítások mentve.'
       saveToStorage()
       setTimeout(() => (message.notifications = ''), 2000)
     }
 
+    // értesítési beállítások visszatöltése lokális tárolóból
     const resetNotifications = () => {
       loadFromStorage()
       message.notifications = 'Visszaállítva.'
       setTimeout(() => (message.notifications = ''), 2000)
     }
 
+    // megjelenési beállítás mentése
     const saveAppearance = () => {
       message.appearance = 'Megjelenés mentve.'
       saveAppearanceToStorage()
       setTimeout(() => (message.appearance = ''), 2000)
     }
 
+    // megjelenés alapértékre visszaállítása
     const resetAppearance = () => {
       appearance.theme = 'light'
       appearance.language = 'hu'
@@ -615,6 +647,7 @@ export default {
       setTimeout(() => (message.appearance = ''), 2000)
     }
 
+    // téma osztály alkalmazása a dokumentum gyökérelemre
     const applyTheme = () => {
       if (appearance.theme === 'dark') {
         document.documentElement.classList.add('dark-theme')
@@ -623,7 +656,10 @@ export default {
       }
     }
 
+    // router példány a kijelentkezés utáni átirányításhoz
     const router = useRouter();
+
+    // kijelentkezés: online státusz frissítés + localStorage törlés + redirect
     const logout = async () => {
       try {
         const token = localStorage.getItem('accessToken');
@@ -653,11 +689,13 @@ export default {
       router.push('/');
     };
 
+    // téma váltásakor automatikus alkalmazás és perzisztálás
     watch(() => appearance.theme, () => {
       applyTheme()
       saveAppearanceToStorage()
     })
 
+    // template-ben használt state-ek és függvények exportja
     return {
       activeTab,
       userProfile,
@@ -684,6 +722,7 @@ export default {
     }
   },
   methods: {
+        // segéd navigáció tanári statisztikához (meglévő viselkedés)
         navigateToTanarStatistics() {
       this.$router.push('/tanar').then(() => {
         this.$nextTick(() => {
