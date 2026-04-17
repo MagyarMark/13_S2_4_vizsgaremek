@@ -22,22 +22,31 @@
 </template>
 
 <script>
+// route és router a token olvasásához, illetve az átirányításhoz
 import { useRoute, useRouter } from 'vue-router';
+// onMounted lifecycle és reaktív állapotok
 import { onMounted, ref } from 'vue';
+// központi API URL helper
 import { getApiUrl } from '../utils/api';
 
 export default {
   name: 'VerifyEmail',
   setup() {
+    // query paraméterek elérése a megerősítő tokenhez
     const route = useRoute();
+    // sikeres megerősítés utáni navigációhoz
     const router = useRouter();
+
+    // betöltési, siker és üzenet állapotok
     const loading = ref(true);
     const success = ref(false);
     const message = ref('');
 
+    // komponens induláskor email megerősítés a token alapján
     onMounted(async () => {
       const token = route.query.token;
 
+      // token hiányában azonnal hibát jelezünk
       if (!token) {
         loading.value = false;
         success.value = false;
@@ -46,20 +55,25 @@ export default {
       }
 
       try {
+        // email megerősítés backend hívása a tokennel
         const response = await fetch(getApiUrl(`/api/auth/verify-email?token=${token}`));
         const data = await response.json();
 
+        // a kérés befejeződött, a loading állapot lekapcsolása
         loading.value = false;
 
+        // sikeres vagy hibás backend válasz kezelése
         if (data.success) {
           success.value = true;
           message.value = 'Az email cím sikeresen megerősítve. Bejelentkezhet az alkalmazásba.';
+          // siker esetén vissza a főoldalra
           router.push('/');
         } else {
           success.value = false;
           message.value = data.message || 'Hiba az email megerősítés során.';
         }
       } catch (error) {
+        // szerver vagy hálózati hiba kezelése
         loading.value = false;
         success.value = false;
         message.value = 'Szerverhiba a megerősítés során. Kérjük, próbálja később.';
@@ -67,6 +81,7 @@ export default {
       }
     });
 
+    // template-ben használt state-ek exportja
     return {
       loading,
       success,

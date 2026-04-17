@@ -109,12 +109,16 @@
 </template>
 
 <script>
+// Vue composablek a reaktív állapothoz és lifecycle-hoz
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+// Socket.IO kliens a signaling kommunikációhoz
 import { io } from 'socket.io-client';
+// socket URL feloldó a környezetfüggő backend címhez
 import { getSocketUrl } from '../utils/api';
 
 export default {
   name: 'VideoCall',
+  // szülő komponensből érkező hívás paraméterek
   props: {
     recipientId: {
       type: [Number, String],
@@ -141,8 +145,10 @@ export default {
       default: 'hívás'
     }
   },
+  // visszajelzések a szülő felé
   emits: ['close', 'call-ended', 'incoming-call'],
   setup(props, { emit }) {
+    // UI és hívás állapotok
     const isOpen = ref(false);
     const callStatus = ref('idle'); 
     const isConnected = ref(false);
@@ -152,19 +158,27 @@ export default {
     const incomingCallerName = ref('');
     const incomingOfferObj = ref(null);
 
+    // DOM referenciák a local/remote video elemekhez
     const localVideoElement = ref(null);
     const remoteVideoElement = ref(null);
+
+    // WebRTC és socket runtime objektumok
     let socket = null;
     let peerConnection = null;
     let localStream = null;
     let remoteStream = null;
     let videoSender = null;
+
+    // signaling és híváskövetéshez szükséges azonosítók/flag-ek
     let localSocketId = null;
     let localUserName = null;
     let didIOffer = false;
     let activePeerUserName = null;
+
+    // már feldolgozott offer-ek deduplikálása
     const processedOfferIds = new Set();
 
+    // STUN konfiguráció NAT mögötti kapcsolatok felépítéséhez
     const peerConfiguration = {
       iceServers: [
         {
@@ -176,6 +190,7 @@ export default {
       ]
     };
 
+    // signaling socket inicializálása és eseménykezelők regisztrálása
     const initSocket = () => {
       if (socket) return;
 
@@ -216,6 +231,7 @@ export default {
       });
 
       socket.on('signalingReady', (payload) => {
+        // backend visszaadja az auth-ból az aktuális felhasználónevet
         localUserName = payload.userName;
         console.log('✓ Signaling ready, username:', localUserName, 'in room:', payload.roomId);
       });
@@ -260,6 +276,7 @@ export default {
       console.log('✅ Socket event listeners registered (availableOffers, newOfferAwaiting, answerResponse, peerHangup, etc.)');
     };
 
+    // böngésző és biztonsági környezet ellenőrzése médiaeszközök előtt
     const ensureMediaDevicesAvailable = () => {
       if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         const isSecure = typeof window !== 'undefined' && (window.isSecureContext || window.location.hostname === 'localhost');
@@ -273,6 +290,7 @@ export default {
       }
     };
 
+    // kamera/mikrofon stream beszerzése, fallback audio-only módra
     const fetchUserMedia = async ({ preferVideo = false } = {}) => {
       try {
         if (localStream) {
@@ -302,6 +320,7 @@ export default {
 
         return stream;
       } catch (error) {
+        // ha a kamera foglalt, újrapróbáljuk videó nélkül
         if (preferVideo && error?.name === 'NotReadableError') {
           console.warn('Camera is busy, retrying with audio-only');
           errorMessage.value = 'A kamera jelenleg foglalt, a hívás audio-only módban folytatódik.';
@@ -314,11 +333,13 @@ export default {
       }
     };
 
+    // WebRTC peer kapcsolat létrehozása és események felkötése
     const createPeerConnection = async (offerObj = null) => {
       peerConnection = new RTCPeerConnection(peerConfiguration);
       remoteStream = new MediaStream();
       videoSender = null;
 
+      // remote stream csatolása a videó elemre
       const attachRemoteStream = async () => {
         if (!remoteStream || !remoteVideoElement.value) {
           return;
@@ -336,10 +357,12 @@ export default {
       await nextTick();
       attachRemoteStream();
 
+      // minden esetben küldünk audio track-et
       localStream.getAudioTracks().forEach((track) => {
         peerConnection.addTrack(track, localStream);
       });
 
+      // videó track lehet valós vagy üres transceiver (későbbi kamera bekapcsoláshoz)
       const localVideoTrack = localStream.getVideoTracks()[0];
       if (localVideoTrack) {
         videoSender = peerConnection.addTrack(localVideoTrack, localStream);
@@ -348,6 +371,7 @@ export default {
         videoSender = videoTransceiver.sender;
       }
 
+      // lokális ICE candidate-ek továbbítása a signaling szerverre
       peerConnection.addEventListener('icecandidate', (event) => {
         if (event.candidate) {
           socket.emit('sendIceCandidateToSignalingServer', {
@@ -358,6 +382,7 @@ export default {
         }
       });
 
+      // remote track fogadása
       peerConnection.addEventListener('track', (event) => {
         if (event.streams && event.streams[0]) {
           event.streams[0].getTracks().forEach((track) => {
@@ -370,6 +395,7 @@ export default {
         attachRemoteStream();
       });
 
+      // kapcsolatállapot figyelése, hívás státusz frissítése
       peerConnection.addEventListener('connectionstatechange', () => {
         if (peerConnection.connectionState === 'connected') {
           callStatus.value = 'connected';
@@ -388,11 +414,13 @@ export default {
         }
       });
 
+      // bejövő hívás esetén remote offer beállítása
       if (offerObj) {
         await peerConnection.setRemoteDescription(new RTCSessionDescription(offerObj.offer));
       }
     };
 
+    // új ICE candidate hozzáadása a peer kapcsolathoz
     const addNewIceCandidate = (iceCandidate) => {
       if (!peerConnection) {
         return;
@@ -401,6 +429,7 @@ export default {
       peerConnection.addIceCandidate(new RTCIceCandidate(iceCandidate));
     };
 
+    // a hívott fél válaszának (answer) beállítása
     const addAnswer = async (offerObj) => {
       if (!peerConnection) {
         return;
@@ -409,6 +438,7 @@ export default {
       await peerConnection.setRemoteDescription(new RTCSessionDescription(offerObj.answer));
     };
 
+    // bejövő offer lista feldolgozása és releváns hívás kiválasztása
     const handleIncomingOffers = (offers) => {
       if (!offers || offers.length === 0) {
         console.log('No offers to handle');
@@ -455,6 +485,7 @@ export default {
       }
     };
 
+    // bejövő hívás elfogadása (answer generálás + ICE szinkron)
     const answerIncomingCall = async () => {
       try {
         if (!incomingOfferObj.value) {
@@ -491,6 +522,7 @@ export default {
       }
     };
 
+    // bejövő hívás elutasítása és másik fél értesítése
     const rejectIncomingCall = () => {
       const callerUserName = incomingOfferObj.value?.offererUserName || incomingCallerName.value;
 
@@ -511,6 +543,7 @@ export default {
       emit('close');
     };
 
+    // kimenő hívás indítása (socket, media, offer, célzott kézbesítés)
     const initiateCall = async () => {
       try {
         console.log('initiateCall entered', {
@@ -589,6 +622,7 @@ export default {
       }
     };
 
+    // helyi kamera be/ki kapcsolása futó kapcsolat közben
     const toggleLocalVideo = async () => {
       if (!localStream) return;
 
@@ -639,6 +673,7 @@ export default {
       }
     };
 
+    // helyi mikrofon némítás/visszakapcsolás
     const toggleLocalAudio = () => {
       if (!localStream) return;
 
@@ -649,6 +684,7 @@ export default {
       isLocalAudioEnabled.value = !isLocalAudioEnabled.value;
     };
 
+    // lokális erőforrások felszabadítása (peer, media, UI állapot)
     const hangupLocally = () => {
       if (peerConnection) {
         peerConnection.close();
@@ -681,6 +717,7 @@ export default {
       isLocalAudioEnabled.value = true;
     };
 
+    // hívás lezárása és partner értesítése hangup eseménnyel
     const endCall = (reason = 'local-hangup') => {
       const fallbackTarget = String(props.recipientUserName || props.recipientName || '').trim();
       const hangupTarget = activePeerUserName || fallbackTarget;
@@ -698,6 +735,7 @@ export default {
       });
     };
 
+    // modal bezárása; aktív hívásnál megerősítéssel
     const closeCall = () => {
       if (callStatus.value === 'calling' || callStatus.value === 'connected' || callStatus.value === 'ringing' || callStatus.value === 'incoming') {
         if (callStatus.value !== 'incoming') {
@@ -717,6 +755,7 @@ export default {
       emit('close');
     };
 
+    // hívásablak megnyitása idle állapotban
     const openCall = () => {
       console.log('openCall invoked');
       isOpen.value = true;
@@ -725,6 +764,7 @@ export default {
       initSocket();
     };
 
+    // külső API: azonnali kimenő hívásindítás
     const startOutgoingCall = async () => {
       console.log('startOutgoingCall invoked');
       openCall();
@@ -732,6 +772,7 @@ export default {
       await initiateCall();
     };
 
+    // komponens megszűnésekor kapcsolat és média takarítás
     onUnmounted(() => {
       if (socket) {
         socket.disconnect();
@@ -739,6 +780,7 @@ export default {
       hangupLocally();
     });
 
+    // komponens indulásakor előzetes socket inicializálás, ha van token
     onMounted(() => {
       console.log('📍 VideoCall component mounted, initializing socket...');
       const token = props.accessToken || localStorage.getItem('accessToken');
@@ -749,6 +791,7 @@ export default {
       }
     });
 
+    // template-ben elérhetővé tett állapotok és metódusok
     return {
       isOpen,
       callStatus,

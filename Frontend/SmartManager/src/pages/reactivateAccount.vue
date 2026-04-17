@@ -53,54 +53,71 @@
 </template>
 
 <script>
+// route query olvasása a reaktivációs tokenhez
 import { useRoute } from 'vue-router';
+// központi API URL helper
 import { getApiUrl } from '../utils/api';
 
 export default {
   setup() {
+    // aktuális route elérhetővé tétele (query paraméterekhez)
     const route = useRoute();
     return { route };
   },
   data() {
     return {
+      // űrlap mezők
       email: '',
       fullName: '',
       password: '',
       confirmPassword: '',
+
+      // felhasználói visszajelző üzenet és típusa
       message: '',
       messageType: 'success',
+
+      // folyamatjelző állapot (gomb/input tiltása)
       loading: false,
+
+      // emailben kapott reaktivációs token
       token: '' 
     };
   },
   mounted() {
+    // token kiolvasása a query stringből
     this.token = this.$route.query.token;
     
+    // ha nincs token, azonnali hibaüzenet megjelenítése
     if (!this.token) {
       this.message = 'Hiányzik a reaktivációs token. Kérem, követje az emailben küldött linket.';
       this.messageType = 'error';
     }
   },
   methods: {
+    // fiók újraaktiválás: kliens oldali validáció + backend kérés
     async reactivateAccount() {
+      // kötelező mezők ellenőrzése
       if (!this.email.trim() || !this.fullName.trim() || !this.password.trim()) {
         this.message = 'Kérem, töltse ki az összes mezőt.';
         this.messageType = 'error';
         return;
       }
 
+      // jelszó és megerősítés egyezőségének ellenőrzése
       if (this.password !== this.confirmPassword) {
         this.message = 'A jelszavak nem egyeznek meg.';
         this.messageType = 'error';
         return;
       }
 
+      // minimális jelszóhossz ellenőrzése
       if (this.password.length < 6) {
         this.message = 'A jelszó legalább 6 karakter hosszú kell, hogy legyen.';
         this.messageType = 'error';
         return;
       }
 
+      // token meglétének ellenőrzése kérés előtt
       if (!this.token) {
         this.message = 'Hiányzik a reaktivációs token.';
         this.messageType = 'error';
@@ -109,6 +126,7 @@ export default {
 
       this.loading = true;
       try {
+        // reaktivációs kérés backend felé
         const response = await fetch(getApiUrl('/api/auth/reactivate-account'), {
           method: 'POST',
           headers: {
@@ -124,22 +142,27 @@ export default {
 
         const data = await response.json();
 
+        // nem 2xx válasz esetén backend hibaüzenet dobása
         if (!response.ok) {
           throw new Error(data.message || 'Hiba történt az újraaktiválás során.');
         }
         
+        // sikeres reaktiválás visszajelzés
         this.message = data.message || 'Fiók sikeresen újraaktiválva!';
         this.messageType = 'success';
         
+        // rövid visszajelzés után átirányítás a login oldalra
         setTimeout(() => {
           this.$router.push('/login');
         }, 2000);
         
       } catch (error) {
+        // hálózati/backend hiba kezelése
         console.error('Újraaktiválási hiba:', error);
         this.message = error.message || 'Hiba történt az újraaktiválás során.';
         this.messageType = 'error';
       } finally {
+        // loading állapot visszaállítása minden esetben
         this.loading = false;
       }
     }

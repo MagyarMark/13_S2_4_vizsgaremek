@@ -134,17 +134,23 @@
 </template>
 
 <script>
+// mobil menü gomb referenciája (ha létezik a DOM-ban)
 const menuBtn = document.getElementById('menuToggle');
+// fő navigációs konténer referenciája
 const mainNav = document.getElementById('mainNav');
+// fejléc elem referenciája scroll-effekthez
 const headerEl = document.querySelector('header');
 
+// mobil navigáció nyitása/zárása class váltással
 function toggleMobileNav() {
   if (!mainNav) return;
   mainNav.classList.toggle('active');
 }
 
+// esemény felkötése, ha a menü gomb megtalálható
 if (menuBtn) menuBtn.addEventListener('click', toggleMobileNav);
 
+// görgetéskor a fejléc háttere sötétebbre vált
 function onScroll() {
   if (!headerEl) return;
   headerEl.style.background = window.scrollY > 50
@@ -152,14 +158,17 @@ function onScroll() {
     : 'rgba(8, 24, 39, 0.85)';
 }
 
+// scroll listener regisztrálása
 window.addEventListener('scroll', onScroll);
 
+// oldal elhagyásakor listener-ek takarítása
 window.addEventListener('beforeunload', () => {
   if (menuBtn) menuBtn.removeEventListener('click', toggleMobileNav);
   window.removeEventListener('scroll', onScroll);
 });
 
 export default {
+  // komponens név (jelenleg üresen hagyva az eredeti logika szerint)
   name: "",
 }
 </script>

@@ -230,17 +230,25 @@
 </template>
 
 <script>
+// Vue composablek: reaktív állapot, lifecycle és watcherek
 import { ref, onMounted, computed, watch, nextTick } from "vue";
+// kliens oldali navigáció
 import { useRouter } from "vue-router";
+// Chart.js statisztikai grafikonokhoz
 import { Chart, registerables } from "chart.js";
+// központi API URL helper
 import { getApiUrl } from "../utils/api";
 
+// Chart.js elemek regisztrálása globálisan a komponensben
 Chart.register(...registerables);
 
 export default {
   name: "Ertekeles",
   setup() {
+    // router példány navigációhoz (pl. kijelentkezés után)
     const router = useRouter();
+
+    // fejléc/dropdown és profil UI állapotok
     const dropdownOpen = ref(false);
     const userProfile = ref({
       teljes_nev: '',
@@ -249,17 +257,24 @@ export default {
       initials: ''
     });
 
+    // opcionális modal/sidebar állapotok (jelenlegi UI-hoz fenntartva)
     const showModal = ref(false);
     const showSidebar = ref(false);
+
+    // canvas referenciák a Chart.js példányokhoz
     const performanceChart = ref(null);
     const submissionChart = ref(null);
 
+    // backendről érkező adatok
     const students = ref([]);
     const allStudents = ref([]);
     const tasks = ref([]);
     const studentGrades = ref([]);
+
+    // statisztikához kiválasztott diák
     const selectedStudentForStats = ref(null);
 
+    // értékelő űrlap reaktív modellje
     const evaluation = ref({
       student: null,
       task: null,
@@ -268,26 +283,32 @@ export default {
       comment: ""
     });
 
+    // feladat alapján szűrt diákok (csak diák szerepkör)
     const availableDiakUsers = computed(() =>
       students.value.filter(u => u.szerep_tipus === 'diak')
     );
 
+    // teljes tagságból szűrt összes diák (statisztika selectorhoz)
     const allDiakUsers = computed(() =>
       allStudents.value.filter(u => u.szerep_tipus === 'diak')
     );
 
+    // feladatlista közvetlen computed-ben a template számára
     const availableTasks = computed(() => tasks.value);
 
+    // szerepkód -> megjelenített felirat
     const getRoleLabel = (role) => {
       const map = { diak: 'Diák', tanar: 'Tanár', admin: 'Adminisztrátor' };
       return map[role] || role;
     };
 
+    // névből monogram előállítása (max 2 karakter)
     const generateInitials = (name) => {
       if (!name) return '';
       return name.split(' ').map(p => p[0].toUpperCase()).join('').substring(0, 2);
     };
 
+    // százalékos teljesítményhez badge színosztály
     const getPercentageClass = (score) => {
       if (score >= 90) return "excellent";
       if (score >= 80) return "good";
@@ -296,6 +317,7 @@ export default {
       return "fail";
     };
 
+    // aktuális user profil betöltése fejléchez és jogosultsághoz
     const fetchUserProfile = async () => {
       try {
         const storedUser = localStorage.getItem('user');
@@ -320,6 +342,7 @@ export default {
       } catch (e) { console.error(e); }
     };
 
+    // projekt tagok (allStudents) lekérése a diákválasztókhoz
     const fetchTeamUsers = async () => {
       try {
         const token = localStorage.getItem('accessToken');
@@ -335,6 +358,7 @@ export default {
       } catch (e) { console.error(e); }
     };
 
+    // összes feladat lekérése az értékelő űrlaphoz
     const fetchAllTasks = async () => {
   try {
     const token = localStorage.getItem('accessToken');
@@ -347,6 +371,7 @@ export default {
   } catch (e) { console.error(e); }
 };
 
+    // a kiválasztott feladathoz tartozó diák(ok) lekérése
     const fetchTaskStudents = async () => {
   if (!evaluation.value.task || !evaluation.value.task.projekt_id) return;
   try {
@@ -364,6 +389,7 @@ export default {
   } catch (e) { console.error(e); }
 };
 
+    // korábban mentett beadás-értékelések betöltése táblázathoz és stathoz
     const fetchBeadasEvaluations = async () => {
       try {
         const token = localStorage.getItem('accessToken');
@@ -393,6 +419,7 @@ export default {
       } catch (e) { console.error('Hiba az értékelések lekérdezésekor:', e); }
     };
 
+    // kijelentkezés: jelenlét frissítése + localStorage ürítés + átirányítás
     const logout = async () => {
       try {
         const token = localStorage.getItem('accessToken');
@@ -422,6 +449,7 @@ export default {
       router.push('/');
     };
 
+    // értékelés mentése backendre, majd lista és grafikonok frissítése
     const saveEvaluation = async () => {
       if (!evaluation.value.student || !evaluation.value.task) {
         return alert("Kérlek válassz diákot és feladatot!");
@@ -469,6 +497,7 @@ export default {
       }
     };
 
+    // feladatváltáskor nullázzuk a diákot és újratöltjük a lehetséges diáklistát
     watch(
   () => evaluation.value.task,
   (newTask) => {
@@ -477,6 +506,7 @@ export default {
   }
 );
 
+    // statisztikai diák váltáskor újrarendereljük a grafikonokat
     watch(
   () => selectedStudentForStats.value,
   async (newStudent) => {
@@ -487,6 +517,7 @@ export default {
   }
 );
 
+    // pontszám alapján automatikus jegy kalkuláció
     watch(
   () => evaluation.value.score,
   (newScore) => {
@@ -508,11 +539,13 @@ export default {
   }
 );
 
+    // kiválasztott diákhoz tartozó teljesítmény és jegyeloszlás grafikon frissítése
     const updateStudentCharts = (student) => {
       const studentGradesData = studentGrades.value.filter(g => g.studentId === student.id);
       const scores = studentGradesData.map(g => g.score);
       const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b) / scores.length) : 0;
 
+      // korábbi chart példányok törlése memória- és render hiba elkerüléséhez
       if (performanceChart.value && performanceChart.value.chart) {
         performanceChart.value.chart.destroy();
       }
@@ -536,6 +569,7 @@ export default {
         });
       }
 
+      // jegyek eloszlása kördiagramon
       if (submissionChart.value) {
         const grades = studentGradesData.map(g => g.grade).filter(g => g !== null && g !== undefined);
         const grade5Count = grades.filter(g => g === 5).length;
@@ -559,6 +593,7 @@ export default {
       }
     };
 
+    // komponens induláskor adatok betöltése + dropdown kattintáskezelő
     onMounted(() => {
       fetchUserProfile();
       fetchAllTasks();
@@ -572,6 +607,7 @@ export default {
       });
     });
 
+    // template-ben használt állapotok és metódusok exportja
     return {
       userProfile, showModal, showSidebar, performanceChart, submissionChart,
       students, tasks, studentGrades, evaluation, selectedStudentForStats,

@@ -61,14 +61,18 @@
 </template>
 
 <script>
+// központi API URL helper az auth végpontokhoz
 import { getApiUrl } from '../utils/api';
 
 export default {
   name: "Login",
   data() {
     return {
+      // mobil navigáció nyitott/zárt állapota
       navActive: false,
+      // bejelentkezés folyamatjelző (gomb tiltás + felirat)
       loading: false,
+      // űrlapmodell a bejelentkezési adatokhoz
       form: {
         username: '',
         password: '',
@@ -78,6 +82,7 @@ export default {
   },
 
   mounted() {
+    // ha már van érvényes session adat, automatikus role alapú átirányítás
     try {
       const token = localStorage.getItem('accessToken');
       const storedUser = localStorage.getItem('user');
@@ -100,14 +105,17 @@ export default {
   },
 
   methods: {
+    // mobil menü nyitása/zárása
     toggleMenu() {
       this.navActive = !this.navActive;
     },
 
+    // bejelentkezési folyamat: API hívás, token mentés, role alapú redirect
     async handleLogin() {
       this.loading = true;
 
       try {
+        // auth/login kérés backend felé
         const response = await fetch(getApiUrl('/api/auth/login'), {
           method: 'POST',
           headers: {
@@ -123,10 +131,12 @@ export default {
 
         if (data.success && data.data && data.data.user && data.data.accessToken) {
 
+          // sikeres login után session adatok tárolása
           localStorage.setItem('user', JSON.stringify(data.data.user));
           localStorage.setItem('accessToken', data.data.accessToken);
           localStorage.setItem('refreshToken', data.data.refreshToken);
 
+          // szerepkör szerinti dashboard navigáció
           const role = data.data.user.szerep_tipus;
 
           if (role === 'diak') {
@@ -138,13 +148,16 @@ export default {
           }
 
         } else {
+          // backend oldali validációs/sikertelenségi üzenet
           alert(data.message || 'Bejelentkezés sikertelen');
         }
 
       } catch (error) {
+        // hálózati vagy feldolgozási hiba kezelése
         console.error('Bejelentkezési hiba:', error);
         alert('Hiba történt a bejelentkezés során');
       } finally {
+        // loading flag visszaállítása minden esetben
         this.loading = false;
       }
     }

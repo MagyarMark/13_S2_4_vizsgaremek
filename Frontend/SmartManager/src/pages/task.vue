@@ -11,7 +11,7 @@
       <ul class="nav-links">
         <router-link to="/diak"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
         <router-link to="/task" class="active"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
-        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Csapatmunka</li></router-link>
+        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Projektek</li></router-link>
         <router-link to="/chat"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings"><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
@@ -47,10 +47,10 @@
                   <span>Feladatok</span>
                 </router-link>
               </button>
-              <button class="dropdown-item" @click="openTasks" title="Csapatmunka">
+              <button class="dropdown-item" @click="openTasks" title="Projektek">
                 <i class="fas fa-users"></i>
                 <router-link to="/teamwork" style="color: inherit; text-decoration: none;">
-                  <span>Csapatmunka</span>
+                  <span>Projektek</span>
                 </router-link>
               </button>
               <button class="dropdown-item" @click="openChat" title="Üzenetek">
@@ -166,23 +166,35 @@
 </template>
 
 <script>
+// Vue reaktív API és lifecycle hookok
 import { ref, onMounted, onBeforeUnmount } from 'vue';
+// kliens oldali navigáció
 import { useRouter } from 'vue-router';
+// központi API URL helper
 import { getApiUrl } from '../utils/api';
 
 export default {
   name: "Task",
   
   setup() {
+    // router példány a redirectekhez
     const router = useRouter()
+
+    // fejléc profil dropdown állapota
     const dropdownOpen = ref(false)
+
+    // sidebar nyitott/zárt állapot (jelenlegi layout tartaléka)
     const navActive = ref(false)
+
+    // bejelentkezett felhasználó profiladatai
     const userProfile = ref({
       teljes_nev: '',
       felhasznalonev: '',
       szerep_tipus: 'diak',
       initials: ''
     })
+
+    // feladatlista és összesített statisztikák
     const tasks = ref([])
     const stats = ref({
       aktiv: 0,
@@ -191,6 +203,7 @@ export default {
       kesesben: 0
     })
 
+    // DOM referenciák a natív modal/lista kezeléshez
     let taskListEl = null
     let taskModalEl = null
     let taskFormEl = null
@@ -204,12 +217,14 @@ export default {
     let closeModalEl = null
     let cancelBtnEl = null
 
+    // névből monogram készítése a header avatarhoz
     function generateInitials(name) {
       if (!name) return ''
       const parts = name.split(' ')
       return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2)
     }
 
+    // prioritás kód -> megjelenített szöveg
     function getPriorityText(priority) {
       switch (priority) {
         case 'high': return 'Magas'
@@ -219,11 +234,13 @@ export default {
       }
     }
 
+    // dátum formázása magyar lokál szerint
     function formatDate(dateString) {
       const options = { year: 'numeric', month: 'long', day: 'numeric' }
       return new Date(dateString).toLocaleDateString('hu-HU', options)
     }
 
+    // hány nap van hátra a határidőig
     function calculateDaysUntilDeadline(deadline) {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
@@ -233,6 +250,7 @@ export default {
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     }
 
+    // statisztikák újraszámítása a betöltött feladatok alapján
     function calculateStats() {
       let aktiv = 0
       let befejezett = 0
@@ -261,6 +279,7 @@ export default {
       }
     }
 
+    // backend prioritás -> frontend prioritás kód
     function mapPriorityToFrontend(backendPriority) {
       const priorityMap = {
         'alacsony': 'low',
@@ -270,6 +289,7 @@ export default {
       return priorityMap[backendPriority] || 'medium'
     }
 
+    // frontend prioritás -> backend prioritás kód
     function mapPriorityToBackend(frontendPriority) {
       const priorityMap = {
         'low': 'alacsony',
@@ -279,6 +299,7 @@ export default {
       return priorityMap[frontendPriority] || 'közepes'
     }
 
+    // feladatok listába renderelése a natív DOM alapú nézethez
     function renderTasks() {
       if (!taskListEl) return
       taskListEl.innerHTML = ''
@@ -292,6 +313,7 @@ export default {
         const taskItem = document.createElement('li')
         taskItem.className = `task-item priority-${task.priority}`
 
+        // határidő alapú figyelmeztető színosztály meghatározása
         const daysUntilDeadline = calculateDaysUntilDeadline(task.deadline)
         const deadlineClass = daysUntilDeadline < 0 ? 'text-danger' :
           daysUntilDeadline <= 2 ? 'text-warning' : ''
@@ -335,6 +357,7 @@ export default {
       })
     }
 
+    // új feladat modal megnyitása
     function openAddTaskModal() {
       if (!modalTitleEl || !taskFormEl || !taskIdEl) return
       modalTitleEl.textContent = 'Új feladat hozzáadása'
@@ -343,6 +366,7 @@ export default {
       taskModalEl.classList.add('active')
     }
 
+    // meglévő feladat szerkesztő modal előtöltése
     function openEditTaskModal(e) {
       const taskIdValue = e.currentTarget.getAttribute('data-id')
       const task = tasks.value.find(t => t.id == taskIdValue)
@@ -358,11 +382,13 @@ export default {
       }
     }
 
+    // modal bezárása
     function closeTaskModal() {
       if (!taskModalEl) return
       taskModalEl.classList.remove('active')
     }
 
+    // bejelentkezett user profiladatainak lekérése
     async function fetchUserProfile() {
       try {
         const storedUser = localStorage.getItem('user')
@@ -403,6 +429,7 @@ export default {
       }
     }
 
+    // feladatlista frissítése backendből és frontend formára alakítása
     async function refreshTasksList() {
       try {
         const token = localStorage.getItem('accessToken')
@@ -432,6 +459,7 @@ export default {
             return task.statusz !== 'befejezett'
           })
           
+            // backend mezők átalakítása a lokális modellre
           tasks.value = filteredTasks.map(task => ({
             id: task.id,
             felelos_id: task.felelos_id,
@@ -447,6 +475,8 @@ export default {
             const deadlineB = new Date(b.deadline)
             return deadlineA - deadlineB
           })
+
+          // nézet és statisztika frissítése
           renderTasks()
           calculateStats()
         }
@@ -455,6 +485,7 @@ export default {
       }
     }
 
+    // feladat mentése a modal űrlapból backendbe
     async function saveTask(e) {
       e.preventDefault()
       
@@ -483,6 +514,7 @@ export default {
           return
         }
 
+        // kimenő payload összeállítása backend kompatibilis formában
         const taskData = {
           feladat_nev: title,
           feladat_leiras: description || '',
@@ -494,6 +526,7 @@ export default {
 
         console.log('Sending task data:', taskData)
 
+        // új feladat létrehozása a backendben
         const response = await fetch(getApiUrl('/api/project/newTask'), {
           method: 'POST',
           headers: {
@@ -525,6 +558,7 @@ export default {
       }
     }
 
+    // feladat készre jelölésének előkészítése
     function toggleTaskCompletion(e) {
       const id = e.currentTarget.getAttribute('data-id')
       const task = tasks.value.find(t => t.id == id)
@@ -535,6 +569,7 @@ export default {
       }
     }
 
+    // feladat státuszának befejezettre állítása a backendben
     async function completeTask(taskId) {
       try {
         const token = localStorage.getItem('accessToken')
@@ -544,6 +579,7 @@ export default {
         }
 
         const response = await fetch(getApiUrl(`/api/project/task/${taskId}`), {
+      // feladat törlése a listából és a nézet újrarenderelése
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -552,10 +588,12 @@ export default {
           body: JSON.stringify({
             statusz: 'befejezett'
           })
+      // mobil/oldalsáv menü váltása
         })
 
         const result = await response.json()
 
+      // kijelentkezés: backend jelenlét frissítés és auth adatok törlése
         if (!response.ok) {
           throw new Error(result.message || `Hiba: ${response.status}`)
         }
@@ -613,6 +651,7 @@ export default {
       router.push('/');
     };
 
+    // szerepkód -> megjelenített szerepnév
     const getRoleLabel = (role) => {
       const roleMap = {
         'diak': 'Diák',
@@ -622,6 +661,7 @@ export default {
       return roleMap[role] || role
     }
 
+    // komponens induláskor DOM referenciák, események és adatok betöltése
     onMounted(() => {
       taskListEl = document.getElementById('taskList')
       taskModalEl = document.getElementById('taskModal')
@@ -643,6 +683,8 @@ export default {
 
       fetchUserProfile()
       refreshTasksList()
+
+      // user profil dobozon kívüli kattintásra dropdown bezárása
       document.addEventListener('click', (e) => {
       if (!e.target.closest('.user-profile')) {
         this.dropdownOpen = false;
@@ -650,6 +692,7 @@ export default {
     });
     })
 
+    // komponens eltávolításakor a natív event listener-ek takarítása
     onBeforeUnmount(() => {
       if (addTaskBtnEl) addTaskBtnEl.removeEventListener('click', openAddTaskModal)
       if (closeModalEl) closeModalEl.removeEventListener('click', closeTaskModal)
@@ -657,6 +700,7 @@ export default {
       if (taskFormEl) taskFormEl.removeEventListener('submit', saveTask)
     })
 
+    // template-ben használt state-ek és metódusok exportja
     return {
       navActive,
       userProfile,
