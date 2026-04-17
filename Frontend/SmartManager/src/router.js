@@ -1,4 +1,6 @@
+// Vue Router fő belépési pont és history kezelés
 import { createRouter, createWebHistory } from 'vue-router'
+// oldalak importálása
 import Home from './pages/Home.vue'
 import Settings from './pages/settings.vue'
 import Login from './pages/login.vue'
@@ -15,6 +17,7 @@ import Ertekeles from './pages/ertekeles.vue'
 import VerifyEmail from './pages/verifyEmail.vue'
 import reactivateAccount from './pages/reactivateAccount.vue'
 
+// alkalmazás útvonalai jogosultsági metaadatokkal
 const routes = [
   {
     path: '/',
@@ -108,9 +111,12 @@ const routes = [
   }
 ]
 
+// router példány létrehozása HTML5 history móddal
 const router = createRouter({
   history: createWebHistory(),
   routes,
+
+  // görgetési pozíció visszaállítása oldalváltáskor
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
@@ -120,8 +126,11 @@ const router = createRouter({
   }
 })
 
+// globális navigációs guard: auth és szerepkör ellenőrzés
 router.beforeEach((to) => {
+  // publikus útvonalaknál nincs ellenőrzés
   const isPublicRoute = to.meta.public === true
+  // lokálisan tárolt auth adatok
   const token = localStorage.getItem('accessToken')
   const storedUser = localStorage.getItem('user')
 
@@ -129,19 +138,23 @@ router.beforeEach((to) => {
     return true
   }
 
+  // ha nincs token vagy user, login oldalra irányítjuk
   if (!token || !storedUser) {
     return { name: 'Login', query: { redirect: to.fullPath } }
   }
 
+  // role alapú hozzáférés ellenőrzése, ha a route megköveteli
   if (Array.isArray(to.meta.roles) && to.meta.roles.length > 0) {
     try {
       const user = JSON.parse(storedUser)
       const role = user?.szerep_tipus
 
+      // ha a szerep nem megengedett, a megfelelő dashboardra irányítunk
       if (!to.meta.roles.includes(role)) {
         return role === 'tanar' ? { name: 'Tanar' } : { name: 'Diak' }
       }
     } catch (error) {
+      // sérült user adat esetén vissza loginra
       return { name: 'Login' }
     }
   }
@@ -149,4 +162,5 @@ router.beforeEach((to) => {
   return true
 })
 
+// router exportálása az alkalmazás számára
 export default router

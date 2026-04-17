@@ -278,23 +278,35 @@
 </template>
 
 <script>
+// Vue lifecycle és reaktív változók
 import { onMounted, ref } from "vue";
+// kliens oldali navigáció
 import { useRouter } from 'vue-router';
+// Chart.js dashboard grafikonokhoz
 import { Chart, registerables } from "chart.js";
+// központi API URL helper
 import { getApiUrl } from '../utils/api';
 
+// Chart.js modulok regisztrálása
 Chart.register(...registerables);
 
 export default {
   name: "Tanar",
   setup() {
+    // UI állapotok (modal, sidebar, dropdown)
     const showModal = ref(false);
     const showSidebar = ref(false);
     const dropdownOpen = ref(false);
+
+    // canvas referenciák a chartokhoz
     const performanceChart = ref(null);
     const submissionChart = ref(null);
+
+    // chart példány referenciák (újrarajzolás előtt destroy-hoz)
     const performanceChartInstance = ref(null);
     const submissionChartInstance = ref(null);
+
+    // fejléc és oldalsáv user adatai
     const userProfile = ref({
       teljes_nev: '',
       felhasznalonev: '',
@@ -302,6 +314,7 @@ export default {
       initials: ''
     });
 
+    // összesítő stat kártyák adatai
     const stats = ref({
       activeTasks: 0,
       totalSubmissions: 0,
@@ -309,6 +322,7 @@ export default {
       missingSubmissions: 0
     });
 
+    // dashboard listák/táblák adatforrásai
     const recentSubmissions = ref([]);
     const activeTasks = ref([]);
     const ranking = ref([]);
@@ -316,6 +330,7 @@ export default {
     const projectsOverview = ref([]);
     const statistics = ref([]);
 
+    // új feladat modal űrlapmodellje
     const assignment = ref({
       title: "",
       description: "",
@@ -324,6 +339,7 @@ export default {
       points: 100
     });
 
+    // új feladat létrehozása backend hívással
     const submitAssignment = async () => {
       try {
         const token = localStorage.getItem('accessToken');
@@ -375,6 +391,7 @@ export default {
       }
     };
 
+    // szerepkód -> felhasználóbarát megnevezés
     const getRoleLabel = (role) => {
       const roleMap = {
         'diak': 'Diák',
@@ -384,12 +401,14 @@ export default {
       return roleMap[role] || role;
     };
 
+    // névből monogram készítése (max 2 karakter)
     const generateInitials = (name) => {
       if (!name) return '';
       const parts = name.split(' ');
       return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2);
     };
 
+    // bejelentkezett felhasználó profiladatainak lekérése
     const fetchUserProfile = async () => {
       try {
         const storedUser = localStorage.getItem('user');
@@ -433,8 +452,10 @@ export default {
       }
     };
 
+    // router példány navigációhoz
     const router = useRouter();
 
+    // dátum formázása magyar lokál szerint
     const formatDate = (dateStr) => {
       if (!dateStr) return '-';
       const date = new Date(dateStr);
@@ -442,6 +463,7 @@ export default {
       return date.toLocaleDateString('hu-HU');
     };
 
+    // dátum+idő formázása magyar lokál szerint
     const formatDateTime = (dateStr) => {
       if (!dateStr) return '-';
       const date = new Date(dateStr);
@@ -455,6 +477,7 @@ export default {
       });
     };
 
+    // beadási státusz -> UI címke és css osztály feloldás
     const buildSubmissionStatus = (status, score) => {
       if (status === 'ertekelt') {
         return {
@@ -488,6 +511,7 @@ export default {
       };
     };
 
+    // projekt státusz formázása megjelenítéshez
     const formatProjectStatus = (status) => {
       const statusMap = {
         'aktiv': 'Aktív',
@@ -497,6 +521,7 @@ export default {
       return statusMap[status] || status;
     };
 
+    // projekt státusz -> badge css osztály
     const getProjectStatusClass = (status) => {
       if (status === 'aktiv') return 'status-submitted';
       if (status === 'befejezett') return 'status-graded';
@@ -504,6 +529,7 @@ export default {
       return 'status-missing';
     };
 
+    // dashboard chartok adat-előkészítése és kirajzolása
     const buildCharts = (submissions, projectList, tasksMap) => {
       const statsByProject = new Map();
       const statusCounts = {};
@@ -545,6 +571,7 @@ export default {
       const statusLabels = Object.keys(statusCounts);
       const statusValues = Object.values(statusCounts);
 
+      // előző chartok törlése újrarender előtt
       if (performanceChartInstance.value) {
         performanceChartInstance.value.destroy();
       }
@@ -578,6 +605,7 @@ export default {
         });
       }
 
+      // beadási státuszok megoszlása kördiagramon
       if (submissionChart.value) {
         submissionChartInstance.value = new Chart(submissionChart.value.getContext("2d"), {
           type: "doughnut",
@@ -605,6 +633,7 @@ export default {
       }
     };
 
+    // tanári dashboard teljes adatbetöltése több endpointból
     const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem('accessToken');
@@ -640,6 +669,7 @@ export default {
         console.log('Statistics:', statistics.value);
         console.log('Submissions:', submissions);
 
+        // segéd indexek és csoportosítások gyors számoláshoz
         const tasksMap = new Map(tasks.map(task => [task.id, task]));
         const submissionsByTask = submissions.reduce((acc, submission) => {
           if (!acc[submission.feladat_id]) {
@@ -649,6 +679,7 @@ export default {
           return acc;
         }, {});
 
+        // feladatonként beadás/számláló mezők
         const tasksWithCounts = tasks.map(task => {
           const taskSubmissions = submissionsByTask[task.id] || [];
           return {
@@ -659,10 +690,12 @@ export default {
           };
         });
 
+        // aktív feladatok határidő szerint rendezve
         activeTasks.value = tasksWithCounts
           .filter(task => task.statusz !== 'befejezett')
           .sort((a, b) => new Date(a.hatarido || 0) - new Date(b.hatarido || 0));
 
+        // stat kártyák összegzése
         stats.value = {
           activeTasks: tasks.filter(task => task.statusz === 'folyamatban').length,
           totalSubmissions: submissions.length,
@@ -670,6 +703,7 @@ export default {
           missingSubmissions: tasks.filter(task => (submissionsByTask[task.id] || []).length === 0).length
         };
 
+        // legfrissebb beadások lista építése
         recentSubmissions.value = submissions
           .map(submission => {
             const task = tasksMap.get(submission.feladat_id);
@@ -689,6 +723,7 @@ export default {
           .sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0))
           .slice(0, 6);
 
+        // diák ranglista átlagpontszám alapján
         const studentGroups = submissions.reduce((acc, submission) => {
           if (!acc[submission.felhasznalo_id]) {
             acc[submission.felhasznalo_id] = [];
@@ -719,6 +754,7 @@ export default {
           .sort((a, b) => b.averageScore - a.averageScore)
           .slice(0, 6);
 
+        // projektenkénti feladatszám összesítés
         const tasksByProject = tasks.reduce((acc, task) => {
           if (!acc[task.projekt_id]) {
             acc[task.projekt_id] = [];
@@ -735,12 +771,14 @@ export default {
           taskCount: tasksByProject[project.id]?.length || 0
         }));
 
+        // grafikonok felépítése aktuális adatokkal
         buildCharts(submissions, projects.value, tasksMap);
       } catch (error) {
         console.error('Dashboard adatok lekérése sikertelen:', error);
       }
     };
 
+    // kijelentkezés: backend jelenlét frissítés + lokális auth adatok törlése
     const logout = async () => {
       try {
         const token = localStorage.getItem('accessToken');
@@ -770,10 +808,12 @@ export default {
       router.push('/');
     };
 
+    // komponens induláskor profil + dashboard adatok betöltése
     onMounted(() => {
       fetchUserProfile();
       fetchDashboardData();
 
+      // user profil menün kívüli kattintásra dropdown bezárása
       document.addEventListener('click', (e) => {
         if (!e.target.closest('.user-profile')) {
           dropdownOpen.value = false;
@@ -781,6 +821,7 @@ export default {
       });
     });
 
+    // template-ben használt értékek és metódusok exportja
     return {
       showModal,
       showSidebar,

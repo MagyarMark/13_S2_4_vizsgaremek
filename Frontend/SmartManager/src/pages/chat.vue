@@ -21,7 +21,7 @@
       <ul v-else class="nav-links">
         <router-link to="/diak"><li><i class="fas fa-home"></i> Áttekintés</li></router-link>
         <router-link to="/task"><li><i class="fas fa-tasks"></i> Feladatok</li></router-link>
-        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Projektmunka</li></router-link>
+        <router-link to="/teamwork"><li><i class="fas fa-users"></i> Projektek</li></router-link>
         <router-link to="/chat" class="active"><li><i class="fas fa-comments"></i> Üzenetek</li></router-link>
         <router-link to="/settings" ><li><i class="fas fa-cog"></i> Beállítások</li></router-link>
       </ul>
@@ -62,7 +62,7 @@
               <button class="dropdown-item" @click="openTasks" title="Feladatok">
                 <i class="fas fa-users"></i>
                 <router-link to="/teamwork" style="color: inherit; text-decoration: none;">
-                  <span>Csapatmunka</span>
+                  <span>Projektek</span>
                 </router-link>
               </button>
               <button class="dropdown-item" @click="openChat" title="Üzenetek">
@@ -383,10 +383,15 @@
 </template>
 
 <script>
+// Vue composablek a reaktív állapothoz és lifecycle eseményekhez
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+// kliens oldali navigáció
 import { useRouter } from 'vue-router';
+// valós idejű chat eseményekhez socket kapcsolat
 import { io } from 'socket.io-client';
+// videóhívás komponens
 import VideoCall from '../components/VideoCall.vue';
+// központi API és socket URL feloldók
 import { getApiUrl, getSocketUrl } from '../utils/api';
 
 export default {
@@ -396,8 +401,11 @@ export default {
   },
   data() {
     return {
+      // felső menü állapota (jelenleg tartalék, meglévő UI logikához)
       navActive: false,  
+      // profil lenyíló menü nyitottsága
       dropdownOpen: false,  
+      // bejelentkezett felhasználó profil adatai a fejléchez/sidebarhoz
       userProfile: {
         teljes_nev: '',
         felhasznalonev: '',
@@ -410,6 +418,7 @@ export default {
     toggleMenu() {
       this.navActive = !this.navActive;
     },
+    // szerepkód -> felirat a UI számára
     getRoleLabel(role) {
       const roleMap = {
         'diak': 'Diák',
@@ -418,11 +427,13 @@ export default {
       };
       return roleMap[role] || role;
     },
+    // névből monogram készítése (max 2 karakter)
     generateInitials(name) {
       if (!name) return '';
       const parts = name.split(' ');
       return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2);
     },
+    // profiladatok lekérése és fejléc/sáv frissítése
     async fetchUserProfile() {
       try {
         const storedUser = localStorage.getItem('user');
@@ -465,6 +476,7 @@ export default {
         console.error('Felhasználó adatainak lekérése sikertelen:', error);
       }
     },
+    // navigáció tanári nézet statisztikai részéhez
         navigateToTanarStatistics() {
       this.$router.push('/tanar').then(() => {
         this.$nextTick(() => {
@@ -477,8 +489,10 @@ export default {
   }
   },
   mounted() {
+    // profil inicializálása oldalbetöltéskor
     this.fetchUserProfile();
 
+    // ha a user menün kívül kattintunk, zárjuk a dropdown-t
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.user-profile')) {
         this.dropdownOpen = false;
@@ -486,9 +500,11 @@ export default {
     });
   },
   setup() {
+    // router példány és API alapútvonal inicializálása
     const router = useRouter();
     const apiBaseUrl = getApiUrl('/api');
 
+    // chathez és UI működéshez szükséges reaktív állapotok
     const userName = ref('anonymous');  
     const currentUserId = ref(null);  
     const newMessage = ref('');  
@@ -515,13 +531,21 @@ export default {
     const accessToken = ref(null);
     const videoCallComponent = ref(null);
     const callStatusNotice = ref('');
+
+    // socket referencia és a hívás státusz üzenet időzítője
     let chatSocket = null;
     let callStatusNoticeTimer = null;
+
+    // kiválasztható felhasználók (saját magunk kizárásával)
     const selectableUsers = computed(() => users.value.filter((u) => u.id !== currentUserId.value));
+
+    // kereséshez ékezetfüggetlen normalizálás
     const normalizeForSearch = (value) => String(value || '')
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
+
+    // címzettlista szűrése a keresőmező alapján
     const filteredSelectableUsers = computed(() => {
       const query = normalizeForSearch(recipientSearch.value).trim();
       if (!query) return selectableUsers.value;
@@ -531,9 +555,13 @@ export default {
         return normalizeForSearch(label).includes(query);
       });
     });
+
+    // az aktuálisan kijelölt egyéni beszélgetés metaadata
     const selectedConversation = computed(() =>
       conversations.value.find((conv) => conv.userId === selectedConversationId.value) || null
     );
+
+    // a hívásjelzéshez használt felhasználónév feloldása
     const selectedConversationSignalUserName = computed(() => {
       if (!selectedConversationId.value) {
         return '';
@@ -542,12 +570,16 @@ export default {
       const directUser = users.value.find((u) => String(u.id) === String(selectedConversationId.value));
       return directUser?.felhasznalonev || selectedConversation.value?.userName || '';
     });
+
+    // az aktuálisan kijelölt projekt objektuma
     const selectedProject = computed(() =>
       projects.value.find((project) => String(project.id) === String(selectedProjectId.value)) || null
     );
 
+    // access token központi olvasása localStorage-ból
     const getToken = () => localStorage.getItem('accessToken');
 
+    // gyakori API hívásokhoz auth header összeállítása
     const buildHeaders = () => {
       const token = getToken();
       return {
@@ -556,6 +588,7 @@ export default {
       };
     };
 
+    // felhasználó nevének feloldása módtól függően (egyéni/projekt)
     const resolveUserName = (id) => {
       if (chatMode.value === 'project') {
         const member = projectMembers.value.find((u) => String(u.id) === String(id));
@@ -566,6 +599,7 @@ export default {
       return user?.teljes_nev || user?.felhasznalonev || `Felhasználó #${id}`;
     };
 
+    // elérhetőség normalizálása többféle backend értékből
     const isOnline = (elerheto) => {
       if (typeof elerheto === 'boolean') return elerheto;
       if (typeof elerheto === 'number') return elerheto === 1;
@@ -576,12 +610,16 @@ export default {
       return false;
     };
 
+    // egy user online státuszának feloldása id alapján
     const isUserOnlineById = (id) => {
       const user = users.value.find((u) => String(u.id) === String(id));
       return isOnline(user?.elerheto);
     };
 
+    // relatív idő formázó magyar nyelven
     const huRelativeFormatter = new Intl.RelativeTimeFormat('hu', { numeric: 'auto' });
+
+    // dátum -> relatív idő szöveg (pl. "2 perce")
     const formatRelativeTimeHu = (input) => {
       const date = new Date(input);
       if (Number.isNaN(date.getTime())) return '';
@@ -605,6 +643,7 @@ export default {
       return huRelativeFormatter.format(Math.round(diffMs / year), 'year');
     };
 
+    // üzenetlista automatikus legörgetése aljára
     const scrollToBottom = () => {
       nextTick(() => {
         if (messagesContainer.value) {
@@ -613,6 +652,7 @@ export default {
       });
     };
 
+    // backend üzenet modell átalakítása a frontend megjelenítési formátumára
     const mapMessage = (msg) => {
       const isOwn = String(msg.kuldo_id) === String(currentUserId.value);  
       return {
@@ -629,10 +669,12 @@ export default {
       };
     };
 
+    // oldalsáv "elérhető kliensek" számláló frissítése mód szerint
     const updateClientsTotal = () => {
       clientsTotal.value = chatMode.value === 'project' ? projectMembers.value.length : users.value.length;
     };
 
+    // felhasználók betöltése (egyéni beszélgetés lista alapja)
     const loadUsers = async () => {
       const token = getToken();
       if (!token) {
@@ -660,6 +702,7 @@ export default {
       }
     };
 
+    // projektek betöltése a projekt chat módhoz
     const loadProjects = async () => {
       const token = getToken();
       if (!token) return;
@@ -680,6 +723,7 @@ export default {
       }
     };
 
+    // kijelölt projekt tagjainak lekérése
     const loadProjectMembers = async () => {
       const token = getToken();
       if (!token || !selectedProjectId.value) {
@@ -705,6 +749,7 @@ export default {
       }
     };
 
+    // projekt chat üzeneteinek lekérése és rendezése
     const loadMessages = async () => {
       const token = getToken();
       if (!token || !selectedProjectId.value) {
@@ -735,6 +780,7 @@ export default {
       }
     };
 
+    // projekt váltáskor tagok + üzenetek újratöltése
     const handleProjectChange = async () => {
       if (!selectedProjectId.value) {
         projectMembers.value = [];
@@ -747,6 +793,7 @@ export default {
       await loadMessages();
     };
 
+    // egyéni beszélgetések összegző listájának felépítése
     const loadConversations = async () => {
       const token = getToken();
       if (!token) return;
@@ -808,6 +855,7 @@ export default {
       }
     };
 
+    // egy konkrét felhasználóval közös chat előzmény betöltése
     const loadConversation = async (withUserId) => {
       const token = getToken();
       if (!token || !withUserId) {
@@ -833,15 +881,18 @@ export default {
       }
     };
 
+    // aktív beszélgetés kijelölése a listában
     const selectConversation = async (userId) => {
       selectedConversationId.value = userId;
       await loadConversation(userId);
     };
 
+    // új beszélgetés indításához címzett kiválasztása
     const selectRecipient = (userId) => {
       selectedRecipientId.value = String(userId);
     };
 
+    // új egyéni beszélgetés megnyitása a kiválasztott userrel
     const startConversation = async () => {
       if (!selectedRecipientId.value) {
         return;
@@ -858,6 +909,7 @@ export default {
       await loadConversations();
     };
 
+    // chat mód váltás kezelése (egyéni <-> projekt)
     const handleChatModeChange = async (mode) => {
       chatMode.value = mode;
       messages.value = [];
@@ -875,6 +927,7 @@ export default {
       await handleProjectChange();
     };
 
+    // üzenet küldése az aktuális módtól függő payload-dal
     const sendMessage = async () => {
       if (newMessage.value.trim() === '') return;
 
@@ -915,15 +968,18 @@ export default {
       }
     };
 
+    // üzenet menü nyitás/zárás (hárompontos gomb)
     const toggleMessageMenu = (messageId) => {
       if (!messageId) return;
       openMessageMenuId.value = openMessageMenuId.value === messageId ? null : messageId;
     };
 
+    // üzenet menü bezárása
     const closeMessageMenu = () => {
       openMessageMenuId.value = null;
     };
 
+    // szerkesztés indítása csak saját üzenetre
     const startEditingMessage = (message) => {
       if (!message?.isOwn || !message?.id) {
         return;
@@ -934,11 +990,13 @@ export default {
       closeMessageMenu();
     };
 
+    // szerkesztési mód visszaállítása
     const cancelEditingMessage = () => {
       editingMessageId.value = null;
       editDraft.value = '';
     };
 
+    // üzenet mentése szerkesztés után + szinkronizálás socketen
     const saveEditedMessage = async (message) => {
       if (!message?.isOwn || !message?.id || editingMessageId.value !== message.id) {
         return;
@@ -1002,6 +1060,7 @@ export default {
       }
     };
 
+    // üzenet törlése backendből + lokális lista frissítése
     const deleteMessage = async (message) => {
       if (!message?.isOwn || !message?.id) {
         return;
@@ -1057,10 +1116,12 @@ export default {
       }
     };
 
+    // dokumentum kattintásra bezárjuk az aktív üzenet menüt
     const handleDocumentClick = () => {
       closeMessageMenu();
     };
 
+    // hívásindítás retry logika, ha a child komponens ref még nem kész
     const triggerOutgoingCall = (attempt = 0) => {
       const maxAttempts = 10;
       const component = videoCallComponent.value;
@@ -1089,6 +1150,7 @@ export default {
       console.warn('VideoCall component methods are unavailable on ref');
     };
 
+    // videóhívás indítása az aktuális egyéni beszélgetés partnerével
     const startVideoCall = () => {
       console.log('startVideoCall clicked', {
         selectedConversationId: selectedConversationId.value,
@@ -1114,11 +1176,13 @@ export default {
       });
     };
 
+    // bejövő hívás megjelenítése
     const onIncomingCall = (callData) => {
       console.log('Incoming call from:', callData.callerName);
       showVideoCall.value = true;
     };
 
+    // hívás lezárás kezelése és átmeneti státusz üzenet megjelenítése
     const handleCallEnded = (payload = {}) => {
       showVideoCall.value = false;
 
@@ -1134,6 +1198,7 @@ export default {
       }, 4000);
     };
 
+    // kijelentkezés: backend jelenlét frissítése + lokális tokenek törlése
     const logout = async () => {
       try {
         const token = localStorage.getItem('accessToken');
@@ -1160,6 +1225,7 @@ export default {
       router.push('/');
     };
 
+    // ellenőrizzük, hogy a bejövő egyéni üzenet a nyitott beszélgetéshez tartozik-e
     const isIncomingDirectMessageRelevant = (messagePayload) => {
       if (!selectedConversationId.value || messagePayload?.projekt_id != null) {
         return false;
@@ -1176,6 +1242,7 @@ export default {
       );
     };
 
+    // ellenőrizzük, hogy a bejövő projekt üzenet a kiválasztott projekthez tartozik-e
     const isIncomingProjectMessageRelevant = (messagePayload) => {
       if (!selectedProjectId.value || messagePayload?.projekt_id == null) {
         return false;
@@ -1184,6 +1251,7 @@ export default {
       return String(messagePayload.projekt_id) === String(selectedProjectId.value);
     };
 
+    // socketről érkező új üzenetek kezelése és nézet frissítése
     const handleIncomingMessage = async (messagePayload) => {
       if (!messagePayload?.id) {
         return;
@@ -1208,6 +1276,7 @@ export default {
       }
     };
 
+    // szerkesztés/törlés chat-event relevancia ellenőrzése
     const isIncomingChatEventRelevant = (eventData) => {
       if (!eventData || !eventData.id) {
         return false;
@@ -1220,6 +1289,7 @@ export default {
       return isIncomingProjectMessageRelevant(eventData);
     };
 
+    // socket chat-eventek (szerkesztés/törlés) feldolgozása
     const handleIncomingChatEvent = async (eventPayload) => {
       const action = String(eventPayload?.action || '').trim();
       const eventData = eventPayload?.data;
@@ -1254,6 +1324,7 @@ export default {
       }
     };
 
+    // socket kliens inicializálása és eseménykezelők feliratkoztatása
     const initChatSocket = () => {
       if (chatSocket) {
         return;
@@ -1284,6 +1355,7 @@ export default {
       });
     };
 
+    // komponens inicializálás: listener, socket, user/token beolvasás, kezdő adatok
     onMounted(async () => {
       document.addEventListener('click', handleDocumentClick);
       initChatSocket();
@@ -1320,6 +1392,7 @@ export default {
       }
     });
 
+    // takarítás kilépéskor: listener, socket, timer
     onUnmounted(() => {
       document.removeEventListener('click', handleDocumentClick);
       if (chatSocket) {
@@ -1331,6 +1404,7 @@ export default {
       }
     });
 
+    // template-ben használt állapotok és metódusok kiexportálása
     return {
       userName,
       newMessage,

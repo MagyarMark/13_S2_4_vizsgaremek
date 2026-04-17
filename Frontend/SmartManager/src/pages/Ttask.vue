@@ -265,8 +265,16 @@
               <div class="file-info">
                 <h4>{{ file.name }}</h4>
                 <span class="file-task">{{ file.taskName }}</span>
+                <span class="file-uploader" style="font-size: 0.75rem; color: #6b7280;">{{ file.uploaderName }}</span>
               </div>
               <span class="file-size" v-if="file.size">{{ file.size }} KB</span> 
+              <button 
+                @click="downloadFile(file.id, file.name)"
+                style="background-color: #3b82f6; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; margin-right: 4px;"
+                title="Fájl letöltése"
+              >
+                Letöltés
+              </button>
               <button 
                 @click="deleteFile(file.id)"
                 style="background-color: red; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;"
@@ -464,32 +472,50 @@
 </template>
 
 <script>
+// router használata kijelentkezéshez és átirányításhoz
 import { useRouter } from 'vue-router';
+// központi API URL helper
 import { getApiUrl } from '../utils/api';
 
 export default {
   name: "Ttask",
   data() {
     return {
+      // fejlécben megjelenő felhasználói profil
       userProfile: {
         teljes_nev: '',
         felhasznalonev: '',
         szerep_tipus: 'tanar',
         initials: ''
       },
+
+      // aktív fül a projekt részletein belül
       activeTab: 'members',
+
+      // kiválasztott és szerkesztett projekt állapota
       selectedTeam: null,
       dropdownOpen: false,
       editingTeam: null,
+
+      // projekt / tag / feladat / fájl modálok állapota
       showTeamModal: false,
       showMemberModal: false,
       showTaskModal: false,
       showUploadModal: false,
+
+      // jelenleg kiválasztott feladathoz tartozó azonosító
       currentTaskId: null,
+
+      // fájlfeltöltéshez kiválasztott és már feltöltött fájlok
       selectedFiles: [],
       uploadedFiles: [],
+      projectFiles: [],
       isUploading: false,
+
+      // backendből betöltött elérhető felhasználók
       availableUsers: [],
+
+      // modalok űrlapmezői
       formData: {
         teamName: '',
         teamDesc: '',
@@ -502,6 +528,8 @@ export default {
         taskPriority: 'medium',
         taskDeadline: ''
       },
+
+      // helyi mintaprojektek, amelyekre a backend adatai ráépülnek
       teams: [
         {
           id: 1,
@@ -616,18 +644,23 @@ export default {
     }
   },
   computed: {
+    // összes tag száma a teljes nézetben vagy a kiválasztott projekten belül
     totalMembers() {
       if (this.selectedTeam) {
         return this.selectedTeam.members.length;
       }
       return this.teams.reduce((sum, team) => sum + team.members.length, 0);
     },
+
+    // összes feladat száma
     totalTasks() {
       if (this.selectedTeam) {
         return this.selectedTeam.tasks.length;
       }
       return this.teams.reduce((sum, team) => sum + team.tasks.length, 0);
     },
+
+    // befejezett feladatok száma
     completedTasks() {
       if (this.selectedTeam) {
         return this.selectedTeam.tasks.filter(t => !t || t.completed === true).length;
@@ -636,6 +669,8 @@ export default {
         sum + team.tasks.filter(t => t && t.completed === true).length, 0
       );
     },
+
+    // közelgő határidős feladatok listája
     upcomingTasks() {
       const allTasks = [];
       this.teams.forEach(team => {
@@ -651,39 +686,38 @@ export default {
         .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
         .slice(0, 5);
     },
+
+    // csak diák szerepkörű felhasználók
     availableDiakUsers() {
       return this.availableUsers.filter(user => user.szerep_tipus === 'diak');
     },
+
+    // template-ben használt fájllista alias
     teamUploadedFiles() {
-      if (!this.selectedTeam) return [];
-      const allFiles = [];
-      this.selectedTeam.tasks.forEach(task => {
-        if (task.uploadedFiles && Array.isArray(task.uploadedFiles)) {
-          task.uploadedFiles.forEach(file => {
-            allFiles.push({
-              ...file,
-              taskName: task.title
-            });
-          });
-        }
-      });
-      return allFiles;
+      return this.projectFiles;
     }
   },
   methods: {
+    // projekt kiválasztása és hozzá kapcsolódó adatok betöltése
     selectTeam(teamId) {
       this.selectedTeam = this.teams.find(t => t.id === teamId);
       this.activeTab = 'members';
+      this.projectFiles = [];
       if (this.selectedTeam) {
         this.loadTeamActivity();
         this.loadTeamTasks();
+        this.loadProjectFiles();
       }
     },
+
+    // új projekt modal megnyitása
     openCreateTeamModal() {
       this.editingTeam = null;
       this.formData = { teamName: '', teamDesc: '', teamIcon: 'fas fa-code' };
       this.showTeamModal = true;
       },
+
+    // fájlfeltöltő modal megnyitása az adott feladathoz
     openDownloadFileModal(taskId) {
         this.currentTaskId = taskId;
         this.selectedFiles = [];
@@ -698,6 +732,8 @@ export default {
         
         this.showUploadModal = true;
     },
+
+      // meglévő projekt űrlap előtöltése szerkesztéshez
     editTeam(team) {
       this.editingTeam = team;
       this.formData = {
@@ -707,6 +743,8 @@ export default {
       };
       this.showTeamModal = true;
     },
+
+    // projekt létrehozása/mentése backend felé
     async saveTeam() {
       try {
         if (!this.formData.teamName) {
@@ -767,6 +805,8 @@ export default {
         alert('Hiba a Projekt mentésekor: ' + error.message);
       }
     },
+
+    // projekt törlése backendből és helyi lista frissítése
     async deleteTeam(teamId) {
       if (!confirm('Biztosan törlöd ezt a Projektot? Ez az összes adatát is törölni fogja (feladatok, fájlok, stb.)!')) {
         return;
@@ -826,11 +866,15 @@ export default {
         alert('Hiba a projekt törléskor: ' + error.message);
       }
     },
+
+    // tag hozzáadása modal megnyitása
     openAddMemberModal() {
       this.formData.selectedMember = '';
       this.formData.memberRole = 'Tag';
       this.showMemberModal = true;
     },
+
+    // tag hozzáadása a kiválasztott projekthez backend hívással
     async addMember() {
       try {
         if (!this.selectedTeam || !this.formData.selectedMember) {
@@ -901,11 +945,15 @@ export default {
         alert('Hiba a tag hozzáadásakor: ' + error.message);
       }
     },
+
+    // tag eltávolítása a lokális nézetből
     removeMember(memberId) {
       if (this.selectedTeam) {
         this.selectedTeam.members = this.selectedTeam.members.filter(m => m.id !== memberId);
       }
     },
+
+    // új feladat modal megnyitása
     openCreateTaskModal() {
       this.formData = {
         taskTitle: '',
@@ -916,6 +964,8 @@ export default {
       };
       this.showTaskModal = true;
     },
+
+    // új feladat mentése backendbe és lokális lista frissítése
     async saveTask() {
       try {
         if (!this.selectedTeam || !this.formData.taskTitle || !this.formData.taskAssignee) {
@@ -1009,6 +1059,8 @@ export default {
         alert('Hiba a feladat mentésekor: ' + error.message);
       }
     },
+
+    // feladat űrlap előtöltése szerkesztéshez
     editTask(task) {
       this.formData = {
         taskTitle: task.title,
@@ -1019,6 +1071,8 @@ export default {
       };
       this.showTaskModal = true;
     },
+
+    // feladat törlése backendből és lokális feladatlista frissítése
     async deleteTask(taskId) {
       if (!confirm('Biztosan törlöd ezt a feladatot?')) {
         return;
@@ -1084,6 +1138,8 @@ export default {
         alert('Hiba a feladat törléskor: ' + error.message);
       }
     },
+
+    // feladat készre jelölése és aktivitásnapló frissítése
     async toggleTaskComplete(taskId) {
       if (!this.selectedTeam) return;
 
@@ -1113,6 +1169,8 @@ export default {
         alert('Hiba a feladat befejezésekor: ' + error.message);
       }
     },
+
+    // tab ikon feloldása
     getTabIcon(tab) {
       const icons = {
         members: 'fas fa-users',
@@ -1121,6 +1179,8 @@ export default {
       };
       return icons[tab] || '';
     },
+
+    // tab felirat feloldása
     getTabLabel(tab) {
       const labels = {
         members: 'Tagok',
@@ -1129,6 +1189,8 @@ export default {
       };
       return labels[tab] || '';
     },
+
+    // prioritás felirat feloldása
     getPriorityLabel(priority) {
       const labels = {
         low: 'Alacsony',
@@ -1137,6 +1199,8 @@ export default {
       };
       return labels[priority] || priority;
     },
+
+    // aktivitás típushoz tartozó ikon
     getActivityIcon(type) {
       const icons = {
         complete: 'fas fa-check-circle',
@@ -1148,18 +1212,26 @@ export default {
       };
       return icons[type] || 'fas fa-circle';
     },
+
+    // dátum formázása magyar lokál szerint
     formatDate(dateStr) {
       const date = new Date(dateStr);
       return date.toLocaleDateString('hu-HU');
     },
+
+    // időbélyeg jelenlegi formátumban való visszaadása
     formatTime(timeStr) {
       return timeStr;
     },
+
+    // névből monogram készítése
     generateInitials(name) {
       if (!name) return '';
       const parts = name.split(' ');
       return parts.map(part => part.charAt(0).toUpperCase()).join('').substring(0, 2);
     },
+
+    // szerepkód -> megjelenített név
     getRoleLabel(role) {
       const roleMap = {
         'diak': 'Diák',
@@ -1168,6 +1240,8 @@ export default {
       };
       return roleMap[role] || role;
     },
+
+    // felhasználói profil lekérése és fejlécadatok feltöltése
     async fetchUserProfile() {
       try {
         const storedUser = localStorage.getItem('user');
@@ -1210,6 +1284,8 @@ export default {
         console.error('Felhasználó adatainak lekérése sikertelen:', error);
       }
     },
+
+    // elérhető felhasználók lekérése a tag/modálokhoz
     async fetchTeamUsers() {
       try {
         const token = localStorage.getItem('accessToken');
@@ -1251,6 +1327,8 @@ export default {
         console.error('Projekt felhasználóinak lekérése sikertelen:', error);
       }
     },
+
+    // kiválasztott projekt aktivitásnaplójának betöltése
     async loadTeamActivity() {
       try {
         if (!this.selectedTeam) return;
@@ -1287,6 +1365,8 @@ export default {
         console.error('Aktivitás betöltésének hiba:', error);
       }
     },
+
+    // kiválasztott projekt feladatainak szinkronizálása backenddel
     async loadTeamTasks() {
       try {
         if (!this.selectedTeam) return;
@@ -1319,6 +1399,8 @@ export default {
         console.error('Feladatok betöltésének hiba:', error);
       }
     },
+
+    // aktivitásnapló bejegyzés létrehozása backendben
     async createActivityLog(muvelet, leiras, feladat_id = null) {
       try {
         const token = localStorage.getItem('accessToken');
@@ -1348,47 +1430,49 @@ export default {
         console.error('Hiba az aktivitás naplóban történő rögzítéskor:', error);
       }
     },
-    async loadTeamFiles() {
+
+    // kiválasztott projekthez tartozó fájlok lekérése
+    async loadProjectFiles() {
       try {
         if (!this.selectedTeam) return;
 
         const token = localStorage.getItem('accessToken');
         if (!token) return;
 
-        for (let task of this.selectedTeam.tasks) {
-          try {
-            const response = await fetch(getApiUrl(`/api/files/task/${task.id}`), {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-              }
-            });
-
-            if (!response.ok) continue;
-
-            const data = await response.json();
-            
-            if (data.success && Array.isArray(data.data.files)) {
-              const filesWithSize = data.data.files.map(file => ({
-                id: file.id,
-                name: file.file_nev,
-                size: file.file_merete ? (file.file_merete / 1024).toFixed(2) : '0'
-              }));
-              task.uploadedFiles = filesWithSize;
-            }
-          } catch (error) {
-            console.error(`Hiba a feladat (${task.id}) fájljainak lekérdezésénél:`, error);
+        const response = await fetch(getApiUrl(`/api/files/project/${this.selectedTeam.id}`), {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
           }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (data.success && Array.isArray(data.data.files)) {
+          this.projectFiles = data.data.files.map(file => ({
+            id: file.id,
+            name: file.file_nev,
+            size: file.file_meret ? (file.file_meret / 1024).toFixed(2) : '0',
+            taskName: file.feladat_nev || 'Ismeretlen feladat',
+            uploaderName: file.feltolto_nev || file.felhasznalonev || 'Ismeretlen',
+            felhasznalo_id: file.felhasznalo_id
+          }));
         }
       } catch (error) {
-        console.error('Csapat fájljainak betöltésének hiba:', error);
+        console.error('Projekt fájljai betöltésének hiba:', error);
       }
     },
+
+    // fájlkiválasztás kezelése
     handleFileSelect(event) {
       const files = Array.from(event.target.files);
       this.selectedFiles = files;
     },
+
+    // kiválasztott fájlok feltöltése backendbe
     async uploadFiles() {
       if (!this.currentTaskId || this.selectedFiles.length === 0) {
         alert('Válassz legalább egy fájlt!');
@@ -1466,6 +1550,8 @@ export default {
             `${data.uploadedFiles.length} fájlt feltöltött`,
             this.currentTaskId
           );
+
+          await this.loadProjectFiles();
           
           setTimeout(() => {
             const input = document.getElementById('fileInput');
@@ -1484,6 +1570,41 @@ export default {
         this.isUploading = false;
       }
     },
+
+    // fájl letöltése backend endpointon keresztül
+    downloadFile(fileId, fileName) {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('Authentikációs token nem található');
+        return;
+      }
+      fetch(getApiUrl(`/api/files/download/${fileId}`), {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(data => { throw new Error(data.message || 'Letöltési hiba'); });
+          }
+          return response.blob();
+        })
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          a.remove();
+        })
+        .catch(error => {
+          console.error('Letöltési hiba:', error);
+          alert('Hiba a fájl letöltésekor: ' + error.message);
+        });
+    },
+
+    // fájl törlése backendből és lokális listák frissítése
     async deleteFile(fileId) {
       if (!confirm('Biztosan törlöd ezt a fájlt?')) {
         return;
@@ -1520,26 +1641,7 @@ export default {
 
         if (data.success) {
           this.uploadedFiles = this.uploadedFiles.filter(f => f.id !== fileId);
-
-          if (this.selectedTeam && this.selectedTeam.tasks) {
-            this.selectedTeam.tasks.forEach(task => {
-              if (task.uploadedFiles && Array.isArray(task.uploadedFiles)) {
-                task.uploadedFiles = task.uploadedFiles.filter(f => f.id !== fileId);
-              }
-            });
-          }
-
-          if (this.teams && Array.isArray(this.teams)) {
-            this.teams.forEach(team => {
-              if (team.tasks && Array.isArray(team.tasks)) {
-                team.tasks.forEach(task => {
-                  if (task.uploadedFiles && Array.isArray(task.uploadedFiles)) {
-                    task.uploadedFiles = task.uploadedFiles.filter(f => f.id !== fileId);
-                  }
-                });
-              }
-            });
-          }
+          this.projectFiles = this.projectFiles.filter(f => f.id !== fileId);
 
           alert('Fájl sikeresen törölve!');
 
@@ -1556,6 +1658,8 @@ export default {
         alert('Hiba a fájl törléskor: ' + error.message);
       }
     },
+
+    // projektek ikonjaimak mentése localStorage-ba
     saveTeamIconsToLocalStorage() {
       const teamIcons = {};
       this.teams.forEach(team => {
@@ -1563,6 +1667,8 @@ export default {
       });
       localStorage.setItem('teamIcons', JSON.stringify(teamIcons));
     },
+
+    // projektek ikonjaimak visszatöltése localStorage-ból
     loadTeamIconsFromLocalStorage() {
       const stored = localStorage.getItem('teamIcons');
       if (stored) {
@@ -1574,6 +1680,8 @@ export default {
         });
       }
     },
+
+    // projektek, feladatok és tagok teljes betöltése a backendből
     async fetchTeamsAndTasks() {
       try {
         const token = localStorage.getItem('accessToken');
@@ -1706,7 +1814,10 @@ export default {
     },
   },
   setup() {
+    // router példány a logout utáni redirecthez
     const router = useRouter();
+
+    // kijelentkezés: jelenlét frissítése + auth adatok törlése + redirect
     const logout = async () => {
       try {
         const token = localStorage.getItem('accessToken');
@@ -1735,14 +1846,18 @@ export default {
       
       router.push('/');
     };
+
+    // template felé kiexportált router és logout függvény
     return { router, logout };
   },
   mounted() {
+    // induláskor ikonok, profil, felhasználók és projektek betöltése
     this.loadTeamIconsFromLocalStorage();
     this.fetchUserProfile();
     this.fetchTeamUsers();
     this.fetchTeamsAndTasks();
 
+    // dropdown bezárása külső kattintásra
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.user-profile')) {
         this.dropdownOpen = false;

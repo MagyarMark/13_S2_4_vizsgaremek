@@ -43,6 +43,7 @@
 <script>
 
 export default {
+  // egyszerű statikus oldal, külön állapot vagy logika nélkül
     name: "Terms"
 }
 </script>

@@ -117,14 +117,18 @@
 </template>
 
 <script>
+// központi API URL helper az auth végpontokhoz
 import { getApiUrl } from '../utils/api';
 
 export default {
   name: "Register",
   data() {
     return {
+      // mobil menü nyitott/zárt állapota
       navActive: false,
+      // regisztrációs kérés folyamatjelzője
       loading: false,
+      // regisztrációs űrlapmodell
       form: {
         username: '',
         fullName: '',
@@ -137,12 +141,15 @@ export default {
     }
   },
   computed: {
+    // jelszó erősség meghatározása hosszalapú szabályok szerint
     passwordStrength() {
       if (!this.form.password) return 'empty';
       if (this.form.password.length < 6) return 'weak';
       if (this.form.password.length < 8) return 'medium';
       return 'strong';
     },
+
+    // jelszó erősség szöveges megjelenítése
     passwordStrengthText() {
       const strengths = {
         empty: 'Nincs megadva',
@@ -154,20 +161,26 @@ export default {
     }
   },
   methods: {
+    // mobil menü nyitása/zárása
     toggleMenu() {
       this.navActive = !this.navActive;
     },
+
+    // regisztrációs folyamat: validáció, API hívás, visszajelzés, navigáció
     async handleRegister() {
+      // jelszó megerősítés ellenőrzése
       if (this.form.password !== this.form.confirmPassword) {
         alert('A jelszavak nem egyeznek!');
         return;
       }
 
+      // ÁSZF elfogadás ellenőrzése
       if (!this.form.agreeTerms) {
         alert('El kell fogadnia az Általános Szerződési Feltételeket!');
         return;
       }
 
+        // szerepkör kötelező kiválasztása
         if (!this.form.role) {
           alert('Válassza ki, hogy diák vagy tanár!');
           return;
@@ -176,6 +189,7 @@ export default {
       this.loading = true;
       
       try {
+        // regisztrációs kérés backend felé
         const response = await fetch(getApiUrl('/api/auth/register'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -189,17 +203,22 @@ export default {
         });
 
         const data = await response.json();
+
+        // sikeres regisztráció esetén tájékoztatás és átirányítás
         if (response.ok && data.success) {
           alert('Sikeres Regisztráció! Kérjük ellenőrizze email címét a fiók aktiválásához.');
           this.$router.push('/');
         } else {
+          // backend hibaüzenet megjelenítése
           const msg = data && data.message ? data.message : 'Regisztráció sikertelen';
           alert(msg);
         }
       } catch (error) {
+        // hálózati/szerveroldali hiba kezelése
         console.error('Regisztrációs hiba:', error);
         alert('Szerverhiba történt a regisztráció során.');
       } finally {
+        // loading flag visszaállítása minden esetben
         this.loading = false;
       }
     }
