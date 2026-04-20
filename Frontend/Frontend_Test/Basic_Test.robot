@@ -3,18 +3,20 @@ Library           SeleniumLibrary
 
 *** Test Cases ***
 LOGIN_LOGOUT
-    Open Browser    http://localhost:5173/home    Chrome
+    Open Browser    http://localhost:5173    Chrome
     Maximize Browser Window
+    Wait Until Element Is Visible    //*[@id="landing"]/div/a[1]/button
     Click Button    //*[@id="landing"]/div/a[1]/button
     SeleniumLibrary.Input Text    //*[@id="username"]    tanar_janos
     SeleniumLibrary.Input Password    //*[@id="password"]    jelszo123
     Click Button    //*[@id="app"]/main/div/form/button
-    Wait Until Element Is Visible    //*[@id="app"]/div/header/div[2]/div[2]/div[3]/button
-    Click Button    //*[@id="app"]/div/header/div[2]/div[2]/div[3]/button
+    Sleep    2s
+    Wait Until Element Is Visible    //*[@id="app"]/div/aside/div[2]/button
+    Click Button    //*[@id="app"]/div/aside/div[2]/button
     Close Browser
 
 REGISTER
-    Open Browser    http://localhost:5173/home    Chrome
+    Open Browser    http://localhost:5173    Chrome
     Maximize Browser Window
     Click Button    //*[@id="landing"]/div/a[2]/button
     SeleniumLibrary.Input Text    //*[@id="username"]    aut_test
