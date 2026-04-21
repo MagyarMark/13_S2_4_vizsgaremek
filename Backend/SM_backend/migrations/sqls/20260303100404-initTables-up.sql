@@ -178,6 +178,7 @@ CREATE TABLE IF NOT EXISTS public."File"
     file_tipus text COLLATE pg_catalog."default",
     feltoltes_idopont timestamp without time zone DEFAULT now(),
     file_eleresiut text COLLATE pg_catalog."default",
+    feladat_id integer,
     CONSTRAINT "File_pkey" PRIMARY KEY (id),
     CONSTRAINT "File_beadas_id_fkey" FOREIGN KEY (beadas_id)
         REFERENCES public."Beadas" (id) MATCH SIMPLE

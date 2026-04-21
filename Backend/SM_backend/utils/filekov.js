@@ -60,16 +60,39 @@ const beadasFileok = async (beadas_id) => {
     }
 };
 
-// ellenőrzi, hogy a beadás létezik-e
-const felhEngedelyBeadas = async (felhasznalo_id, beadas_id) => {
+// ellenőrzi, hogy a user jogosult-e a beadáshoz hozzáférni
+const felhEngedelyBeadas = async (user, beadas_id) => {
     try {
-        const query = `
-            SELECT id FROM "Beadas"
-            WHERE id = $1
-        `;
-        
-        const result = await pool.query(query, [beadas_id]);
-        return result.rows.length > 0;
+        if (beadas_id === undefined || beadas_id === null || beadas_id === '') {
+            return false;
+        }
+        const id = Number(beadas_id);
+        if (!Number.isFinite(id)) {
+            return false;
+        }
+
+        const result = await pool.query(
+            `SELECT id, felhasznalo_id, tanar_id FROM "Beadas" WHERE id = $1`,
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return false;
+        }
+
+        const row = result.rows[0];
+
+        if (user.szerep_tipus === 'admin') {
+            return true;
+        }
+        if (row.felhasznalo_id === user.id) {
+            return true;
+        }
+        if (row.tanar_id === user.id) {
+            return true;
+        }
+
+        return false;
     } catch (error) {
         console.error('Hiba az engedélyek ellenőrzésekor:', error);
         throw error;

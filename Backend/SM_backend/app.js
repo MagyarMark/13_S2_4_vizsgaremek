@@ -3,19 +3,50 @@ const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 
 const pool = require('./config/db');
 const filesPayloadExists = require('./middleware/filesPayloadExists');
 const fileExtLimiter = require('./middleware/fileExtLimiter');
 const fileSizeLimiter = require('./middleware/fileSizeLimiter');
 const { verifyToken } = require('./middleware/auth');
+const { clientErrorDetail } = require('./utils/clientErrorDetail');
 
 const app = express();
 
-// alap middleware-ek, hogy a kliens kéréseit fel tudjuk dolgozni
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// CORS beállítás: csak engedélyezett originek kapnak hozzáférést
+const corsOriginsRaw = process.env.CORS_ORIGINS || 'http://localhost:5173,http://localhost:5174';
+const corsAllowed = corsOriginsRaw.split(',').map((o) => o.trim()).filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+      if (corsAllowed.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true
+  })
+);
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
+// rate limiter az auth végpontokhoz
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: Number(process.env.AUTH_RATE_LIMIT_MAX) || 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Túl sok kérés. Próbáld újra később.'
+  }
+});
 
 // szükséges oszlopok hozzáadása a File táblához, ha még nem léteznek
 pool.query('ALTER TABLE "File" ADD COLUMN IF NOT EXISTS feladat_id integer').catch(err => {
@@ -32,7 +63,7 @@ app.post('/api/upload',
     verifyToken,
     fileUpload({ createParentPath: true }),
     filesPayloadExists,
-    //fileExtLimiter(['.png','.jpg','.jpeg']),
+    fileExtLimiter(['.png', '.jpg', '.jpeg', '.webp', '.pdf', '.doc', '.docx', '.txt', '.zip']),
     fileSizeLimiter, 
     async (req, res) => {
         try {
@@ -47,7 +78,27 @@ app.post('/api/upload',
                 });
             }
 
-            const beadas_id = feladat_id;
+            const feladatIdNum = Number(feladat_id);
+            if (!Number.isFinite(feladatIdNum)) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Érvényes feladat_id szükséges'
+                });
+            }
+
+            const beadasLookup = await pool.query(
+                `SELECT id FROM "Beadas" WHERE feladat_id = $1 AND felhasznalo_id = $2`,
+                [feladatIdNum, felhasznalo_id]
+            );
+
+            if (beadasLookup.rows.length === 0) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Ehhez a feladathoz nincs beadásod. Előbb hozd létre a beadást, majd tölts fel fájlt.'
+                });
+            }
+
+            const resolvedBeadasId = beadasLookup.rows[0].id;
             
             const uploadedFiles = [];
             const errors = [];
@@ -55,39 +106,42 @@ app.post('/api/upload',
             for (const key of Object.keys(files)) {
                 try {
                     const file = files[key];
-                    const filepath = path.join(__dirname, 'files', file.name);
+                    const safeOriginalName = path.basename(file.name || 'file');
+                    const ext = path.extname(safeOriginalName);
+                    const storedFileName = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${ext}`;
+                    const filepath = path.join(__dirname, 'files', storedFileName);
                     const fileSizeBytes = file.size;
-                    const fileType = path.extname(file.name);
+                    const fileType = path.extname(safeOriginalName);
                     const feltoltes_idopont = new Date();
 
                     await file.mv(filepath);
 
                     const query = `
-                        INSERT INTO "File" (beadas_id, feladat_id, felhasznalo_id, file_nev, file_meret, file_tipus, feltoltes_idopont, file_eleresiut)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        INSERT INTO "File" (beadas_id, felhasznalo_id, file_nev, file_meret, file_tipus, feltoltes_idopont, file_eleresiut)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7)
                         RETURNING id
                     `;
                     
                     const result = await pool.query(query, [
-                        null,
-                        feladat_id || null,
+                        resolvedBeadasId,
                         felhasznalo_id,
-                        file.name,
+                        safeOriginalName,
                         fileSizeBytes,
                         fileType,
                         feltoltes_idopont,
-                        filepath
+                        storedFileName
                     ]);
 
                     uploadedFiles.push({
-                        name: file.name,
+                        name: safeOriginalName,
+                        storedAs: storedFileName,
                         id: result.rows[0].id
                     });
 
                 } catch (error) {
                     errors.push({
                         file: key,
-                        error: error.message
+                        error: clientErrorDetail(error) || 'Ismeretlen hiba'
                     });
                     console.error(`Hiba a ${key} fájl feltöltésekor:`, error);
                 }
@@ -101,8 +155,8 @@ app.post('/api/upload',
                     uploadInfo: {
                         felhasznalo_id: felhasznalo_id,
                         felhasznalonev: req.user.felhasznalonev,
-                        feladat_id: feladat_id,
-                        feladat_id: feladat_id
+                        feladat_id: feladatIdNum,
+                        beadas_id: resolvedBeadasId
                     }
                 });
             } else {
@@ -118,7 +172,7 @@ app.post('/api/upload',
             return res.status(500).json({
                 status: 'error',
                 message: 'Szerver hiba a feltöltés során',
-                error: error.message
+                error: clientErrorDetail(error)
             });
         }
     }
@@ -129,8 +183,8 @@ const fileRoutes = require('./routes/files');
 app.use('/api/files', fileRoutes);
 
 const authRoutes = require('./routes/auth');
-// bejelentkezés és profil api-k
-app.use('/api/auth', authRoutes);
+// bejelentkezés és profil api-k (rate limittel védve)
+app.use('/api/auth', authLimiter, authRoutes);
 
 const projectRoutes = require('./routes/project');
 // projektekhez, feladatokhoz és statokhoz tartozó api-k

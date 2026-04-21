@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { accessTokenSecret } = require('../config/jwt');
+const { accessTokenSecret, refreshTokenSecret } = require('../config/jwt');
 
 // access token ellenőrzése minden védett kéréssel
 const verifyToken = (req, res, next) => {
@@ -48,7 +48,7 @@ const verifyRefreshToken = (req, res, next) => {
 
   try {
     // refresh token ellenőrzés külön kulccsal
-    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'your-refresh-token-secret-key');
+    const decoded = jwt.verify(token, refreshTokenSecret);
     req.user = decoded;
     next();
   } catch (error) {
