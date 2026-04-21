@@ -81,8 +81,8 @@ router.post('/register', [
     .withMessage('Jelszó kötelező'),
   body('teljes_nev'),
   body('szerep_tipus')
-    .isIn(['tanar', 'diak', 'admin'])
-    .withMessage('Létező szereptípus megadása kötelező (tanar, diak, admin)')
+    .isIn(['tanar', 'diak'])
+    .withMessage('Létező szereptípus megadása kötelező (tanar vagy diak); admin csak meglévő admin által hozható létre')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
