@@ -20,7 +20,7 @@ const fileSizeLimiter = (req, res, next) => {
         const sentence = `Feltöltés sikertelen. ${filesOverLimit.toString()} ${properVerb}
         file méret határ korlát (${MB} MB).` .replaceAll(",", ", ")
 
-        const message = fileSizeLimit.length < 3
+        const message = filesOverLimit.length < 3
             ? sentence.replace(",", " and")
             : sentence.replace(/,(?=[^,]*$)/, " and")
 

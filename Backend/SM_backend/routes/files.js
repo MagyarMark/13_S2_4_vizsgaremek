@@ -1,5 +1,6 @@
 const express = require('express');
 const fs = require('fs');
+const path = require('path');
 const { verifyToken } = require('../middleware/auth');
 const { 
     felhFeltoltesiElozmeny,
@@ -8,8 +9,22 @@ const {
 } = require('../utils/filekov');
 const { body, validationResult } = require('express-validator');
 const pool = require('../config/db');
+const { clientErrorDetail } = require('../utils/clientErrorDetail');
 
 const router = express.Router();
+
+// ellenőrzi, hogy a user tagja-e a projektnek
+async function userHasProjektAccess(felhasznaloId, projektId) {
+    const r = await pool.query(
+        `SELECT 1
+         FROM "Projekt" p
+         LEFT JOIN "ProjektTag" pt ON p.id = pt.projekt_id
+         WHERE p.id = $1 AND (p.letrehozo_id = $2 OR pt.felhasznalo_id = $2)
+         LIMIT 1`,
+        [projektId, felhasznaloId]
+    );
+    return r.rows.length > 0;
+}
 
 // user feltöltési előzményének lekérése
 router.get('/upload', verifyToken, async (req, res) => {
@@ -33,16 +48,19 @@ router.get('/upload', verifyToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Hiba a feltöltések lekérdezésekor',
-            error: error.message
+            error: clientErrorDetail(error)
         });
     }
 });
 
-// beadások listája a kapcsolódó adatokkal
+// beadások listája a kapcsolódó adatokkal (szerep alapú szűréssel)
 router.get('/submission', verifyToken, async (req, res) => {
     try {
-        const beadasResult = await pool.query(
-            `SELECT 
+        const userId = req.user.id;
+        const role = req.user.szerep_tipus;
+
+        const baseSelect = `
+            SELECT 
                 b.id, 
                 b.feladat_id, 
                 b.felhasznalo_id, 
@@ -59,8 +77,29 @@ router.get('/submission', verifyToken, async (req, res) => {
              FROM "Beadas" b
              LEFT JOIN "Felhasznalo" f ON b.felhasznalo_id = f.id
              LEFT JOIN "Feladat" ft ON b.feladat_id = ft.id
+        `;
+
+        let beadasResult;
+        if (role === 'admin') {
+            beadasResult = await pool.query(
+                `${baseSelect}
              ORDER BY b.ertekeles_idopont DESC NULLS LAST`
-        );
+            );
+        } else if (role === 'tanar') {
+            beadasResult = await pool.query(
+                `${baseSelect}
+             WHERE b.tanar_id = $1 OR b.felhasznalo_id = $1
+             ORDER BY b.ertekeles_idopont DESC NULLS LAST`,
+                [userId]
+            );
+        } else {
+            beadasResult = await pool.query(
+                `${baseSelect}
+             WHERE b.felhasznalo_id = $1
+             ORDER BY b.ertekeles_idopont DESC NULLS LAST`,
+                [userId]
+            );
+        }
 
         res.json({
             success: true,
@@ -74,7 +113,7 @@ router.get('/submission', verifyToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Hiba a beadas lekérdezésekor',
-            error: error.message
+            error: clientErrorDetail(error)
         });
     }
 });
@@ -85,7 +124,7 @@ router.get('/submission/:submission_id', verifyToken, async (req, res) => {
         const { submission_id } = req.params;
         const beadas_id = submission_id;
     
-        const authorized = await felhEngedelyBeadas(req.user.id, beadas_id);
+        const authorized = await felhEngedelyBeadas(req.user, beadas_id);
         if (!authorized) {
             return res.status(404).json({
                 success: false,
@@ -115,14 +154,14 @@ router.get('/submission/:submission_id', verifyToken, async (req, res) => {
 
 // új beadás rekord létrehozása
 router.post('/submissionCreate', verifyToken, [
-    body('feladat_id'),
-    body('felhasznalo_id'),
-    body('tanar_id'),
-    body('pontszam'),
-    body('maxpontszam'),
-    body('jegy'),
-    body('statusz'),
-    body('visszajelzes'),
+    body('feladat_id').notEmpty().isInt({ min: 1 }).withMessage('feladat_id kötelező'),
+    body('felhasznalo_id').optional().isInt({ min: 1 }),
+    body('tanar_id').optional().isInt({ min: 1 }),
+    body('pontszam').optional().isNumeric(),
+    body('maxpontszam').optional().isNumeric(),
+    body('jegy').optional().isInt({ min: 1, max: 5 }),
+    body('statusz').optional(),
+    body('visszajelzes').optional(),
     body('ertekeles_idopont').optional()
 ], async (req, res) => {
     try {
@@ -133,14 +172,94 @@ router.post('/submissionCreate', verifyToken, [
           message: 'Hibás adatok',
           errors: errors.array()
         });
+      }
+
+      const role = req.user.szerep_tipus;
+      const userId = req.user.id;
+      let {
+        feladat_id,
+        felhasznalo_id,
+        tanar_id,
+        pontszam,
+        maxpontszam,
+        jegy,
+        statusz,
+        visszajelzes,
+        ertekeles_idopont
+      } = req.body;
+
+      const feladatResult = await pool.query(
+        `SELECT id, felelos_id, letrehozo_id, projekt_id FROM "Feladat" WHERE id = $1`,
+        [feladat_id]
+      );
+
+      if (feladatResult.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Feladat nem található'
+        });
+      }
+
+      const feladat = feladatResult.rows[0];
+
+      if (role === 'admin') {
+        if (felhasznalo_id == null || tanar_id == null) {
+          return res.status(400).json({
+            success: false,
+            message: 'Admin létrehozáshoz felhasznalo_id és tanar_id megadása kötelező'
+          });
         }
-        const { feladat_id, felhasznalo_id, tanar_id, pontszam, maxpontszam, jegy, statusz, visszajelzes, ertekeles_idopont} = req.body;
+      } else if (role === 'diak') {
+        felhasznalo_id = userId;
+        tanar_id = feladat.felelos_id != null ? feladat.felelos_id : feladat.letrehozo_id;
+        if (!(await userHasProjektAccess(userId, feladat.projekt_id))) {
+          return res.status(403).json({
+            success: false,
+            message: 'Nincs jogosultságod ehhez a feladathoz'
+          });
+        }
+      } else if (role === 'tanar') {
+        if (felhasznalo_id == null) {
+          return res.status(400).json({
+            success: false,
+            message: 'A diák felhasználó azonosítója (felhasznalo_id) kötelező'
+          });
+        }
+        tanar_id = userId;
+        if (!(await userHasProjektAccess(userId, feladat.projekt_id))) {
+          return res.status(403).json({
+            success: false,
+            message: 'Nincs jogosultságod ehhez a feladathoz'
+          });
+        }
+        if (!(await userHasProjektAccess(felhasznalo_id, feladat.projekt_id))) {
+          return res.status(400).json({
+            success: false,
+            message: 'A megadott diák nem tagja a projektnek'
+          });
+        }
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: 'Nincs jogosultság beadás létrehozásához'
+        });
+      }
 
         const beadas = await pool.query(
             `INSERT INTO "Beadas" (feladat_id, felhasznalo_id, tanar_id, pontszam, maxpontszam, jegy, statusz, visszajelzes, ertekeles_idopont)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
              RETURNING id, feladat_id, felhasznalo_id, tanar_id, pontszam, maxpontszam, jegy, statusz, visszajelzes, bekuldes_idopont, ertekeles_idopont`,
-             [feladat_id, felhasznalo_id, tanar_id, pontszam, maxpontszam, jegy, statusz, visszajelzes, ertekeles_idopont]
+             [
+               feladat_id,
+               felhasznalo_id,
+               tanar_id,
+               pontszam ?? null,
+               maxpontszam ?? 100,
+               jegy ?? null,
+               statusz ?? 'hiányzik',
+               visszajelzes ?? null,
+               ertekeles_idopont ?? null
+             ]
         );
         res.status(201).json({
             success: true,
@@ -286,7 +405,7 @@ router.put('/submissionUpdate/:submission_id', verifyToken, [
         res.status(500).json({
             success: false,
             message: 'Szerver hiba a beadás frissítése során',
-            error: error.message
+            error: clientErrorDetail(error)
         });
     }
 });
@@ -318,7 +437,7 @@ router.get('/task/:task_id', verifyToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Hiba a feladat fájljai lekérdezésekor',
-            error: error.message
+            error: clientErrorDetail(error)
         });
     }
 });
@@ -352,7 +471,7 @@ router.get('/project/:project_id', verifyToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Hiba a projekt fájljai lekérdezésekor',
-            error: error.message
+            error: clientErrorDetail(error)
         });
     }
 });
@@ -409,20 +528,22 @@ router.get('/download/:file_id', verifyToken, async (req, res) => {
             }
         }
 
-        if (!file.file_eleresiut || !fs.existsSync(file.file_eleresiut)) {
+        const filePath = path.join(__dirname, '..', 'files', file.file_eleresiut);
+
+        if (!file.file_eleresiut || !fs.existsSync(filePath)) {
             return res.status(404).json({
                 success: false,
                 message: 'A fájl nem található a szerveren'
             });
         }
 
-        res.download(file.file_eleresiut, file.file_nev);
+        res.download(filePath, file.file_nev);
     } catch (error) {
         console.error('Szerver hiba a fájl letöltése során:', error);
         return res.status(500).json({
             success: false,
             message: 'Szerver hiba a fájl letöltése során',
-            error: error.message
+            error: clientErrorDetail(error)
         });
     }
 });
@@ -449,9 +570,8 @@ router.delete('/:file_id', verifyToken, async (req, res) => {
         const file = fileResult.rows[0];
         const isOwner = file.felhasznalo_id === req.user.id;
         const isAdmin = req.user.szerep_tipus === 'admin';
-        const isTeacher = req.user.szerep_tipus === 'tanar';
 
-        if (!isOwner && !isAdmin && !isTeacher) {
+        if (!isOwner && !isAdmin) {
             return res.status(403).json({
                 success: false,
                 message: 'Nincs jogosultsága a fájl törléséhez'
@@ -460,8 +580,9 @@ router.delete('/:file_id', verifyToken, async (req, res) => {
 
         if (file.file_eleresiut) {
             try {
-                if (fs.existsSync(file.file_eleresiut)) {
-                    await fs.promises.unlink(file.file_eleresiut);
+                const filePath = path.join(__dirname, '..', 'files', file.file_eleresiut);
+                if (fs.existsSync(filePath)) {
+                    await fs.promises.unlink(filePath);
                 }
             } catch (deleteError) {
                 console.error('Hiba a fájl törlésekor a fájlrendszerből:', deleteError);
@@ -486,7 +607,7 @@ router.delete('/:file_id', verifyToken, async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Szerver hiba a fájl törlése során',
-            error: error.message
+            error: clientErrorDetail(error)
         });
     }
 });
