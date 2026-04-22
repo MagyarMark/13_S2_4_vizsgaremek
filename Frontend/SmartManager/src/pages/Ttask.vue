@@ -257,35 +257,72 @@
             <h2 class="section-title">Feltöltött fájlok</h2>
           </div>
 
-          <div class="uploaded-files-list" v-if="teamUploadedFiles.length > 0">
-            <div v-for="file in teamUploadedFiles" :key="file.id" class="uploaded-file-item">
-              <div class="file-icon">
-                <i class="fas fa-file"></i>
+          <div class="uploaded-group">
+            <h3 class="uploaded-group-title"><i class="fas fa-chalkboard-teacher"></i> Tanár által feltöltött fájlok</h3>
+            <div class="uploaded-files-list" v-if="teacherUploadedFiles.length > 0">
+              <div v-for="file in teacherUploadedFiles" :key="`teacher-${file.id}`" class="uploaded-file-item">
+                <div class="file-icon">
+                  <i class="fas fa-file"></i>
+                </div>
+                <div class="file-info">
+                  <h4>{{ file.name }}</h4>
+                  <span class="file-task">{{ file.taskName }}</span>
+                  <span class="file-uploader" style="font-size: 0.75rem; color: #6b7280;">{{ file.uploaderName }}</span>
+                </div>
+                <span class="file-size" v-if="file.size">{{ file.size }} KB</span>
+                <button
+                  @click="downloadFile(file.id, file.name)"
+                  style="background-color: #3b82f6; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; margin-right: 4px;"
+                  title="Fájl letöltése"
+                >
+                  Letöltés
+                </button>
+                <button
+                  @click="deleteFile(file.id)"
+                  style="background-color: red; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;"
+                  title="Fájl törlése"
+                >
+                  Törlés
+                </button>
               </div>
-              <div class="file-info">
-                <h4>{{ file.name }}</h4>
-                <span class="file-task">{{ file.taskName }}</span>
-                <span class="file-uploader" style="font-size: 0.75rem; color: #6b7280;">{{ file.uploaderName }}</span>
-              </div>
-              <span class="file-size" v-if="file.size">{{ file.size }} KB</span> 
-              <button 
-                @click="downloadFile(file.id, file.name)"
-                style="background-color: #3b82f6; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; margin-right: 4px;"
-                title="Fájl letöltése"
-              >
-                Letöltés
-              </button>
-              <button 
-                @click="deleteFile(file.id)"
-                style="background-color: red; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;"
-                title="Fájl törlése"
-              >
-                Törlés
-              </button>
+            </div>
+            <div v-else class="no-files small-empty">
+              <p><i class="fas fa-inbox"></i> Nincs tanár által feltöltött fájl</p>
             </div>
           </div>
-          <div v-else class="no-files">
-            <p><i class="fas fa-inbox"></i> Nincs feltöltött fájl</p>
+
+          <div class="uploaded-group">
+            <h3 class="uploaded-group-title"><i class="fas fa-user-graduate"></i> Diák által feltöltött fájlok</h3>
+            <div class="uploaded-files-list" v-if="studentUploadedFiles.length > 0">
+              <div v-for="file in studentUploadedFiles" :key="`student-${file.id}`" class="uploaded-file-item">
+                <div class="file-icon">
+                  <i class="fas fa-file"></i>
+                </div>
+                <div class="file-info">
+                  <h4>{{ file.name }}</h4>
+                  <span class="file-task">{{ file.taskName }}</span>
+                  <span class="file-uploader" style="font-size: 0.75rem; color: #6b7280;">{{ file.uploaderName }}</span>
+                </div>
+                <span class="file-size" v-if="file.size">{{ file.size }} KB</span>
+                <button
+                  @click="downloadFile(file.id, file.name)"
+                  style="background-color: #3b82f6; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; margin-right: 4px;"
+                  title="Fájl letöltése"
+                >
+                  Letöltés
+                </button>
+                <button
+                  @click="deleteFile(file.id)"
+                  style="background-color: red; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;"
+                  title="Fájl törlése"
+                >
+                  Törlés
+                </button>
+              </div>
+            </div>
+            <div v-else class="no-files small-empty">
+              <p><i class="fas fa-inbox"></i> Nincs diák által feltöltött fájl</p>
+            </div>
           </div>
         </section>
       </aside>
@@ -695,15 +732,104 @@ export default {
     // template-ben használt fájllista alias
     teamUploadedFiles() {
       return this.projectFiles;
+    },
+
+    // tanári feltöltések listája
+    teacherUploadedFiles() {
+      return this.teamUploadedFiles.filter(file => this.isTeacherFile(file));
+    },
+
+    // diáki feltöltések listája
+    studentUploadedFiles() {
+      return this.teamUploadedFiles.filter(file => !this.isTeacherFile(file));
     }
   },
   methods: {
+    // szerepkód normalizálás
+    normalizeRole(role) {
+      if (!role) return '';
+      const normalized = String(role).toLowerCase();
+      if (normalized === 'adminisztrator') return 'admin';
+      return normalized;
+    },
+
+    // felhasználó szerepének kinyerése ID alapján
+    getUploaderRoleById(userId) {
+      if (!userId) return '';
+      const user = this.availableUsers.find(u => u.id === userId);
+      return user?.szerep_tipus || '';
+    },
+
+    // fájl tanári vagy diáki csoportjának eldöntése
+    isTeacherFile(file) {
+      const roleFromFile = this.normalizeRole(file?.uploaderRole);
+      if (roleFromFile === 'tanar' || roleFromFile === 'admin') {
+        return true;
+      }
+
+      if (file?.source === 'ttask-upload') {
+        return true;
+      }
+
+      const roleFromUser = this.normalizeRole(this.getUploaderRoleById(file?.felhasznalo_id));
+      if (roleFromUser === 'tanar' || roleFromUser === 'admin') {
+        return true;
+      }
+
+      if (this.userProfile?.id && file?.felhasznalo_id === this.userProfile.id) {
+        return true;
+      }
+
+      return false;
+    },
+
+    // localStorage kulcs a projekt fájljaihoz
+    getProjectFilesStorageKey(teamId = this.selectedTeam?.id) {
+      if (!teamId) return '';
+      return `ttaskProjectFiles:${teamId}`;
+    },
+
+    // projekt fájljainak visszatöltése localStorage-ból
+    loadProjectFilesFromLocalStorage(teamId = this.selectedTeam?.id) {
+      const key = this.getProjectFilesStorageKey(teamId);
+      if (!key) return [];
+
+      const stored = localStorage.getItem(key);
+      if (!stored) return [];
+
+      try {
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.warn('Projekt fájl cache parse hiba:', error);
+        return [];
+      }
+    },
+
+    // projekt fájljainak mentése localStorage-ba
+    saveProjectFilesToLocalStorage(teamId = this.selectedTeam?.id, files = this.projectFiles) {
+      const key = this.getProjectFilesStorageKey(teamId);
+      if (!key) return;
+      localStorage.setItem(key, JSON.stringify(files || []));
+    },
+
+    // projekt fájl cache törlése
+    removeProjectFilesFromLocalStorage(teamId) {
+      const key = this.getProjectFilesStorageKey(teamId);
+      if (!key) return;
+      localStorage.removeItem(key);
+    },
+
     // projekt kiválasztása és hozzá kapcsolódó adatok betöltése
     selectTeam(teamId) {
       this.selectedTeam = this.teams.find(t => t.id === teamId);
       this.activeTab = 'members';
       this.projectFiles = [];
       if (this.selectedTeam) {
+        const cachedFiles = this.loadProjectFilesFromLocalStorage(this.selectedTeam.id);
+        if (cachedFiles.length > 0) {
+          this.projectFiles = cachedFiles;
+        }
         this.loadTeamActivity();
         this.loadTeamTasks();
         this.loadProjectFiles();
@@ -844,6 +970,8 @@ export default {
         if (data.success) {
           const teamToDelete = this.teams.find(t => t.id === teamId);
           const teamName = teamToDelete?.name || 'Ismeretlen projekt';
+
+          this.removeProjectFilesFromLocalStorage(teamId);
           
           this.teams = this.teams.filter(t => t.id !== teamId);
 
@@ -1451,16 +1579,40 @@ export default {
 
         const data = await response.json();
 
-        if (data.success && Array.isArray(data.data.files)) {
-          this.projectFiles = data.data.files.map(file => ({
-            id: file.id,
-            name: file.file_nev,
-            size: file.file_meret ? (file.file_meret / 1024).toFixed(2) : '0',
-            taskName: file.feladat_nev || 'Ismeretlen feladat',
-            uploaderName: file.feltolto_nev || file.felhasznalonev || 'Ismeretlen',
-            felhasznalo_id: file.felhasznalo_id
-          }));
+        const rawFiles =
+          (data?.data && Array.isArray(data.data.files) && data.data.files) ||
+          (data?.data && Array.isArray(data.data) && data.data) ||
+          (Array.isArray(data?.files) && data.files) ||
+          (Array.isArray(data) && data) ||
+          [];
+
+        const mappedServerFiles = rawFiles.map((file, index) => ({
+          id: file.id || `server-file-${this.selectedTeam?.id || 'unknown'}-${index}-${file.file_nev || file.name || 'file'}`,
+          name: file.file_nev || file.name || 'Ismeretlen fájl',
+          size: file.file_meret
+            ? (file.file_meret / 1024).toFixed(2)
+            : file.file_merete
+              ? (file.file_merete / 1024).toFixed(2)
+              : file.size
+                ? (file.size / 1024).toFixed(2)
+                : '0',
+          taskName: file.feladat_nev || file.taskName || 'Ismeretlen feladat',
+          uploaderName: file.feltolto_nev || file.felhasznalonev || file.uploaderName || 'Ismeretlen',
+          uploaderRole: file.szerep_tipus || file.uploaderRole || '',
+          source: file.source || 'api',
+          felhasznalo_id: file.felhasznalo_id
+        }));
+
+        // Ha a backend frissen feltöltés után még üres listát ad vissza, tartsuk meg a lokális elemeket.
+        if (mappedServerFiles.length === 0 && this.projectFiles.length > 0) {
+          return;
         }
+
+        this.projectFiles = [...mappedServerFiles, ...this.projectFiles].filter(
+          (file, index, arr) => index === arr.findIndex(existing => existing.id === file.id)
+        );
+
+        this.saveProjectFilesToLocalStorage(this.selectedTeam.id, this.projectFiles);
       } catch (error) {
         console.error('Projekt fájljai betöltésének hiba:', error);
       }
@@ -1525,13 +1677,37 @@ export default {
           return;
         }
 
-        if (data.status === 'success' && data.uploadedFiles && data.uploadedFiles.length > 0) {
-          const filesWithData = data.uploadedFiles.map(apiFile => ({
-            id: apiFile.id,
+        const uploadedFiles =
+          (Array.isArray(data?.uploadedFiles) && data.uploadedFiles) ||
+          (data?.data && Array.isArray(data.data.uploadedFiles) && data.data.uploadedFiles) ||
+          (data?.data && Array.isArray(data.data.files) && data.data.files) ||
+          (Array.isArray(data?.files) && data.files) ||
+          [];
+
+        const isSuccessfulUpload =
+          data?.success === true ||
+          data?.status === 'success' ||
+          uploadedFiles.length > 0;
+
+        if (isSuccessfulUpload && uploadedFiles.length > 0) {
+          const filesWithData = uploadedFiles.map((apiFile, index) => ({
+            id: apiFile.id || `local-upload-${Date.now()}-${index}`,
             name: apiFile.file_nev || apiFile.name,
-            size: apiFile.file_merete ? (apiFile.file_merete / 1024).toFixed(2) : '0'
+            size: apiFile.file_merete ? (apiFile.file_merete / 1024).toFixed(2) : '0',
+            taskName: this.selectedTeam?.tasks?.find(t => t.id === this.currentTaskId)?.title || 'Ismeretlen feladat',
+            uploaderName: this.userProfile.teljes_nev || this.userProfile.felhasznalonev || 'Tanár',
+            uploaderRole: 'tanar',
+            source: 'ttask-upload',
+            felhasznalo_id: this.userProfile.id || null
           }));
           this.uploadedFiles.push(...filesWithData);
+
+          // Azonnali vizuális frissítés akkor is, ha a lista API később szinkronizál.
+          this.projectFiles = [...filesWithData, ...this.projectFiles].filter(
+            (file, index, arr) => index === arr.findIndex(existing => existing.id === file.id)
+          );
+
+          this.saveProjectFilesToLocalStorage(this.selectedTeam?.id, this.projectFiles);
 
           if (this.selectedTeam) {
             const currentTask = this.selectedTeam.tasks.find(t => t.id === this.currentTaskId);
@@ -1543,11 +1719,11 @@ export default {
             }
           }
 
-          alert(`${data.uploadedFiles.length} fájl sikeresen feltöltve!`);
+          alert(`${uploadedFiles.length} fájl sikeresen feltöltve!`);
           
           await this.createActivityLog(
             'feltöltés',
-            `${data.uploadedFiles.length} fájlt feltöltött`,
+            `${uploadedFiles.length} fájlt feltöltött`,
             this.currentTaskId
           );
 
@@ -1642,6 +1818,7 @@ export default {
         if (data.success) {
           this.uploadedFiles = this.uploadedFiles.filter(f => f.id !== fileId);
           this.projectFiles = this.projectFiles.filter(f => f.id !== fileId);
+          this.saveProjectFilesToLocalStorage(this.selectedTeam?.id, this.projectFiles);
 
           alert('Fájl sikeresen törölve!');
 
@@ -2454,6 +2631,32 @@ export default {
   gap: 0.75rem;
   max-height: 280px;
   overflow-y: auto;
+}
+
+.uploaded-group {
+  margin-bottom: 1rem;
+}
+
+.uploaded-group:last-child {
+  margin-bottom: 0;
+}
+
+.uploaded-group-title {
+  font-size: 0.95rem;
+  color: #334155;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.small-empty {
+  padding: 0.8rem 0.6rem;
+}
+
+.small-empty p {
+  font-size: 0.88rem;
 }
 
 .uploaded-file-item {

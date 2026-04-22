@@ -241,36 +241,74 @@
             <h2 class="section-title">Feltöltött fájlok</h2>
           </div>
 
-          <div class="uploaded-files-list" v-if="teamUploadedFiles.length > 0">
-            <div v-for="file in teamUploadedFiles" :key="file.id" class="uploaded-file-item">
-              <div class="file-icon">
-                <i class="fas fa-file"></i>
+          <div class="uploaded-group">
+            <h3 class="uploaded-group-title"><i class="fas fa-chalkboard-teacher"></i> Tanár által feltöltött fájlok</h3>
+            <div class="uploaded-files-list" v-if="teacherUploadedFiles.length > 0">
+              <div v-for="file in teacherUploadedFiles" :key="`teacher-${file.id}`" class="uploaded-file-item">
+                <div class="file-icon">
+                  <i class="fas fa-file"></i>
+                </div>
+                <div class="file-info">
+                  <h4>{{ file.name }}</h4>
+                  <span class="file-task">{{ file.taskName }}</span>
+                  <span class="file-uploader" style="font-size: 0.75rem; color: #6b7280;">{{ file.uploaderName }}</span>
+                </div>
+                <span class="file-size" v-if="file.size">{{ file.size }} KB</span>
+                <button
+                  @click="downloadFile(file.id, file.name)"
+                  style="background-color: #3b82f6; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; margin-right: 4px;"
+                  title="Fájl letöltése"
+                >
+                  Letöltés
+                </button>
+                <button
+                  v-if="file.felhasznalo_id === userProfile.id"
+                  @click="deleteFile(file.id)"
+                  style="background-color: red; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;"
+                  title="Fájl törlése"
+                >
+                  Törlés
+                </button>
               </div>
-              <div class="file-info">
-                <h4>{{ file.name }}</h4>
-                <span class="file-task">{{ file.taskName }}</span>
-                <span class="file-uploader" style="font-size: 0.75rem; color: #6b7280;">{{ file.uploaderName }}</span>
-              </div>
-              <span class="file-size" v-if="file.size">{{ file.size }} KB</span> 
-              <button 
-                @click="downloadFile(file.id, file.name)"
-                style="background-color: #3b82f6; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; margin-right: 4px;"
-                title="Fájl letöltése"
-              >
-                Letöltés
-              </button>
-              <button 
-                v-if="file.felhasznalo_id === userProfile.id"
-                @click="deleteFile(file.id)"
-                style="background-color: red; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;"
-                title="Fájl törlése"
-              >
-                Törlés
-              </button>
+            </div>
+            <div v-else class="no-files small-empty">
+              <p><i class="fas fa-inbox"></i> Nincs tanár által feltöltött fájl</p>
             </div>
           </div>
-          <div v-else class="no-files">
-            <p><i class="fas fa-inbox"></i> Nincs feltöltött fájl</p>
+
+          <div class="uploaded-group">
+            <h3 class="uploaded-group-title"><i class="fas fa-user-graduate"></i> Diák által feltöltött fájlok</h3>
+            <div class="uploaded-files-list" v-if="studentUploadedFiles.length > 0">
+              <div v-for="file in studentUploadedFiles" :key="`student-${file.id}`" class="uploaded-file-item">
+                <div class="file-icon">
+                  <i class="fas fa-file"></i>
+                </div>
+                <div class="file-info">
+                  <h4>{{ file.name }}</h4>
+                  <span class="file-task">{{ file.taskName }}</span>
+                  <span class="file-uploader" style="font-size: 0.75rem; color: #6b7280;">{{ file.uploaderName }}</span>
+                </div>
+                <span class="file-size" v-if="file.size">{{ file.size }} KB</span>
+                <button
+                  @click="downloadFile(file.id, file.name)"
+                  style="background-color: #3b82f6; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; margin-right: 4px;"
+                  title="Fájl letöltése"
+                >
+                  Letöltés
+                </button>
+                <button
+                  v-if="file.felhasznalo_id === userProfile.id"
+                  @click="deleteFile(file.id)"
+                  style="background-color: red; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;"
+                  title="Fájl törlése"
+                >
+                  Törlés
+                </button>
+              </div>
+            </div>
+            <div v-else class="no-files small-empty">
+              <p><i class="fas fa-inbox"></i> Nincs diák által feltöltött fájl</p>
+            </div>
           </div>
         </section>
       </aside>
@@ -680,9 +718,103 @@ export default {
     // fájllista alias a template számára
     teamUploadedFiles() {
       return this.projectFiles;
+    },
+
+    // tanári feltöltések
+    teacherUploadedFiles() {
+      return this.teamUploadedFiles.filter(file => this.isTeacherFile(file));
+    },
+
+    // diáki feltöltések
+    studentUploadedFiles() {
+      return this.teamUploadedFiles.filter(file => !this.isTeacherFile(file));
     }
   },
   methods: {
+    // szerepkód normalizálása
+    normalizeRole(role) {
+      if (!role) return '';
+      const normalized = String(role)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+      const roleAliases = {
+        tanar: 'tanar',
+        teacher: 'tanar',
+        diak: 'diak',
+        student: 'diak',
+        admin: 'admin',
+        adminisztrator: 'admin'
+      };
+
+      return roleAliases[normalized] || normalized;
+    },
+
+    // feltöltő szerepének meghatározása felhasználó ID alapján
+    getUploaderRoleById(userId) {
+      if (!userId) return '';
+      const user = this.availableUsers.find(u => u.id === userId);
+      return user?.szerep_tipus || '';
+    },
+
+    // feltöltő szerepének meghatározása név/felhasználónév alapján
+    getUploaderRoleByName(uploaderName) {
+      if (!uploaderName) return '';
+
+      const normalizeText = (value) => String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+
+      const target = normalizeText(uploaderName);
+      if (!target) return '';
+
+      const matchedUser = this.availableUsers.find((user) => {
+        const fullName = normalizeText(user.teljes_nev);
+        const username = normalizeText(user.felhasznalonev);
+        return fullName === target || username === target;
+      });
+
+      return matchedUser?.szerep_tipus || '';
+    },
+
+    // feltöltő szerepének meghatározása a kiválasztott projekt taglistájából
+    getUploaderRoleFromSelectedTeam(userId) {
+      if (!userId || !this.selectedTeam || !Array.isArray(this.selectedTeam.members)) {
+        return '';
+      }
+
+      const member = this.selectedTeam.members.find(m => m.id === userId);
+      return member?.role || '';
+    },
+
+    // eldönti, hogy a fájl tanári csoportba tartozik-e
+    isTeacherFile(file) {
+      const roleFromFile = this.normalizeRole(file?.uploaderRole);
+      if (roleFromFile === 'tanar' || roleFromFile === 'admin') {
+        return true;
+      }
+
+      const roleFromUser = this.normalizeRole(this.getUploaderRoleById(file?.felhasznalo_id));
+      if (roleFromUser === 'tanar' || roleFromUser === 'admin') {
+        return true;
+      }
+
+      const roleFromTeamMember = this.normalizeRole(this.getUploaderRoleFromSelectedTeam(file?.felhasznalo_id));
+      if (roleFromTeamMember === 'tanar' || roleFromTeamMember === 'admin') {
+        return true;
+      }
+
+      const roleFromName = this.normalizeRole(this.getUploaderRoleByName(file?.uploaderName));
+      if (roleFromName === 'tanar' || roleFromName === 'admin') {
+        return true;
+      }
+
+      return false;
+    },
+
     // projekt kiválasztása és a hozzá tartozó adatok betöltése
     selectTeam(teamId) {
       this.selectedTeam = this.teams.find(t => t.id === teamId);
@@ -1436,16 +1568,28 @@ export default {
 
         const data = await response.json();
 
-        if (data.success && Array.isArray(data.data.files)) {
-          this.projectFiles = data.data.files.map(file => ({
-            id: file.id,
-            name: file.file_nev,
-            size: file.file_meret ? (file.file_meret / 1024).toFixed(2) : '0',
-            taskName: file.feladat_nev || 'Ismeretlen feladat',
-            uploaderName: file.feltolto_nev || file.felhasznalonev || 'Ismeretlen',
-            felhasznalo_id: file.felhasznalo_id
-          }));
-        }
+        const rawFiles =
+          (data?.data && Array.isArray(data.data.files) && data.data.files) ||
+          (data?.data && Array.isArray(data.data) && data.data) ||
+          (Array.isArray(data?.files) && data.files) ||
+          (Array.isArray(data) && data) ||
+          [];
+
+        this.projectFiles = rawFiles.map((file, index) => ({
+          id: file.id || `teamwork-file-${this.selectedTeam?.id || 'unknown'}-${index}`,
+          name: file.file_nev || file.name || 'Ismeretlen fájl',
+          size: file.file_meret
+            ? (file.file_meret / 1024).toFixed(2)
+            : file.file_merete
+              ? (file.file_merete / 1024).toFixed(2)
+              : file.size
+                ? (file.size / 1024).toFixed(2)
+                : '0',
+          taskName: file.feladat_nev || file.taskName || 'Ismeretlen feladat',
+          uploaderName: file.feltolto_nev || file.felhasznalonev || file.uploaderName || 'Ismeretlen',
+          uploaderRole: file.szerep_tipus || file.feltolto_szerep || file.uploaderRole || '',
+          felhasznalo_id: file.felhasznalo_id
+        }));
       } catch (error) {
         console.error('Projekt fájljai betöltésének hiba:', error);
       }
@@ -1514,7 +1658,8 @@ export default {
           const filesWithData = data.uploadedFiles.map(apiFile => ({
             id: apiFile.id,
             name: apiFile.file_nev || apiFile.name,
-            size: apiFile.file_merete ? (apiFile.file_merete / 1024).toFixed(2) : '0'
+            size: apiFile.file_merete ? (apiFile.file_merete / 1024).toFixed(2) : '0',
+            uploaderRole: 'diak'
           }));
           this.uploadedFiles.push(...filesWithData);
 
@@ -2439,6 +2584,32 @@ export default {
   gap: 0.75rem;
   max-height: 280px;
   overflow-y: auto;
+}
+
+.uploaded-group {
+  margin-bottom: 1rem;
+}
+
+.uploaded-group:last-child {
+  margin-bottom: 0;
+}
+
+.uploaded-group-title {
+  font-size: 0.95rem;
+  color: #334155;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.small-empty {
+  padding: 0.8rem 0.6rem;
+}
+
+.small-empty p {
+  font-size: 0.88rem;
 }
 
 .uploaded-file-item {
