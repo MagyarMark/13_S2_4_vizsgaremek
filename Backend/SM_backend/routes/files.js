@@ -416,11 +416,14 @@ router.get('/task/:task_id', verifyToken, async (req, res) => {
         const { task_id } = req.params;
 
         const result = await pool.query(
-            `SELECT f.id, f.file_nev, f.file_meret, f.file_tipus, f.feltoltes_idopont, f.feladat_id, f.felhasznalo_id,
+            `SELECT f.id, f.file_nev, f.file_meret, f.file_tipus, f.feltoltes_idopont,
+                    COALESCE(f.feladat_id, b.feladat_id) as feladat_id,
+                    f.felhasznalo_id,
                     fu.teljes_nev as feltolto_nev, fu.felhasznalonev
              FROM "File" f
+             LEFT JOIN "Beadas" b ON f.beadas_id = b.id
              LEFT JOIN "Felhasznalo" fu ON f.felhasznalo_id = fu.id
-             WHERE f.feladat_id = $1
+             WHERE COALESCE(f.feladat_id, b.feladat_id) = $1
              ORDER BY f.feltoltes_idopont DESC`,
             [task_id]
         );
@@ -448,12 +451,15 @@ router.get('/project/:project_id', verifyToken, async (req, res) => {
         const { project_id } = req.params;
 
         const result = await pool.query(
-            `SELECT f.id, f.file_nev, f.file_meret, f.file_tipus, f.feltoltes_idopont, f.feladat_id, f.felhasznalo_id,
+            `SELECT f.id, f.file_nev, f.file_meret, f.file_tipus, f.feltoltes_idopont,
+                    COALESCE(f.feladat_id, b.feladat_id) as feladat_id,
+                    f.felhasznalo_id,
                     fu.teljes_nev as feltolto_nev, fu.felhasznalonev,
                     ft.feladat_nev
              FROM "File" f
+             LEFT JOIN "Beadas" b ON f.beadas_id = b.id
              LEFT JOIN "Felhasznalo" fu ON f.felhasznalo_id = fu.id
-             LEFT JOIN "Feladat" ft ON f.feladat_id = ft.id
+             LEFT JOIN "Feladat" ft ON ft.id = COALESCE(f.feladat_id, b.feladat_id)
              WHERE ft.projekt_id = $1
              ORDER BY f.feltoltes_idopont DESC`,
             [project_id]
@@ -482,10 +488,12 @@ router.get('/download/:file_id', verifyToken, async (req, res) => {
         const { file_id } = req.params;
 
         const fileResult = await pool.query(
-            `SELECT f.id, f.felhasznalo_id, f.file_eleresiut, f.file_nev, f.feladat_id,
+            `SELECT f.id, f.felhasznalo_id, f.file_eleresiut, f.file_nev,
+                    COALESCE(f.feladat_id, b.feladat_id) as feladat_id,
                     ft.projekt_id
              FROM "File" f
-             LEFT JOIN "Feladat" ft ON f.feladat_id = ft.id
+             LEFT JOIN "Beadas" b ON f.beadas_id = b.id
+             LEFT JOIN "Feladat" ft ON ft.id = COALESCE(f.feladat_id, b.feladat_id)
              WHERE f.id = $1`,
             [file_id]
         );
