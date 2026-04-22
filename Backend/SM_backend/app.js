@@ -117,13 +117,14 @@ app.post('/api/upload',
                     await file.mv(filepath);
 
                     const query = `
-                        INSERT INTO "File" (beadas_id, felhasznalo_id, file_nev, file_meret, file_tipus, feltoltes_idopont, file_eleresiut)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7)
+                        INSERT INTO "File" (beadas_id, feladat_id, felhasznalo_id, file_nev, file_meret, file_tipus, feltoltes_idopont, file_eleresiut)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                         RETURNING id
                     `;
                     
                     const result = await pool.query(query, [
                         resolvedBeadasId,
+                        feladatIdNum,
                         felhasznalo_id,
                         safeOriginalName,
                         fileSizeBytes,
