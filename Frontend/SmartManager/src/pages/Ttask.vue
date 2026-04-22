@@ -767,16 +767,8 @@ export default {
         return true;
       }
 
-      if (file?.source === 'ttask-upload') {
-        return true;
-      }
-
       const roleFromUser = this.normalizeRole(this.getUploaderRoleById(file?.felhasznalo_id));
       if (roleFromUser === 'tanar' || roleFromUser === 'admin') {
-        return true;
-      }
-
-      if (this.userProfile?.id && file?.felhasznalo_id === this.userProfile.id) {
         return true;
       }
 
@@ -1696,7 +1688,7 @@ export default {
             size: apiFile.file_merete ? (apiFile.file_merete / 1024).toFixed(2) : '0',
             taskName: this.selectedTeam?.tasks?.find(t => t.id === this.currentTaskId)?.title || 'Ismeretlen feladat',
             uploaderName: this.userProfile.teljes_nev || this.userProfile.felhasznalonev || 'Tanár',
-            uploaderRole: 'tanar',
+            uploaderRole: this.normalizeRole(this.userProfile.szerep_tipus) || 'tanar',
             source: 'ttask-upload',
             felhasznalo_id: this.userProfile.id || null
           }));

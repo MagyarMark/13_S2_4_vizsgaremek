@@ -1659,7 +1659,7 @@ export default {
             id: apiFile.id,
             name: apiFile.file_nev || apiFile.name,
             size: apiFile.file_merete ? (apiFile.file_merete / 1024).toFixed(2) : '0',
-            uploaderRole: 'diak'
+            uploaderRole: this.normalizeRole(this.userProfile.szerep_tipus) || 'diak'
           }));
           this.uploadedFiles.push(...filesWithData);
 
