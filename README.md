@@ -1,4 +1,4 @@
-# 🎓 Smart Manager
+f# 🎓 Smart Manager
 
 **Smart Manager** egy modern, webalapú oktatási projektmenedzsment rendszer, amely segíti a tanárok és diákok közötti hatékony együttműködést, feladatkezelést és kommunikációt — mindezt egyetlen, átlátható felületen.
 
@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Tartalomjegyzék
+## Tartalomjegyzék
 
 - [A projektről](#a-projektről)
 - [Rendszerkövetelmények](#rendszerkövetelmények)
@@ -96,93 +96,6 @@ A Smart Manager három fő komponensre épül, amelyek együtt alkotnak egy telj
 |-------------|--------|
 | C# / .NET 8 | Programozási nyelv és platform |
 | WinUI 3 (Windows App SDK) | Grafikus felhasználói felület |
-
----
-
-## Projekt struktúra
-
-```
-13_S2_4_vizsgaremek/
-│
-├── Backend/
-│   └── SM_backend/                  # Node.js REST API szerver
-│       ├── routes/                  # API útvonalak
-│       │   ├── auth.js              # Hitelesítés (regisztráció, login, token frissítés)
-│       │   ├── project.js           # Projektek és feladatok kezelése
-│       │   ├── messages.js          # Üzenetek (privát és projekt chat)
-│       │   ├── files.js             # Fájlok és beadások kezelése
-│       │   └── admin.js             # Admin műveletek
-│       ├── middleware/              # JWT auth, fájlméret/típus ellenőrzés
-│       ├── config/                  # Adatbázis, JWT, validáció konfiguráció
-│       ├── chat/                    # Socket.IO chat + WebRTC videóhívás jelzés
-│       ├── nodemailer/              # Email küldés (regisztráció, reaktiváció)
-│       ├── migrations/              # Adatbázis migrációk (db-migrate)
-│       ├── seeder/                  # Tesztadatok feltöltése
-│       ├── utils/                   # Segédfüggvények
-│       ├── files/                   # Feltöltött fájlok tárolója
-│       ├── Dockerfile               # Docker konténer konfiguráció
-│       ├── .env.example             # Példa környezeti változók
-│       └── server.js                # Belépési pont
-│
-├── Frontend/
-│   ├── SmartManager/                # Vue 3 webes frontend
-│   │   ├── src/
-│   │   │   ├── pages/               # Oldalkomponensek
-│   │   │   │   ├── Home.vue         # Kezdőoldal (vendégeknek)
-│   │   │   │   ├── login.vue        # Bejelentkezés
-│   │   │   │   ├── register.vue     # Regisztráció (jelszóerősség-ellenőrzéssel)
-│   │   │   │   ├── verifyEmail.vue  # Email cím megerősítése
-│   │   │   │   ├── reactivateAccount.vue # Fiók reaktiválása
-│   │   │   │   ├── diak.vue         # Diák irányítópult
-│   │   │   │   ├── tanar.vue        # Tanár irányítópult
-│   │   │   │   ├── task.vue         # Diák feladatok
-│   │   │   │   ├── Ttask.vue        # Tanár projektmunka és feladatok
-│   │   │   │   ├── ertekeles.vue    # Értékelés (tanár)
-│   │   │   │   ├── chat.vue         # Chat + videóhívás (Socket.IO + WebRTC)
-│   │   │   │   ├── teamwork.vue     # Csapatmunka (diák)
-│   │   │   │   ├── settings.vue     # Beállítások (profil, jelszó, megjelenés)
-│   │   │   │   ├── kapcsolat.vue    # Kapcsolat
-│   │   │   │   └── terms.vue        # Általános szerződési feltételek
-│   │   │   ├── components/
-│   │   │   │   └── VideoCall.vue    # WebRTC videóhívás komponens
-│   │   │   ├── utils/
-│   │   │   │   └── api.js           # API segédfüggvények
-│   │   │   ├── router.js            # Vue Router (route guards, jogosultság-ellenőrzés)
-│   │   │   ├── App.vue              # Gyökérkomponens
-│   │   │   └── style.css            # Globális stílusok
-│   │   ├── public/                  # Statikus fájlok (logók, képek)
-│   │   └── vite.config.js           # Vite konfiguráció
-│   │
-│   └── Frontend_Test/               # Robot Framework tesztfájlok
-│       ├── Basic_Test.robot         # Bejelentkezés és regisztráció tesztek
-│       ├── Beallitasok_Test.robot   # Jelszóváltoztatás és fiók deaktiválás
-│       ├── Chat_Test.robot          # Chat üzenetküldés és fogadás
-│       ├── Tanar_Test.robot         # Tanári funkciók (feladat, értékelés, statisztika)
-│       ├── Diak_Test.robot          # Diák feladatbeadás teszt
-│       └── Teszt_Dokumentáció.xlsx  # Tesztelési dokumentáció
-│
-├── Asztali alkalmazás/
-│   └── SMadmin/                     # C# WinUI 3 asztali admin alkalmazás
-│       ├── Views/                   # XAML oldalak
-│       │   ├── LoginPage.xaml       # Bejelentkezés
-│       │   ├── DashboardPage.xaml   # Statisztikák, tanár jóváhagyás
-│       │   ├── UserPage.xaml        # Felhasználókezelés
-│       │   ├── ProjectsPage.xaml    # Projektkezelés
-│       │   └── SubmissionsPage.xaml # Beadások
-│       ├── Models/                  # Adatmodellek (User, Project, Submission stb.)
-│       ├── Services/                # AdminApiService (HTTP kliens)
-│       └── SMadmin.sln              # Visual Studio solution fájl
-│
-└── Dokumentációk/                   # Projekt dokumentációk
-    ├── Dokumentáció_MagyarMárk_NagyHuba.docx
-    ├── Szoftverspecifikacio_MagyarMark_NagyHuba.docx
-    ├── Felhasználói kézikönyv.docx
-    ├── Adatszerkezet_MagyarMárk_NagyHuba.docx
-    ├── Algoritmus_dokumentáció.docx
-    ├── Tesztelés_dokumentáció_MagyarMárk_NagyHuba.docx
-    ├── Gantt-projekttervező_SM.xlsx
-    └── Smart Manager.drawio
-```
 
 ---
 
@@ -324,13 +237,13 @@ AUTH_RATE_LIMIT_MAX=100
 
 ## Felhasználói szerepkörök és funkciók
 
-### 👁️ Vendég (nem regisztrált felhasználó)
+### Vendég (nem regisztrált felhasználó)
 - Kezdőoldal megtekintése
 - Általános szerződési feltételek olvasása
 - Bejelentkezés / Regisztráció (jelszóerősség-ellenőrzéssel)
 - Kapcsolatfelvétel
 
-### 🎒 Diák
+### Diák
 - Személyes dashboard — feladatstatisztikák (aktív, befejezett, közelgő, késésben)
 - Feladatok megtekintése, beadása, fájlfeltöltés
 - Értékelések megtekintése (pontszám, jegy, visszajelzés)
@@ -339,7 +252,7 @@ AUTH_RATE_LIMIT_MAX=100
 - Profilbeállítások, jelszóváltoztatás, fiók deaktiválás
 - Sötét / világos téma váltás
 
-### 🏫 Tanár
+### Tanár
 - Tanári dashboard — aktív feladatok, beadások, késések, Chart.js statisztikák
 - Feladatok létrehozása, szerkesztése, törlése, felhasználók hozzárendelése
 - Projektek kezelése: létrehozás, tagok meghívása, feladatok hozzárendelése
@@ -348,12 +261,12 @@ AUTH_RATE_LIMIT_MAX=100
 - Valós idejű chat (Socket.IO) és WebRTC videóhívás
 - Profilbeállítások, jelszóváltoztatás, fiók deaktiválás
 
-### 🛡️ Admin (webes felület)
+### Admin (webes felület)
 - Felhasználók listázása, keresése, szerepkör-szűrése, törlése
 - Projektek listázása, keresése, státusz-szűrése, törlése
 - Beadások áttekintése és szűrése
 
-### 🖥️ Admin (asztali alkalmazás – SMadmin)
+### Admin (asztali alkalmazás – SMadmin)
 - JWT alapú bejelentkezés
 - Dashboard: rendszerstatisztikák és jóváhagyásra váró tanárok aktiválása
 - Felhasználók kezelése: keresés, szerepkör-szűrés, lapozás, törlés
