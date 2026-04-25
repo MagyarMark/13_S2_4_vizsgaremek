@@ -1,4 +1,4 @@
-## 🎓 Smart Manager
+## Smart Manager
 
 **Smart Manager** egy modern, webalapú oktatási projektmenedzsment rendszer, amely segíti a tanárok és diákok közötti hatékony együttműködést, feladatkezelést és kommunikációt — mindezt egyetlen, átlátható felületen.
 
