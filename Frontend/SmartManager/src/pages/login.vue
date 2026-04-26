@@ -63,6 +63,7 @@
 <script>
 // központi API URL helper az auth végpontokhoz
 import { getApiUrl } from '../utils/api';
+import { refreshSessionTimeout } from '../utils/sessionTimeout';
 
 export default {
   name: "Login",
@@ -135,6 +136,7 @@ export default {
           localStorage.setItem('user', JSON.stringify(data.data.user));
           localStorage.setItem('accessToken', data.data.accessToken);
           localStorage.setItem('refreshToken', data.data.refreshToken);
+          refreshSessionTimeout();
 
           // szerepkör szerinti dashboard navigáció
           const role = data.data.user.szerep_tipus;
