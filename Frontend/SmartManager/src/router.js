@@ -16,6 +16,11 @@ import Ttask from './pages/Ttask.vue'
 import Ertekeles from './pages/ertekeles.vue'
 import VerifyEmail from './pages/verifyEmail.vue'
 import reactivateAccount from './pages/reactivateAccount.vue'
+import {
+  clearSessionAuthData,
+  ensureSessionTimeout,
+  isSessionExpired
+} from './utils/sessionTimeout'
 
 // alkalmazás útvonalai jogosultsági metaadatokkal
 const routes = [
@@ -141,6 +146,12 @@ router.beforeEach((to) => {
   // ha nincs token vagy user, login oldalra irányítjuk
   if (!token || !storedUser) {
     return { name: 'Login', query: { redirect: to.fullPath } }
+  }
+
+  ensureSessionTimeout()
+  if (isSessionExpired()) {
+    clearSessionAuthData()
+    return { name: 'Login', query: { reason: 'timeout' } }
   }
 
   // role alapú hozzáférés ellenőrzése, ha a route megköveteli

@@ -25,7 +25,7 @@
 // route és router a token olvasásához, illetve az átirányításhoz
 import { useRoute, useRouter } from 'vue-router';
 // onMounted lifecycle és reaktív állapotok
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 // központi API URL helper
 import { getApiUrl } from '../utils/api';
 
@@ -41,6 +41,7 @@ export default {
     const loading = ref(true);
     const success = ref(false);
     const message = ref('');
+    let redirectTimerId = null;
 
     // komponens induláskor email megerősítés a token alapján
     onMounted(async () => {
@@ -66,8 +67,10 @@ export default {
         if (data.success) {
           success.value = true;
           message.value = 'Az email cím sikeresen megerősítve. Bejelentkezhet az alkalmazásba.';
-          // siker esetén vissza a főoldalra
-          router.push('/');
+          // siker esetén 5 mp várakozás után vissza a főoldalra
+          redirectTimerId = window.setTimeout(() => {
+            router.push('/');
+          }, 5000);
         } else {
           success.value = false;
           message.value = data.message || 'Hiba az email megerősítés során.';
@@ -78,6 +81,13 @@ export default {
         success.value = false;
         message.value = 'Szerverhiba a megerősítés során. Kérjük, próbálja később.';
         console.error('Email verification error:', error);
+      }
+    });
+
+    onUnmounted(() => {
+      if (redirectTimerId) {
+        clearTimeout(redirectTimerId);
+        redirectTimerId = null;
       }
     });
 

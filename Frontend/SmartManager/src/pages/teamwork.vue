@@ -1659,7 +1659,7 @@ export default {
             id: apiFile.id,
             name: apiFile.file_nev || apiFile.name,
             size: apiFile.file_merete ? (apiFile.file_merete / 1024).toFixed(2) : '0',
-            uploaderRole: this.normalizeRole(this.userProfile.szerep_tipus) || 'diak'
+            uploaderRole: 'diak'
           }));
           this.uploadedFiles.push(...filesWithData);
 
@@ -3008,7 +3008,7 @@ textarea.form-control {
   }
 
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 0.75rem;
   }
 

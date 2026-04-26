@@ -625,7 +625,7 @@ margin: 0;
 
 .dashboard-wrapper .kanban-container {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1rem;
 }
 
@@ -633,7 +633,7 @@ margin: 0;
   background: #f8f9fa;
   border-radius: 5px;
   padding: 1rem;
-  min-height: 400px;
+  min-height: 320px;
   background-color: #e0e0e0;
 }
 
@@ -686,7 +686,8 @@ margin: 0;
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 1.5rem;
-  height: 400px;
+  min-height: 360px;
+  max-height: 540px;
 }
 
 .dashboard-wrapper .chat-sidebar {
@@ -909,7 +910,7 @@ margin: 0;
   }
 
   .dashboard-wrapper .chat-main {
-    height: 300px;
+    min-height: 260px;
   }
 
   .dashboard-wrapper .chat-input input {
@@ -991,6 +992,10 @@ margin: 0;
   .dashboard-wrapper .btn {
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
+  }
+
+  .dashboard-wrapper .kanban-column {
+    min-height: 220px;
   }
 }
 </style>

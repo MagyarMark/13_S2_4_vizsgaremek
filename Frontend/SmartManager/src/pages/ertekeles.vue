@@ -963,8 +963,8 @@ export default {
 
   .content-wrapper {
     gap: 0.75rem;
-    margin-top: -1rem;
-    margin-left: -0.75rem;
+    margin-top: 0;
+    margin-left: 0;
     margin-bottom: 1rem;
   }
 
@@ -1077,8 +1077,8 @@ export default {
 
   .content-wrapper {
     gap: 0.5rem;
-    margin-top: -1rem;
-    margin-left: -0.5rem;
+    margin-top: 0;
+    margin-left: 0;
     margin-bottom: 1rem;
   }
 
@@ -1120,12 +1120,13 @@ export default {
   }
 
   .grades-table {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
+    min-width: 640px;
   }
 
   .grades-table th,
   .grades-table td {
-    padding: 0.35rem;
+    padding: 0.45rem;
   }
 
   .percentage-badge {

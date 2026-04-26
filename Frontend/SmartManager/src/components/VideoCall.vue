@@ -1103,6 +1103,7 @@ export default {
 @media (max-width: 768px) {
   .video-call-container {
     max-height: 100vh;
+    max-height: 100dvh;
   }
 
   .video-container {
@@ -1131,6 +1132,39 @@ export default {
   .btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .video-call-modal {
+    padding: 10px;
+  }
+
+  .video-call-container {
+    max-width: 95vw;
+    max-height: 90vh;
+    max-height: 90dvh;
+    border-radius: 10px;
+  }
+
+  .video-call-header {
+    padding: 12px;
+  }
+
+  .video-call-header h3 {
+    font-size: 1rem;
+  }
+
+  .call-controls {
+    padding: 12px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .control-button {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
   }
 }
 </style>
