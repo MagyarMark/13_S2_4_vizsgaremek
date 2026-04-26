@@ -1460,6 +1460,14 @@ export default {
 
 <style scoped>
 
+.main-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0 auto;
+  padding: 80px 0 20px;
+}
+
 .dashboard-wrapper .dropdown {
   position: relative;
   display: flex;
@@ -1544,12 +1552,17 @@ export default {
   flex: 1;
   min-height: 0;
   height: calc(100vh - 150px);
+  height: calc(100dvh - 150px);
   max-height: calc(100vh - 150px);
+  max-height: calc(100dvh - 150px);
+  width: 100%;
+  max-width: none;
   padding: 0;
   margin: 0;
-  background-color: white;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #ffffff 0%, #f6f8ff 100%);
+  border: 1px solid #dde3f3;
+  border-radius: 18px;
+  box-shadow: 0 18px 35px rgba(62, 90, 160, 0.14);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1559,14 +1572,15 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 30px;
-  background-color: #4a6ee0;
+  padding: 18px 24px;
+  background: linear-gradient(120deg, #3f63d5 0%, #5d7fe8 45%, #758ff0 100%);
   color: white;
 }
 
 .section-header h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .clients-total {
@@ -1593,17 +1607,20 @@ export default {
   min-height: 0;
   height: 100%;
   overflow: hidden;
+  gap: 14px;
+  padding: 14px;
 }
 
 .chat-sidebar {
-  width: 30%;
-  display: flex;
-  flex-direction: column;
+  width: 32%;
+  min-width: 300px;
   min-height: 0;
-  background-color: #f5f7fb;
-  border-right: 1px solid #e1e5eb;
-  padding: 20px;
-  overflow: hidden;
+  height: 100%;
+  overflow: auto;
+  background: #f8faff;
+  border: 1px solid #dfe6f6;
+  border-radius: 14px;
+  padding: 14px;
 }
 
 .chat-sidebar h4 {
@@ -1617,11 +1634,11 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 15px;
-  margin-bottom: 20px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
   background-color: white;
   border-radius: 8px;
-  border: 1px solid #e1e5eb;
+  border: 1px solid #e0e6f3;
 }
 
 .name-section span {
@@ -1661,7 +1678,7 @@ export default {
 .chat-mode-toggle {
   display: flex;
   gap: 10px;
-  margin-top: 15px;
+  margin-top: 8px;
 }
 
 .mode-button {
@@ -1683,11 +1700,11 @@ export default {
 }
 
 .new-conversation {
-  margin-top: 20px;
+  margin-top: 14px;
   background-color: white;
-  padding: 15px;
+  padding: 12px;
   border-radius: 8px;
-  border: 1px solid #e1e5eb;
+  border: 1px solid #e0e6f3;
 }
 
 .new-conversation label {
@@ -1699,11 +1716,11 @@ export default {
 }
 
 .project-select {
-  margin-top: 20px;
+  margin-top: 14px;
   background-color: white;
-  padding: 15px;
+  padding: 12px;
   border-radius: 8px;
-  border: 1px solid #e1e5eb;
+  border: 1px solid #e0e6f3;
 }
 
 .project-select label {
@@ -1805,16 +1822,17 @@ export default {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 8px;
   overflow-y: auto;
+  padding-right: 4px;
 }
 
 .conversation-item {
   text-align: left;
-  border: 1px solid #e1e5eb;
+  border: 1px solid #dbe3f6;
   background: white;
-  padding: 12px;
+  padding: 10px 12px;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1827,6 +1845,7 @@ export default {
 
 .conversation-item:hover {
   transform: translateY(-1px);
+  border-color: #c7d5fb;
 }
 
 .conversation-title {
@@ -1874,19 +1893,22 @@ export default {
 }
 
 .chat-main {
-  width: 70%;
+  width: 68%;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  border: 1px solid #dfe5f5;
+  border-radius: 14px;
+  background: #ffffff;
 }
 
 .chat-header {
   flex-shrink: 0;
-  padding: 20px 25px;
+  padding: 14px 18px;
   border-bottom: 1px solid #e1e5eb;
-  background-color: #f8fafc;
+  background-color: #f8faff;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1954,18 +1976,18 @@ export default {
 .chat-messages {
   flex: 1 1 auto;
   min-height: 0;
-  padding: 20px 25px;
+  padding: 16px;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  background-color: #f8fafc;
+  background: linear-gradient(180deg, #fbfcff 0%, #f3f7ff 100%);
 }
 
 .message {
-  max-width: 75%;
-  padding: 12px 18px;
-  margin-bottom: 15px;
-  border-radius: 18px;
+  max-width: min(76%, 640px);
+  padding: 11px 14px;
+  margin-bottom: 12px;
+  border-radius: 14px;
   line-height: 1.4;
   position: relative;
 }
@@ -2093,17 +2115,18 @@ export default {
 
 .message.received {
   background-color: white;
-  border-top-left-radius: 5px;
+  border-top-left-radius: 6px;
   color: #2d3748;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #dfe6f7;
+  box-shadow: 0 8px 18px rgba(37, 61, 115, 0.06);
 }
 
 .message.sent {
-  background-color: #4a6ee0;
+  background: linear-gradient(135deg, #4a6ee0 0%, #5e80ea 100%);
   color: white;
-  border-top-right-radius: 5px;
+  border-top-right-radius: 6px;
   margin-left: auto;
-  box-shadow: 0 2px 5px rgba(74, 110, 224, 0.3);
+  box-shadow: 0 10px 20px rgba(74, 110, 224, 0.26);
 }
 
 .message.sent .message-menu-toggle:hover {
@@ -2119,15 +2142,16 @@ export default {
 .chat-input {
   display: flex;
   flex-shrink: 0;
-  padding: 20px 25px;
+  padding: 12px 14px;
   border-top: 1px solid #e1e5eb;
   background-color: white;
+  gap: 8px;
 }
 
 .chat-input input {
   flex: 1;
-  padding: 12px 18px;
-  border: 1px solid #e1e5eb;
+  padding: 12px 14px;
+  border: 1px solid #d9e2f8;
   border-radius: 25px;
   outline: none;
   font-size: 1rem;
@@ -2143,10 +2167,10 @@ export default {
   background-color: #4a6ee0;
   color: white;
   border: none;
-  padding: 0 20px;
-  height: 45px;
-  border-radius: 25px;
-  margin-left: 10px;
+  padding: 0 16px;
+  height: 44px;
+  border-radius: 22px;
+  margin-left: 0;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -2197,18 +2221,22 @@ export default {
   }
 
   .section {
-    padding: 1rem;
+    padding: 0;
+    border-radius: 14px;
   }
 
   .chat-container {
     flex-direction: column;
-    height: 500px;
+    height: auto;
+    gap: 10px;
+    padding: 10px;
   }
 
   .chat-sidebar {
     width: 100%;
+    min-width: 0;
     min-height: 0;
-    max-height: 150px;
+    max-height: 240px;
     border-right: none;
     border-bottom: 1px solid #e1e5eb;
     overflow-y: auto;
@@ -2226,7 +2254,7 @@ export default {
   }
 
   .chat-messages {
-    height: 300px;
+    min-height: 220px;
   }
 
   .chat-input input {
@@ -2249,7 +2277,8 @@ export default {
 
 @media (max-width: 600px) {
   header {
-    padding: 0 0.75rem;
+    gap: 0rem;
+    padding: 0 6rem;
   }
 
   main {
@@ -2304,7 +2333,7 @@ export default {
   }
 
   .chat-sidebar {
-    max-height: 100px;
+    max-height: 210px;
   }
 
   .chat-list {
@@ -2327,7 +2356,7 @@ export default {
   }
 
   .chat-messages {
-    height: 200px;
+    min-height: 180px;
   }
 
   .chat-input {
@@ -2344,14 +2373,12 @@ export default {
   .chat-input button {
     width: 36px;
     height: 36px;
-    margin-left: 0.5rem;
+    margin-left: 0;
+    padding: 0;
   }
 }
 
 @media (max-width: 400px) {
-  header {
-    padding: 0 0.5rem;
-  }
 
   main {
     padding: 0.5rem;
@@ -2370,7 +2397,7 @@ export default {
   }
 
   .chat-sidebar {
-    max-height: 80px;
+    max-height: 190px;
   }
 
   .chat-header h4 {
@@ -2378,7 +2405,7 @@ export default {
   }
 
   .chat-messages {
-    height: 150px;
+    min-height: 140px;
     font-size: 0.8rem;
   }
 
@@ -2397,6 +2424,14 @@ export default {
     width: 32px;
     height: 32px;
     font-size: 0.9rem;
+    padding: 0;
+  }
+
+  .section {
+    height: calc(100vh - 90px);
+    height: calc(100dvh - 90px);
+    max-height: calc(100vh - 90px);
+    max-height: calc(100dvh - 90px);
   }
 }
 </style>

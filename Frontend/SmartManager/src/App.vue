@@ -1,31 +1,48 @@
 <script>
-/*export default {
-  async mounted() {
-    try {
-      const lastRoute = sessionStorage.getItem("lastRoute");
-      const lastRouteName = lastRoute ? JSON.parse(lastRoute).name : null;
-      
-      if (lastRouteName && lastRouteName !== this.$route.name) {
-        await this.$router.replace(JSON.parse(lastRoute));
-      } else if (!lastRouteName) {
-        await this.$router.replace({ name: "Home" });
-      }
-    } catch (e) {
-      console.log("Nincs elérhető oldal", e)
+import {
+  clearSessionAuthData,
+  ensureSessionTimeout,
+  isSessionExpired
+} from './utils/sessionTimeout';
+
+export default {
+  name: 'App',
+  data() {
+    return {
+      sessionCheckIntervalId: null
+    };
+  },
+  mounted() {
+    this.checkSessionTimeout();
+    this.sessionCheckIntervalId = window.setInterval(this.checkSessionTimeout, 15000);
+  },
+  beforeUnmount() {
+    if (this.sessionCheckIntervalId) {
+      clearInterval(this.sessionCheckIntervalId);
+      this.sessionCheckIntervalId = null;
     }
   },
-  
-  watch: {
-    $route(to) {
-      sessionStorage.setItem("lastRoute", JSON.stringify({
-        name: to.name,
-        path: to.path,
-        params: to.params,
-        query: to.query
-      }));
+  methods: {
+    checkSessionTimeout() {
+      const hasToken = Boolean(localStorage.getItem('accessToken'));
+      const hasUser = Boolean(localStorage.getItem('user'));
+
+      if (!hasToken || !hasUser) {
+        return;
+      }
+
+      ensureSessionTimeout();
+      if (!isSessionExpired()) {
+        return;
+      }
+
+      clearSessionAuthData();
+      if (this.$route.name !== 'Login') {
+        this.$router.push({ name: 'Login', query: { reason: 'timeout' } }).catch(() => {});
+      }
     }
   }
-};*/
+};
 </script>
 
 <template>
